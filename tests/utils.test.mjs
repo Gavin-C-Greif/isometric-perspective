@@ -12,10 +12,18 @@ import {
   safeDivide,
   computeElevationOffsetDelta,
   computeElevationVisualOffset,
-  computeOffsetComponentsForProjection
+  computeOffsetComponentsForProjection,
+  computeVisualYForSort
 } from '../scripts/utils.js';
 import { assertPointAlmostEqual, assertAlmostEqual, DEFAULT_EPSILON } from './helpers/tolerance.js';
-import { OFFSETS, TOKEN_DIMENSIONS, GRID_SIZES, GRID_DISTANCES, ELEVATIONS } from './fixtures/math-fixtures.js';
+import {
+  OFFSETS,
+  TOKEN_DIMENSIONS,
+  GRID_SIZES,
+  GRID_DISTANCES,
+  ELEVATIONS,
+  TRUE_ISOMETRIC_RAD
+} from './fixtures/math-fixtures.js';
 
 describe('cartesianToIso', () => {
   it('converts (0,0) to (0,0)', () => {
@@ -235,6 +243,60 @@ describe('transform/ruler equivalence (computeOffsetComponentsForProjection)', (
             }
           }
         }
+      }
+    }
+  });
+});
+
+describe('computeVisualYForSort (depth sorting)', () => {
+  const r = TRUE_ISOMETRIC_RAD.rotation;
+  const sx = TRUE_ISOMETRIC_RAD.skewX;
+  const sy = TRUE_ISOMETRIC_RAD.skewY ?? 0;
+
+  it('returns finite values for token positions', () => {
+    for (const { width, height } of TOKEN_DIMENSIONS) {
+      const gridSize = 100;
+      const x = (width * gridSize) / 2;
+      const y = (height * gridSize) / 2;
+      const visY = computeVisualYForSort(x, y, r, sx, sy);
+      assert(Number.isFinite(visY), `${width}x${height}`);
+    }
+  });
+
+  it('south (higher Y) has higher visual Y than north (lower Y)', () => {
+    const x = 50;
+    const visYNorth = computeVisualYForSort(x, 10, r, sx, sy);
+    const visYSouth = computeVisualYForSort(x, 90, r, sx, sy);
+    assert(visYSouth > visYNorth, 'south should sort in front of north');
+  });
+
+  it('sort order is deterministic for overlap scenarios', () => {
+    const positions = [
+      { x: 0, y: 0 },
+      { x: 50, y: 50 },
+      { x: 100, y: 100 },
+      { x: 25, y: 75 }
+    ];
+    const visYs = positions.map(p => computeVisualYForSort(p.x, p.y, r, sx, sy));
+    for (let i = 0; i < visYs.length - 1; i++) {
+      assert(Number.isFinite(visYs[i]));
+    }
+    const sorted = [...visYs].sort((a, b) => a - b);
+    assert.deepStrictEqual(visYs.map(v => v), visYs, 'no mutation');
+    assert.ok(sorted.every((v, i) => i === 0 || v >= sorted[i - 1]), 'sorted ascending');
+  });
+
+  it('scaled/offset positions produce stable ordering', () => {
+    const gridSize = 100;
+    for (const { width: scaleX, height: scaleY } of TOKEN_DIMENSIONS) {
+      for (const { x: offX, y: offY } of OFFSETS) {
+        const baseX = (scaleX * gridSize) / 2;
+        const baseY = (scaleY * gridSize) / 2;
+        const offsetScale = gridSize / 100;
+        const x = baseX + offX * offsetScale;
+        const y = baseY + offY * offsetScale;
+        const visY = computeVisualYForSort(x, y, r, sx, sy);
+        assert(Number.isFinite(visY), `${scaleX}x${scaleY} off=(${offX},${offY})`);
       }
     }
   });

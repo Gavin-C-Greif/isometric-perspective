@@ -9,6 +9,7 @@ Started: 2026-02-24
 - Extract placement/transform math to pure functions in utils.js for unit testing; transform.js calls them with document values.
 - Use safeDivide(num, denom, fallback) for any division where denominator can be 0 or non-finite.
 - computeOffsetComponentsForProjection is the shared path for offset/elevation; transform and ruler both use it.
+- Depth sorting uses visual center (mesh.position); computeVisualYForSort projects grid position to Visual Y for sort.
 
 ---
 ## 2026-02-24 - US-001
@@ -53,4 +54,14 @@ Started: 2026-02-24
   - computeOffsetComponentsForProjection is the single source of truth for offset+elevation in grid space; transform and ruler must both use it.
   - Ruler previously omitted gridSize/100 scaling for art offsets; unification fixes label drift for non-100 grid sizes.
   - Manual browser verification: measure with Token Ruler in isometric scene; labels should align with token visuals.
+---
+## 2026-02-24 - US-005
+- Sorting now uses visual center (token.mesh.position when available) instead of doc top-left; fallback to computed center when mesh absent.
+- Extracted computeVisualYForSort(x, y, rotation, skewX, skewY) as pure projection for testing.
+- Added 4 integration tests: finite values for token positions, south>north ordering, deterministic overlap, scaled/offset stability.
+- Files changed: scripts/utils.js, tests/utils.test.mjs, prd.json, progress.txt.
+- **Learnings for future iterations:**
+  - calculateTokenSortValue uses mesh.position (visual center) so scaled/offset tokens sort by rendered position, not doc corner.
+  - computeVisualYForSort is the pure projection; use TRUE_ISOMETRIC_RAD from fixtures for tests.
+  - Manual browser verification: overlap tokens in isometric scene; front/back order should match visuals.
 ---

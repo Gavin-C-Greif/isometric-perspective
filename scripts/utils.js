@@ -202,44 +202,56 @@ export function patchConfig(documentSheet, config, args) {
 }
 
 /**
- * Calculates the sort value for a token based on its isometric depth.
- * The formula (Width - X) + Y creates a gradient from North (back) to South (front).
+ * Projects a grid-space point (x, y) to Visual Y for depth sorting.
+ * Uses stage rotation and skew; higher Visual Y = "in front" (drawn last).
+ * Pure function for testing.
+ * @param {number} x - X in scene coords
+ * @param {number} y - Y in scene coords
+ * @param {number} rotation - Stage rotation (radians)
+ * @param {number} skewX - Stage skew X (radians)
+ * @param {number} skewY - Stage skew Y (radians)
+ * @returns {number} Visual Y for sort comparison
+ */
+export function computeVisualYForSort(x, y, rotation, skewX, skewY) {
+  const tanSx = Math.tan(skewX);
+  const tanSy = Math.tan(skewY);
+  const xSkewed = x + y * tanSx;
+  const ySkewed = y + x * tanSy;
+  return xSkewed * Math.sin(rotation) + ySkewed * Math.cos(rotation);
+}
+
+/**
+ * Calculates the sort value for a token based on isometric depth.
+ * Visual reference: token visual center (mesh position when available).
+ * Objects lower on screen (higher Visual Y) are "in front" and get higher sort.
  * @param {Token|TokenDocument} token - The token or token document to calculate for.
  * @returns {number} The calculated sort value.
  */
 export function calculateTokenSortValue(token) {
-  const scene = canvas.scene;
+  const scene = canvas?.scene;
   if (!scene) return 0;
-  
-  // Use document coordinates if passed a token document, otherwise use object coordinates
-  const doc = token.document || token;
-  const x = doc.x;
-  const y = doc.y;
 
-  // We want to sort by the "Visual Y" on the screen. 
-  // Objects lower on the screen (Higher Visual Y) are "in front" and should be drawn last (Higher Sort).
-  
-  // PIXI Transform Order: Scale -> Skew -> Rotate -> Translate
-  // We apply the Skew and Rotation to finding the Visual Y of the point.
-  // We use the actual canvas stage transform to ensure WYSIWYG correctness.
-  
+  const doc = token.document || token;
+  let x, y;
+
+  if (token.mesh?.position) {
+    x = token.mesh.position.x;
+    y = token.mesh.position.y;
+  } else {
+    const gridSize = scene.grid?.size ?? 100;
+    const scaleX = doc.width ?? 1;
+    const scaleY = doc.height ?? 1;
+    x = (doc.x ?? 0) + (scaleX * gridSize) / 2;
+    y = (doc.y ?? 0) + (scaleY * gridSize) / 2;
+  }
+
   const r = canvas.app.stage.rotation;
   const sx = canvas.app.stage.skew.x;
   const sy = canvas.app.stage.skew.y;
-  
-  const tanSx = Math.tan(sx);
-  const tanSy = Math.tan(sy);
-  
-  const xSkewed = x + y * tanSx;
-  const ySkewed = y + x * tanSy;
-  
-  const cosR = Math.cos(r);
-  const sinR = Math.sin(r);
-  const visualY = xSkewed * sinR + ySkewed * cosR;
+  const visualY = computeVisualYForSort(x, y, r, sx, sy);
 
-  debugLog(`[SortCalc] ${token.name || token.id} | (${x},${y}) -> VisY: ${visualY.toFixed(2)} | Sort: ${Math.round(visualY * 10)}`);
+  debugLog(`[SortCalc] ${token.name || token.id} | (${x.toFixed(0)},${y.toFixed(0)}) -> VisY: ${visualY.toFixed(2)} | Sort: ${Math.round(visualY * 10)}`);
 
-  // Multiply by 10 to keep precision in integer sort
   return Math.round(visualY * 10);
 }
 
