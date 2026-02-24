@@ -1,0 +1,32 @@
+{
+  "project": "MyProject",
+  "branchName": "ralph/my-feature",
+  "description": "Short description of the feature",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "First small task",
+      "description": "As a ..., I need ... so that ...",
+      "acceptanceCriteria": [
+        "Concrete criterion 1",
+        "Concrete criterion 2",
+        "Typecheck/lint/tests pass"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Second small task",
+      "description": "As a ..., I need ...",
+      "acceptanceCriteria": [
+        "Criterion 1",
+        "Verify in browser if UI change"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
