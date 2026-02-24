@@ -3,6 +3,7 @@ Started: 2026-02-24
 ---
 
 ## Codebase Patterns
+- Legacy v11 paths: marked with "// LEGACY: v11-only; not executed on v13"; module targets v13 so these branches never run
 - Grid config: Use renderGridConfig, gridConfigUpdate, closeGridConfig hooks; call canvas.draw() after grid/ruler edits to force refresh in isometric scenes
 - Use optional chaining (html.querySelector?.()) when targeting Foundry DOM elements that may vary by version
 - HUD sync: canvas.hud.token/tile/drawing have .object and .element when active; canvasPan re-syncs HUD positions for isometric stage transforms
@@ -70,4 +71,15 @@ Started: 2026-02-24
   - Token sort: autosorting.js is the only module that writes token.sort to document; _refreshSort only sets mesh.zIndex for display
   - Do not add scene.updateEmbeddedDocuments('Token', {sort: ...}) elsewhere; would duplicate/conflict with autosorting
   - calculateTokenSortValue() in utils.js is the shared formula; both autosorting and _refreshSort use it
+---
+
+## 2026-02-24 - US-006
+- Marked v11-only runtime paths as LEGACY in transform.js (3 locations), autosorting.js, token.js, dynamictile.js (3 locations)
+- Archived occlusion experiment files to archive/legacy-occlusion-experiments/: occlusion2 v15, occlusion2 v21, occlusion3.js
+- Added archive/legacy-occlusion-experiments/README.md documenting non-production experiments
+- Replaced ambiguous commented occlusion imports in main.js with single clear comment
+- Files changed: scripts/transform.js, scripts/autosorting.js, scripts/token.js, scripts/dynamictile.js, scripts/main.js, archive/legacy-occlusion-experiments/ (3 files + README), prd.json, progress.txt
+- **Learnings for future iterations:**
+  - v11 branches never execute on v13 (module.json compatibility minimum 13); LEGACY comments clarify intent
+  - Occlusion experiments were already not in runtime (commented imports); archiving removes them from scripts/ and documents them
 ---

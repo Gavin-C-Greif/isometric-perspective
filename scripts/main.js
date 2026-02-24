@@ -36,11 +36,7 @@ import { isoToCartesian, cartesianToIso } from './utils.js';
 
 import { registerOcclusionConfig } from './occlusion.js';
 import { addWelcomeScreen } from './welcome.js';
-
-//import { registerOcclusionConfig } from './silhouetetoken.js';
-//import { registerOcclusionConfig } from './occlusion2 v15 (cpu gpu choose).js';  // choose between cpu (working, heavy on performance) and gpu (not fully working)
-//import { registerOcclusionConfig } from './occlusion2 v21 (simple test 2).js';   // different approach to solution (not fully working)
-//import { registerOcclusionConfig } from './occlusion3.js';                       // has token-token occlusion (not fully working)
+// Occlusion: production uses occlusion.js. Non-production experiments are in archive/legacy-occlusion-experiments/.
 
 import { 
   createSceneIsometricTab,

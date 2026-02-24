@@ -89,6 +89,7 @@ function resetTokenTransform(token, baseState) {
       sy = 1;
       break;
     default:
+      // LEGACY: v11-only; not executed on v13 (module targets v13)
       if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
         sx = objTxtRatio_W / objTxtRatio_H;
         sy = 1;
@@ -316,7 +317,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
           sy = 1
           break;
         default:
-          // V11 Compatibility change
+          // LEGACY: v11-only; not executed on v13 (module targets v13)
           if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
             sx = (objTxtRatio_W) / (objTxtRatio_H);
             sy = 1;
@@ -555,7 +556,7 @@ Hooks.on('deleteToken', (token) => {
 
 
 
-// HOOK SETUP FOR COMPATIBILITY WITH FOUNDRY V11
+// LEGACY: v11-only; not executed on v13 (module targets v13)
 Hooks.once('ready', () => {
   setupCompatibilityHooks();
 });

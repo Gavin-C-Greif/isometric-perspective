@@ -618,14 +618,15 @@ function getWallDirection(x1, y1, x2, y2) {
 * @returns {boolean} - true se o token estiver em frente à parede, false caso contrário
 */
 function isTokenInFrontOfWall(token, wall) {
+  // LEGACY: v11 uses wall.A/B; v13 uses wall.edge.a/b (module targets v13)
   if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
     if (!wall?.A || !wall?.B || !token?.center) return false;
   } else {
     if (!wall?.edge?.a || !wall?.edge?.b || !token?.center) return false;
   }
 
-  const { x: x1, y: y1 } = isometricModuleConfig.FOUNDRY_VERSION === 11 ? wall.A : wall.edge.a;
-  const { x: x2, y: y2 } = isometricModuleConfig.FOUNDRY_VERSION === 11 ? wall.B : wall.edge.b;
+  const { x: x1, y: y1 } = isometricModuleConfig.FOUNDRY_VERSION === 11 ? wall.A : wall.edge.a; // v11: wall.A
+  const { x: x2, y: y2 } = isometricModuleConfig.FOUNDRY_VERSION === 11 ? wall.B : wall.edge.b; // v11: wall.B
   const { x: tokenX, y: tokenY } = token.center;
 
   // Verifica se a parede é horizontal (ângulo próximo a 0°)
@@ -682,6 +683,7 @@ function canTokenSeeWall(token, wall) {
   if (!isInFront) return false;
 
   // Verifica colisão com outros objetos entre o token e os pontos da parede
+  // LEGACY: v11 uses wall.A/B and canvas.effects.visibility; v13 uses wall.edge.a/b and canvas.visibility
   const wallPoints = isometricModuleConfig.FOUNDRY_VERSION === 11 ? [wall.A, wall.center, wall.B] : [wall.edge.a, wall.center, wall.edge.b];
   const tokenPosition = token.center;
 
