@@ -47,17 +47,66 @@ export function registerOcclusionConfig() {
 
 	// Reset on scene change
 	Hooks.on('changeScene', () => {
-		if (occlusionConfig.container) {
-			canvas.stage.removeChild(occlusionConfig.container);
-			occlusionConfig.container.destroy({ children: true });
-			occlusionConfig.container = null;
-			occlusionConfig.tokensLayer = null;
-			occlusionConfig.initialized = false;
-		}
+		teardownOcclusionLayer();
+	});
+
+	// Clean up on canvas teardown (e.g. before reload or world switch)
+	Hooks.on('canvasTearDown', () => {
+		teardownOcclusionLayer();
 	});
 
 	// Start the module
 	registerGlobalHooks();
+}
+
+/**
+ * Remove and destroy the occlusion layer and all its display objects.
+ * Prevents stale containers and memory churn (US-003).
+ */
+function teardownOcclusionLayer() {
+	if (!occlusionConfig.container) return;
+	try {
+		if (canvas?.stage?.children?.includes(occlusionConfig.container)) {
+			canvas.stage.removeChild(occlusionConfig.container);
+		}
+		destroyOcclusionContainer(occlusionConfig.container);
+	} catch (_e) {
+		// Canvas may already be torn down
+	}
+	occlusionConfig.container = null;
+	occlusionConfig.tokensLayer = null;
+	occlusionConfig.initialized = false;
+}
+
+/**
+ * Destroy container and all children, including masks. Does not destroy shared textures.
+ * Handles structure: container -> tokensLayer -> sprites (with masks).
+ */
+function destroyOcclusionContainer(container) {
+	if (!container) return;
+	const children = container.removeChildren();
+	for (const child of children) {
+		if (child.children?.length > 0) {
+			const sprites = child.removeChildren();
+			for (const sprite of sprites) {
+				destroyOcclusionSprite(sprite);
+			}
+		}
+		child.destroy({ children: false });
+	}
+	container.destroy({ children: false });
+}
+
+/**
+ * Destroy a single occlusion sprite and its mask. Preserves shared token texture.
+ */
+function destroyOcclusionSprite(sprite) {
+	if (!sprite) return;
+	if (sprite.mask) {
+		sprite.mask.destroy();
+		sprite.mask = null;
+	}
+	sprite.destroy({ texture: false, textureSource: false });
 }
 
 // Otimização 1: Debounce do updateOcclusionLayer
@@ -84,10 +133,14 @@ const occlusionConfig = {
 
 // Initialize or reset the occlusion layer
 function initializeOcclusionLayer() {
-	// Remove existing container if it exists
+	// Remove and destroy existing container if it exists (explicit cleanup for US-003)
 	if (occlusionConfig.container) {
-		canvas.stage.removeChild(occlusionConfig.container);
-		occlusionConfig.container.destroy({ children: true });
+		if (canvas?.stage?.children?.includes(occlusionConfig.container)) {
+			canvas.stage.removeChild(occlusionConfig.container);
+		}
+		destroyOcclusionContainer(occlusionConfig.container);
+		occlusionConfig.container = null;
+		occlusionConfig.tokensLayer = null;
 	}
 
 	// Create the main occlusion container
@@ -122,8 +175,11 @@ function updateOcclusionLayer() {
 		initializeOcclusionLayer();
 	}
 
-	// Clear existing occlusion tokens
-	occlusionConfig.tokensLayer.removeChildren();
+	// Destroy replaced sprites and masks to avoid memory churn (US-003)
+	const oldSprites = occlusionConfig.tokensLayer.removeChildren();
+	for (const sprite of oldSprites) {
+		destroyOcclusionSprite(sprite);
+	}
 
 	// Get all tokens and tiles
 	const tokens = canvas.tokens.placeables;

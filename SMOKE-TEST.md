@@ -34,6 +34,7 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 6 | Auto-sort depth ordering | Moving tokens updates depth order by isometric position; controlled token remains visible | | |
 | 7 | Dynamic tile linked-wall behavior | Linked tiles hide/show correctly when crossing linked walls and after scene switch | | |
 | 8 | Occlusion mode validation (CPU/GPU/Off as configured) | Occlusion behavior matches mode expectations without refresh storms or runtime errors | | |
+| 8a | **Occlusion lifecycle (US-003)** | No stale containers after scene switch; memory stable during repeated token movement/pan cycles | | |
 | 9 | Console noise gate with debug OFF/ON | Debug OFF: no noisy logs. Debug ON: prefixed `[Isometric Perspective]` diagnostics appear | | |
 
 ### Release Gate Checklist
@@ -107,6 +108,15 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 4 | Set `isoTokenDisabled` on a token and `isoTileDisabled` on a tile, then enable isometric | Flagged token/tile stay in standard projection (no iso offsets, scale, or anchor changes) | |
 | 5 | Move a token while isometric is enabled, then disable isometric | Token returns to the correct non-isometric position/size with no lingering offsets | |
 | 6 | Open console with debug **off** while toggling | No noisy log output from token/tile transforms | |
+
+## US-003 (PRD): Occlusion Lifecycle and Memory
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable Token Silhouette (gpu or cpu mode), open scene with occluding tiles | Occlusion layer renders; no console errors | | |
+| 2 | Move tokens repeatedly for 2–3 minutes | Occlusion updates; no visible lag or refresh storms | | |
+| 3 | Switch to another scene, then back | No stale occlusion containers; layer reinitializes cleanly | | |
+| 4 | (Optional) Use DevTools Memory profiler during step 2 | Heap does not continuously grow; stable or sawtooth pattern | | |
 
 ## US-004: Structured Debug Logging / No Production Noise
 

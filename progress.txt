@@ -6,6 +6,7 @@ Started: 2026-02-24
 - Grid config: Use renderGridConfig, gridConfigUpdate, closeGridConfig hooks; call canvas.draw() after grid/ruler edits to force refresh in isometric scenes
 - Use optional chaining (html.querySelector?.()) when targeting Foundry DOM elements that may vary by version
 - HUD sync: canvas.hud.token/tile/drawing have .object and .element when active; canvasPan re-syncs HUD positions for isometric stage transforms
+- Occlusion: PIXI removeChildren() does not destroy; explicitly destroy sprites and masks; use texture: false for shared textures; canvasTearDown for teardown cleanup
 ---
 
 ## 2026-02-24 - US-001
@@ -30,4 +31,18 @@ Started: 2026-02-24
   - canvas.hud.token, canvas.hud.tile, canvas.hud.drawing are the HUD layer instances; each has .object (bound placeable) and .element (HTML) when active
   - canvasPan fires on both pan and zoom; use it to keep HUD positions in sync with transformed stage coordinates
   - handleCanvasReady's forced canvas.pan() triggers canvasPan, so HUD sync runs automatically on scene load
+---
+
+## 2026-02-24 - US-003
+- Added explicit destroy path for occlusion sprites and masks in updateOcclusionLayer; replaced removeChildren() with destroyOcclusionSprite() for each sprite
+- Added teardownOcclusionLayer() and canvasTearDown hook; changeScene now uses teardownOcclusionLayer
+- Added destroyOcclusionContainer() and destroyOcclusionSprite() helpers; preserve shared token textures (texture: false)
+- initializeOcclusionLayer uses destroyOcclusionContainer when replacing existing container
+- Appended US-003: Occlusion Lifecycle and Memory Notes to PERFORMANCE-BASELINE.md
+- Added US-003 (PRD): Occlusion Lifecycle section to SMOKE-TEST.md; added row 8a to Release Smoke Suite
+- Files changed: scripts/occlusion.js, PERFORMANCE-BASELINE.md, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - PIXI removeChildren() does NOT destroy by default; must explicitly destroy sprites and masks to avoid memory churn
+  - sprite.mask is a Graphics object; destroy it before destroying the sprite; use texture: false when sprite shares token texture
+  - canvasTearDown fires when canvas is torn down (e.g. before reload); use it for cleanup alongside changeScene
 ---

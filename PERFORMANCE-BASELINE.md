@@ -83,3 +83,13 @@ Copy this section for each profiling run:
 | High Density | cpu6 | | | |
 | High Density | cpu8 | | | |
 | High Density | cpu10 | | | |
+
+## US-003: Occlusion Lifecycle and Memory Notes (2026-02-24)
+
+Occlusion overlay updates now explicitly destroy replaced sprites and masks on each update cycle to avoid memory churn during long sessions:
+
+- **Update loop**: Before rebuilding the occlusion layer, `updateOcclusionLayer` destroys all prior sprites and their masks via `destroyOcclusionSprite`. Sprites share the token texture; only the sprite and mask DisplayObjects are destroyed.
+- **Scene change / canvas teardown**: `teardownOcclusionLayer` removes the occlusion container from the stage and destroys it (including all children and masks) on `changeScene` and `canvasTearDown` hooks. Prevents stale containers when switching scenes or reloading.
+- **Re-initialization**: `initializeOcclusionLayer` uses the same explicit destroy path when replacing an existing container.
+
+**Stress test recommendation**: Run 10+ minutes of repeated token movement and pan/zoom with occlusion enabled (gpu or cpu modes). Use browser DevTools Memory profiler to confirm heap does not continuously grow.
