@@ -196,9 +196,16 @@ function reapplyTransformsAfterGridConfig() {
   }
 }
 
-const gridConfigChangeHandlers = new WeakMap();
+// Track listener cleanup by GridConfig app instance to avoid duplicate handlers across re-renders.
+const gridConfigListenerCleanupByApp = new WeakMap();
 
 Hooks.on("renderGridConfig", (app, html, data) => {
+  const previousCleanup = gridConfigListenerCleanupByApp.get(app);
+  if (previousCleanup) {
+    previousCleanup();
+    gridConfigListenerCleanupByApp.delete(app);
+  }
+
   const scene = app.object;
   if (!scene) return;
 
@@ -214,11 +221,6 @@ Hooks.on("renderGridConfig", (app, html, data) => {
 
   const gridConfigEl = html.querySelector?.(".grid-config");
   if (gridConfigEl) {
-    const previousHandler = gridConfigChangeHandlers.get(gridConfigEl);
-    if (previousHandler) {
-      gridConfigEl.removeEventListener("change", previousHandler);
-    }
-
     const onGridConfigChange = () => {
       const currentScene = app.object;
       if (!currentScene) return;
@@ -234,7 +236,9 @@ Hooks.on("renderGridConfig", (app, html, data) => {
     };
 
     gridConfigEl.addEventListener("change", onGridConfigChange);
-    gridConfigChangeHandlers.set(gridConfigEl, onGridConfigChange);
+    gridConfigListenerCleanupByApp.set(app, () => {
+      gridConfigEl.removeEventListener("change", onGridConfigChange);
+    });
   }
 });
 
@@ -243,6 +247,12 @@ Hooks.on("gridConfigUpdate", () => {
 });
 
 Hooks.on("closeGridConfig", (app) => {
+  const cleanup = gridConfigListenerCleanupByApp.get(app);
+  if (cleanup) {
+    cleanup();
+    gridConfigListenerCleanupByApp.delete(app);
+  }
+
   const scene = app.object;
   if (!scene) return;
 
