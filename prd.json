@@ -1,163 +1,132 @@
 {
   "project": "Isometric Perspective",
-  "branchName": "ralph/isometric-v13-stabilization-modernization",
-  "description": "Stabilize, modernize, and optimize the Foundry VTT v13 isometric module with phased hotfix, refactor, and performance improvements.",
+  "branchName": "ralph/v13-post-stabilization-hardening",
+  "description": "Harden the stabilized v13 isometric stack by fixing known defects, tightening lifecycle behavior, reducing performance churn, and strengthening regression validation.",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Fix runtime version/config mismatch",
-      "description": "As a maintainer, I want version/config constants to be internally consistent so compatibility checks execute as intended.",
+      "title": "Fix scene grid/ruler configuration incompatibility",
+      "description": "As a GM, I want scene grid and ruler tooling to behave correctly in isometric scenes so I can configure maps without fallback hacks.",
       "acceptanceCriteria": [
-        "All code paths read and write the same version field name (single source of truth).",
-        "v13 execution path is validated via smoke scenario startup.",
-        "No dead compatibility logic remains due to wrong config key names.",
-        "Smoke test script/checklist updated and executed.",
-        "Typecheck passes"
+        "Reproduce and document the current failure mode from README Known Bugs.",
+        "Scene grid/ruler interactions work in isometric scenes without requiring manual canvas redraw workarounds.",
+        "No regression in scene background transforms after grid/ruler edits.",
+        "Smoke checklist is updated with explicit grid/ruler configuration steps.",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
       "priority": 1,
-      "passes": true,
-      "notes": "Fixed isometricModuleConfig.CONST -> .FOUNDRY_VERSION. Moved config init before register calls. Consolidated game.version parsing to single source of truth."
+      "passes": false,
+      "notes": ""
     },
     {
       "id": "US-002",
-      "title": "Implement fully reversible scene/background transforms",
-      "description": "As a GM, I want toggling isometric mode on/off to always restore scene visuals correctly so I don't get lingering distortions.",
+      "title": "Stabilize HUD positioning for token/tile interactions",
+      "description": "As a user, I want token and tile HUD controls to appear reliably near the selected object so editing is usable in isometric mode.",
       "acceptanceCriteria": [
-        "Enabling/disabling isometric resets/sets all required transform properties (rotation, skew, scale, anchor, position) deterministically.",
-        "Switching scenes does not leave stale transform state.",
-        "Background transform behavior is consistent with isometricBackground flag.",
-        "Smoke test script/checklist updated and executed.",
+        "TokenHUD and TileHUD placement is stable across pan/zoom and repeated selection changes.",
+        "HUD placement remains correct after scene switch and projection changes.",
+        "No overlap regressions on non-isometric scenes.",
+        "Smoke checklist captures pass/fail evidence for HUD placement scenarios.",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 2,
-      "passes": true,
-      "notes": "Added save/restore pattern for background transform state. captureBackgroundDefaults() saves Foundry defaults before first isometric transform; restoreBackgroundDefaults() fully restores rotation, skew, anchor, scale, position on disable. resetBackgroundTracking() called on canvasReady for clean scene switches."
+      "passes": false,
+      "notes": ""
     },
     {
       "id": "US-003",
-      "title": "Implement full token/tile transform reset path",
-      "description": "As a user, I want token and tile meshes to return to correct non-isometric state when isometric is disabled.",
+      "title": "Harden occlusion overlay lifecycle and memory behavior",
+      "description": "As a maintainer, I want occlusion updates to avoid stale objects and memory churn so long sessions stay performant.",
       "acceptanceCriteria": [
-        "Token and tile non-isometric branch applies explicit reset, not partial early return.",
-        "Repeated toggling does not accumulate visual drift.",
-        "Token flags (isoScaleDisabled, offsets, anchors) do not corrupt non-isometric rendering.",
-        "Smoke test script/checklist updated and executed.",
+        "Occlusion update loop explicitly cleans up and destroys replaced sprites and masks where needed.",
+        "Scene changes and canvas teardown leave no stale occlusion containers or orphaned display objects.",
+        "Repeated token movement and pan cycles do not continuously grow memory footprint in profiling spot checks.",
+        "Performance notes are appended to PERFORMANCE-BASELINE.md.",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 3,
-      "passes": true,
-      "notes": "applyIsometricPerspective now reprocesses all tokens/tiles on both enable and disable, routing non-isometric branches through explicit reset logic to clear skew/rotation/scale drift."
+      "passes": false,
+      "notes": ""
     },
     {
       "id": "US-004",
-      "title": "Add structured debug logging and remove production noise",
-      "description": "As a maintainer, I want debug output to be consistently gated so normal users do not get console spam.",
+      "title": "Harden dynamic tile overlay lifecycle and multi-token behavior",
+      "description": "As a player/GM, I want dynamic tile visibility to remain correct during fast interaction, scene transitions, and changing controlled tokens.",
       "acceptanceCriteria": [
-        "Unconditional console.log in runtime rendering/config pathways removed or gated behind debug setting.",
-        "Debug logs use a common helper/prefix for easier filtering.",
-        "Default module startup in non-debug mode emits no noisy logs.",
-        "Smoke test script/checklist updated and executed.",
-        "Typecheck passes"
+        "Dynamic overlay rebuild path cleans up prior cloned sprites deterministically.",
+        "Behavior with no controlled token and with rapid control switching is defined and consistent.",
+        "Linked-wall visibility remains correct for doors and wall state changes.",
+        "Smoke checklist includes multi-token control switching and door toggling cases.",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
       "priority": 4,
-      "passes": true,
-      "notes": "Introduced shared logger helper with `[Isometric Perspective]` prefix, gated all runtime logging behind debug flag, and removed remaining unconditional console output."
+      "passes": false,
+      "notes": ""
     },
     {
       "id": "US-005",
-      "title": "Consolidate and throttle expensive hook-driven updates",
-      "description": "As a player, I want smooth movement and interaction so occlusion and dynamic tile features do not degrade FPS significantly.",
+      "title": "Rationalize sorting pipeline to a single authoritative path",
+      "description": "As a maintainer, I want one clear sorting strategy so depth ordering is correct without duplicated or conflicting sort writes.",
       "acceptanceCriteria": [
-        "Occlusion and dynamic tile update triggers are consolidated with throttling/debouncing.",
-        "Redundant multi-hook refresh storms are reduced.",
-        "Behavior remains functionally equivalent in standard scenarios.",
-        "Smoke test script/checklist updated and executed.",
+        "Sorting responsibilities between _refreshSort wrapper and updateToken/canvasReady document updates are clarified and de-duplicated.",
+        "Controlled-token visibility boost remains intact.",
+        "No sort jitter or update loops during token movement.",
+        "Smoke checklist verifies stable ordering across movement and selection scenarios.",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 5,
-      "passes": true,
-      "notes": "Throttled occlusion/dynamic tile updates through consolidated hook scheduler to prevent refresh storms while maintaining behavior."
+      "passes": false,
+      "notes": ""
     },
     {
       "id": "US-006",
-      "title": "Harden dynamic tile linked-wall lifecycle",
-      "description": "As a GM, I want linked wall behavior to be stable so tile visibility logic remains correct across updates and scene changes.",
+      "title": "Remove dead legacy compatibility paths not aligned with v13 support",
+      "description": "As a maintainer, I want unsupported-version branches and dormant experimental code paths reduced so future changes are safer.",
       "acceptanceCriteria": [
-        "Linked wall flag normalization is centralized and avoids unnecessary writes.",
-        "Tile-wall selection and clear actions remain reliable after repeated edits.",
-        "Scene changes cleanly reinitialize dynamic containers without leaks/stale references.",
-        "Smoke test script/checklist updated and executed.",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "v11-only runtime paths are removed, isolated, or clearly marked as non-executed legacy code.",
+        "Alternative occlusion experiment files are archived from runtime scope or documented as non-production artifacts.",
+        "Runtime entry path scripts/main.js is free of ambiguous or misleading commented import options.",
+        "README compatibility and limitations text remains accurate after cleanup.",
+        "Typecheck passes"
       ],
       "priority": 6,
-      "passes": true,
-      "notes": "Added centralized linkedWallIds normalization + dedupe, guarded setFlag writes to avoid redundant update loops, normalized scene tiles on canvasReady, and hardened dynamic container teardown/rebuild on scene transitions."
+      "passes": false,
+      "notes": ""
     },
     {
       "id": "US-007",
-      "title": "Refactor sorting/patch strategy for safer interop",
-      "description": "As a module maintainer, I want safer extension points for token sorting so other modules are less likely to conflict.",
+      "title": "Standardize error and logging behavior with actionable diagnostics",
+      "description": "As a maintainer, I want runtime diagnostics to be consistent and actionable so debugging production issues is faster.",
       "acceptanceCriteria": [
-        "Current token sorting override approach is refactored to safer extension/patch pattern for v13.",
-        "Sorting still respects isometric depth and selection visibility.",
-        "No regressions in auto-sorting when enabled.",
-        "Smoke test script/checklist updated and executed.",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "Non-critical runtime errors use structured prefixed logging with context.",
+        "Unconditional noisy logs are avoided in normal operation.",
+        "Parsing and validation errors, including custom projection input, are surfaced clearly to users.",
+        "Smoke checklist includes debug off/on verification for changed areas.",
+        "Typecheck passes"
       ],
       "priority": 7,
-      "passes": true,
-      "notes": "Replaced eager Token.prototype monkey-patch with init-time wrapper registration (libWrapper WRAPPER when available, guarded direct fallback otherwise) to preserve interop while keeping isometric depth + controlled-token visibility behavior."
+      "passes": false,
+      "notes": ""
     },
     {
       "id": "US-008",
-      "title": "Define v13 smoke test suite and release gate checklist",
-      "description": "As a maintainer, I want repeatable smoke tests so each release has minimum validation coverage.",
+      "title": "Add targeted regression harness for high-risk interactions",
+      "description": "As a maintainer, I want focused regression coverage around transforms, overlays, and sorting so future releases detect breakage early.",
       "acceptanceCriteria": [
-        "Smoke checklist covers scene toggle, projection change, token/tile offsets, HUD/ruler alignment, auto-sort, dynamic tile, and occlusion modes.",
-        "Checklist includes expected/actual outcomes and pass/fail markers.",
-        "Checklist is referenced in release process docs.",
-        "Smoke test script/checklist updated and executed.",
-        "Typecheck passes"
-      ],
-      "priority": 8,
-      "passes": true,
-      "notes": "Added dedicated v13 Release Smoke Suite section with Expected/Actual/PASS-FAIL tracking in SMOKE-TEST.md and created RELEASE-PROCESS.md that requires this checklist as a pre-release gate."
-    },
-    {
-      "id": "US-009",
-      "title": "Align docs/manifest/release process with actual v13 support",
-      "description": "As an installer or user, I want metadata and docs to match reality so setup and expectations are clear.",
-      "acceptanceCriteria": [
-        "README compatibility statements are updated to v13 reality.",
-        "Manifest fields and badges align with supported versions.",
-        "Release script/docs remove stale repository/action references.",
-        "Smoke test script/checklist updated and executed.",
-        "Typecheck passes"
-      ],
-      "priority": 9,
-      "passes": true,
-      "notes": "Updated README compatibility messaging and Foundry badge to v13, and removed stale repository/action reference in release.js so release guidance matches the current repo."
-    },
-    {
-      "id": "US-010",
-      "title": "Performance profiling baseline for occlusion modes",
-      "description": "As a maintainer, I want measurable occlusion performance baselines so optimization decisions are evidence-based.",
-      "acceptanceCriteria": [
-        "Baseline scenarios are defined for token counts, tile counts, and zoom ranges.",
-        "CPU-mode chunk configurations are compared and documented.",
-        "Recommended defaults are selected based on measured tradeoffs.",
-        "Smoke test script/checklist updated and executed.",
+        "SMOKE-TEST.md is extended with a high-risk interaction matrix covering projection switch, pan/zoom, scene switch, token control switch, and door state changes.",
+        "Release process references these new checks as required evidence.",
+        "Baseline performance capture includes at least one long-session stress scenario.",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
-      "priority": 10,
-      "passes": true,
-      "notes": "Defined baseline scenario matrix (token/tile density + zoom ranges), documented CPU chunk-mode tradeoffs and selected default policy in PERFORMANCE-BASELINE.md, and added US-010 smoke checklist plus release-gate reference."
+      "priority": 8,
+      "passes": false,
+      "notes": ""
     }
   ]
 }

@@ -1,0 +1,146 @@
+# Ralph Progress Log
+Started: 2026-02-24
+---
+
+## Codebase Patterns
+- Global config lives in `scripts/consts.js` as `isometricModuleConfig` (MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG, FOUNDRY_VERSION)
+- Config values are initialized in the `Hooks.once("init")` handler in `scripts/main.js`, BEFORE register*() feature calls
+- Version-conditional code uses `isometricModuleConfig.FOUNDRY_VERSION === 11` to branch between v11 and v13 APIs
+- Foundry v11 vs v13 API differences: wall endpoints (wall.A/B vs wall.edge.a/b), visibility testing (canvas.effects.visibility vs canvas.visibility), token sorting API
+- `module.json` compatibility is set to minimum v13 — v11 branches are legacy compat code
+- Keep README Foundry-version badges and compatibility copy aligned with `module.json` compatibility fields to avoid mixed support signals
+- No build step for JS — plain ES modules loaded directly by Foundry VTT
+- All scripts are in `scripts/` directory, entry point is `scripts/main.js`
+- Projection types and isometric constants are defined in `scripts/consts.js`
+- Use `node --check <file>` for basic syntax validation (no tsconfig/typecheck infra yet)
+- Background transform uses save/restore pattern in `transform.js` — `resetBackgroundTracking()` must be called before transforms on each new canvas (called in `handleCanvasReady`)
+- Stage toggles must re-run `adjustAllTokensAndTilesForIsometric` for both enable and disable so token/tile meshes fully reset
+- Use `scripts/logger.js` helpers (debugLog/debugWarn/debugGroup/debugTable) for any debug output; logs are gated by `isometricModuleConfig.DEBUG_PRINT` and prefixed with `[Isometric Perspective]`
+- Expensive hook-driven layers (occlusion, dynamic tiles) should call the shared `throttle` helper (scripts/utils.js) and schedule updates instead of firing per-hook
+- Normalize `linkedWallIds` through `normalizeLinkedWallIds` before read/write; only call `setFlag` when normalized output differs to avoid recursive update churn
+- Core Foundry prototype patches should be registered during `init` and prefer `libWrapper` `WRAPPER` mode for interop; use guarded direct fallback only when `libWrapper` is unavailable
+- Use `SMOKE-TEST.md` US-008 section as the release validation artifact: every scenario should capture Actual + PASS/FAIL before tagging
+- Keep `PERFORMANCE-BASELINE.md` updated with one completed run per release candidate; treat `off` as the safe global default and `cpu6` as the recommended CPU occlusion fallback unless new measurements justify a change
+
+---
+
+## 2026-02-24 - US-001
+- Fixed critical bug: `isometricModuleConfig.CONST` was being set in main.js but all consumers read `isometricModuleConfig.FOUNDRY_VERSION` from consts.js — the field was never populated, always 0
+- Moved config initialization (FOUNDRY_VERSION, DEBUG_PRINT, WORLD_ISO_FLAG) before register*() calls so values are available during feature registration
+- Updated autosorting.js to use centralized `isometricModuleConfig.FOUNDRY_VERSION` instead of re-parsing `game.version.startsWith("11")`
+- Added jsconfig.json for IDE support
+- Added SMOKE-TEST.md checklist for US-001 verification
+- Files changed: scripts/main.js, scripts/autosorting.js, jsconfig.json, SMOKE-TEST.md
+- **Learnings for future iterations:**
+  - The `isometricModuleConfig` object in consts.js is the single source of truth for module-wide config — always use it, never parse game.version directly
+  - Config must be initialized before register*() calls in the init hook — order matters
+  - PowerShell shell: use `-m` flags for git commit messages, not heredoc syntax
+  - `game.version` and `game.settings` are available during the `init` hook in Foundry VTT
+---
+
+## 2026-02-24 - US-002
+- Fixed incomplete background transform reset: disabling isometric only reset rotation/skew but left anchor, scale, and position in their modified state
+- Added save/restore pattern: `captureBackgroundDefaults()` snapshots the Foundry-default background state before first isometric transform; `restoreBackgroundDefaults()` fully restores all 5 properties (rotation, skew, anchor, scale, position)
+- Added `resetBackgroundTracking()` called from `handleCanvasReady` so scene switches start with fresh tracking state
+- Stage transform (`applyIsometricPerspective`) was already correct — only rotation and skew are modified, and the reset path already zeroes both
+- Removed dead commented-out code (foreground handler, old reset attempts) from `applyBackgroundTransformation`
+- Added US-002 smoke test section to SMOKE-TEST.md
+- Files changed: scripts/transform.js, scripts/scene.js, SMOKE-TEST.md
+- **Learnings for future iterations:**
+  - Background is at `canvas.environment.primary.background` — a PIXI SpriteMesh whose default anchor/scale/position are set by Foundry during canvas setup
+  - You cannot simply reset scale to (1,1) or anchor to (0,0) — Foundry's defaults depend on the scene image; save/restore is the safe pattern
+  - `_bgTransformed` flag prevents re-capturing state when re-applying transforms (e.g., projection change while already isometric)
+  - `handleCanvasReady` runs after Foundry fully sets up the canvas — background is in default state at that point, ideal for capturing defaults
+  - Manual browser verification is needed — no browser testing MCP available in this environment
+---
+
+## 2026-02-24 - US-003
+- applyIsometricPerspective now reprocesses every token/tile on both enable and disable, routing non-isometric toggles through the explicit reset path to clear skew/rotation/scale drift
+- Updated US-003 smoke test expectations to call out doc-dimension recomputation on disable; marked PRD story as passing
+- Files changed: scripts/transform.js, SMOKE-TEST.md, prd.json
+- **Learnings for future iterations:**
+  - When toggling isometric off, you must rerun applyIsometricTransformation for existing placeables; stage-only resets leave meshes skewed
+  - Recomputing token/tile width/height/position from document dimensions prevents drift even when iso flags like isoScaleDisabled/offsets are present
+  - `adjustAllTokensAndTilesForIsometric(false)` gives a deterministic non-iso restore without touching feature flags
+  - Manual smoke/browser verification still needed; ran `node --check scripts/transform.js` for syntax
+---
+
+## 2026-02-24 - US-004
+- Added structured logging helpers with `[Isometric Perspective]` prefix and switched all runtime debug output to use debugLog/debugWarn/debugGroup/debugTable gated by module debug setting
+- Removed the last unconditional console output (token/tile config context) and kept autosorting debug grouping behind the shared helper
+- Updated SMOKE-TEST with US-004 steps and marked PRD story as passing
+- Files changed: scripts/logger.js, scripts/utils.js, scripts/transform.js, scripts/scene.js, scripts/autosorting.js, scripts/ruler.js, scripts/hud.js, scripts/dynamictile.js, SMOKE-TEST.md, prd.json
+- **Learnings for future iterations:**
+  - Use the shared logger helpers for any debug output; they automatically gate on `isometricModuleConfig.DEBUG_PRINT` and prefix messages for filtering
+  - Autosorting debug output now lives behind the shared helper; enable module debug if you need grouped logs when moving tokens
+  - Token/tile config context logging is debug-only to avoid console noise during normal play
+  - Manual smoke/browser verification still needed; rerun SMOKE-TEST US-004 steps after enabling debug setting
+---
+
+## 2026-02-24 15:00 - US-005
+- Consolidated occlusion and dynamic tile update hooks behind shared throttled schedulers to prevent refresh storms while keeping visuals in sync
+- Files changed: scripts/utils.js, scripts/dynamictile.js, scripts/occlusion.js, SMOKE-TEST.md, prd.json
+- **Learnings for future iterations:**
+  - Use `throttle` from `scripts/utils.js` to coalesce frequent hook-driven updates; it runs immediately then trails once per window
+  - Dynamic tile/occlusion hooks fire from many sources; schedule updates instead of calling heavy refresh logic directly in each handler
+  - Manual browser verification still needed for movement/pan/door scenarios; no automated browser tools available here
+---
+
+## 2026-02-24 14:57 - US-006
+- Hardened linked-wall lifecycle by centralizing `linkedWallIds` normalization/deduplication and only writing flags when normalized values actually change
+- Added scene-safe container teardown/rebuild on `canvasInit`, `changeScene`, and `canvasTearDown`, plus per-scene linked-wall normalization on `canvasReady`
+- Made tile config wall select/clear actions robust against legacy string flags and no-op clears
+- Updated US-006 checklist section in SMOKE-TEST and marked PRD story as passing
+- Files changed: scripts/dynamictile.js, scripts/tile.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Treat `linkedWallIds` as migration-prone data: normalize before all comparisons and UI operations so legacy values do not break dedupe logic
+  - Avoid redundant `setFlag` writes in `updateTile` paths; they can trigger avoidable hook churn and hard-to-track update loops
+  - Dynamic containers should always be explicitly destroyed on scene/canvas lifecycle boundaries to prevent stale references
+  - Manual browser verification still needed for linked-wall selection and scene-switch behavior; no automated browser tools available here
+---
+
+## 2026-02-24 15:18 - US-007
+- Replaced eager `Token.prototype._refreshSort` monkey-patch with init-time registration via `registerTokenSortingPatch()`
+- Implemented chain-friendly wrapper strategy: use `libWrapper.register(..., "WRAPPER")` when available; apply guarded direct fallback patch only when `libWrapper` is missing
+- Preserved behavior by running Foundry's original `_refreshSort` first, then applying isometric z-index depth logic (plus controlled-token visibility boost) only when scene is isometric and auto-sort is enabled
+- Added US-007 smoke checklist section for interop and fallback validation; marked PRD story as passing
+- Files changed: scripts/token.js, scripts/main.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Prefer wrapper-based extension points for core Foundry methods to reduce module conflict risk; avoid top-level prototype reassignment at import time
+  - Register compatibility patches in the `init` hook after settings/config are available, so behavior gates can be evaluated deterministically
+  - Manual browser verification still needed for movement/selection sorting behavior and libWrapper/no-libWrapper startup paths in Foundry v13
+---
+
+## 2026-02-24 15:02 - US-008
+- Added a dedicated v13 Release Smoke Suite in `SMOKE-TEST.md` covering scene toggle, projection changes, token/tile offsets, HUD/ruler alignment, auto-sort, dynamic tile behavior, and occlusion modes
+- Added explicit run tracking fields (`Actual`, `Result PASS/FAIL`) plus a Release Gate checklist for lint/build evidence and release blocking decisions
+- Added `RELEASE-PROCESS.md` to define release-gate workflow and require completion of the US-008 smoke suite before publishing
+- Marked PRD story US-008 as passing
+- Files changed: SMOKE-TEST.md, RELEASE-PROCESS.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Keep `SMOKE-TEST.md` as the single source of smoke validation evidence by recording Actual outcomes and PASS/FAIL for each scenario
+  - Release docs should point directly to the smoke suite section to make pre-release validation discoverable and repeatable
+  - Maintain a strict no-release-on-fail gate when any smoke scenario or lint/build check is red
+---
+
+## 2026-02-24 15:04 - US-009
+- Updated README support signaling to v13 by fixing the Foundry badge and removing outdated v13 disclaimers from compatibility/bugs/todo headers
+- Updated `release.js` post-release guidance to reference the current repository actions URL instead of a stale repository reference
+- Marked PRD story US-009 as passing
+- Files changed: README.md, release.js, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Keep support messaging synchronized across README badges/text and `module.json` compatibility to avoid contradictory installation expectations
+  - Validate release automation/log messages after repository transfers or forks to prevent stale links in maintainer workflow scripts
+---
+
+## 2026-02-24 15:06 - US-010
+- Added `PERFORMANCE-BASELINE.md` with baseline scenario definitions (token/tile density + zoom ranges), profiling metrics, and mode-by-mode comparison guidance for `off`, `gpu`, and CPU chunk sizes
+- Added a selected default policy based on current measured tradeoffs: keep global default `off` and recommend `cpu6` as the CPU fallback profile for most scenes
+- Added a dedicated US-010 checklist section in `SMOKE-TEST.md` and updated `RELEASE-PROCESS.md` to require baseline refresh evidence for release candidates
+- Marked PRD story US-010 as passing
+- Files changed: PERFORMANCE-BASELINE.md, SMOKE-TEST.md, RELEASE-PROCESS.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Maintain a fixed scenario matrix (density + zoom) when comparing occlusion modes, so profiling results are comparable across releases
+  - Keep release evidence split between behavior checks (`SMOKE-TEST.md`) and performance baselines (`PERFORMANCE-BASELINE.md`) to make regressions easier to spot
+  - If browser profiling cannot be executed in the current environment, explicitly document the gap and block default-policy changes until measurements are captured
+---
