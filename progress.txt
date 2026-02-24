@@ -6,6 +6,7 @@ Started: 2026-02-24
 - Shared math fixtures live in `tests/fixtures/math-fixtures.js`; tolerance helpers in `tests/helpers/tolerance.js`.
 - Project uses `"type":"module"` in package.json; release.cjs is CommonJS for build script compatibility.
 - Pure coordinate math (cartesianToIso, isoToCartesian) in utils.js has no Foundry deps and can be tested in Node.
+- Extract placement/transform math to pure functions in utils.js for unit testing; transform.js calls them with document values.
 
 ---
 ## 2026-02-24 - US-001
@@ -18,4 +19,15 @@ Started: 2026-02-24
   - Scripts use ES modules; release.js was CommonJS—migrated to release.cjs to allow "type":"module" for tests.
   - ESLint has a release.cjs override with globals.node; tests/** override uses globals.node for Node test files.
   - Fixtures match the Math Test Matrix dimensions from the PRD (projection, token shape, grid, offsets, elevation).
+---
+## 2026-02-24 - US-002
+- Fixed axis-scale token placement: center and projected offsets now use scaleX for X and scaleY for Y (was incorrectly using scaleX for both).
+- Extracted computeTokenPlacementPosition(docX, docY, scaleX, scaleY, gridSize, isoOffsets) to utils.js for testability.
+- Updated transform.js to use the shared helper.
+- Added 6 unit tests for computeTokenPlacementPosition: square 1x1 baseline, rectangular 2x1, 1x2, 3x2, projected offset scaling, and fixture coverage.
+- Files changed: scripts/utils.js, scripts/transform.js, tests/utils.test.mjs, prd.json, progress.txt.
+- **Learnings for future iterations:**
+  - Token placement formula: pos.x = docX + (scaleX * gridSize/2) + (scaleX * isoOffsets.x); pos.y = docY + (scaleY * gridSize/2) + (scaleY * isoOffsets.y).
+  - Extracting pure placement math to utils enables Node tests without Foundry mocks.
+  - Manual browser verification needed: place 2x1, 1x2, 3x2 tokens in Foundry isometric scene to confirm no drift.
 ---

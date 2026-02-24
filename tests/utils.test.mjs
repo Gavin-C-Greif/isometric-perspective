@@ -4,7 +4,12 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { cartesianToIso, isoToCartesian, calculateIsometricVerticalDistance } from '../scripts/utils.js';
+import {
+  cartesianToIso,
+  isoToCartesian,
+  calculateIsometricVerticalDistance,
+  computeTokenPlacementPosition
+} from '../scripts/utils.js';
 import { assertPointAlmostEqual, assertAlmostEqual, DEFAULT_EPSILON } from './helpers/tolerance.js';
 import { OFFSETS, TOKEN_DIMENSIONS } from './fixtures/math-fixtures.js';
 
@@ -57,5 +62,64 @@ describe('calculateIsometricVerticalDistance', () => {
   it('matches sqrt(2) * min(w,h) for square', () => {
     const d = calculateIsometricVerticalDistance(1, 1);
     assertAlmostEqual(d, Math.sqrt(2), DEFAULT_EPSILON);
+  });
+});
+
+describe('computeTokenPlacementPosition', () => {
+  const gridSize = 100;
+
+  it('square 1x1 baseline: center matches doc + half grid', () => {
+    const docX = 0;
+    const docY = 0;
+    const pos = computeTokenPlacementPosition(docX, docY, 1, 1, gridSize, { x: 0, y: 0 });
+    assertAlmostEqual(pos.x, docX + gridSize / 2, DEFAULT_EPSILON);
+    assertAlmostEqual(pos.y, docY + gridSize / 2, DEFAULT_EPSILON);
+  });
+
+  it('rectangular 2x1: X center uses scaleX, Y center uses scaleY', () => {
+    const docX = 0;
+    const docY = 0;
+    const pos = computeTokenPlacementPosition(docX, docY, 2, 1, gridSize, { x: 0, y: 0 });
+    assertAlmostEqual(pos.x, docX + (2 * gridSize) / 2, DEFAULT_EPSILON);
+    assertAlmostEqual(pos.y, docY + (1 * gridSize) / 2, DEFAULT_EPSILON);
+  });
+
+  it('rectangular 1x2: X center uses scaleX, Y center uses scaleY', () => {
+    const docX = 0;
+    const docY = 0;
+    const pos = computeTokenPlacementPosition(docX, docY, 1, 2, gridSize, { x: 0, y: 0 });
+    assertAlmostEqual(pos.x, docX + (1 * gridSize) / 2, DEFAULT_EPSILON);
+    assertAlmostEqual(pos.y, docY + (2 * gridSize) / 2, DEFAULT_EPSILON);
+  });
+
+  it('rectangular 3x2: axis-correct center', () => {
+    const docX = 50;
+    const docY = 100;
+    const pos = computeTokenPlacementPosition(docX, docY, 3, 2, gridSize, { x: 0, y: 0 });
+    assertAlmostEqual(pos.x, docX + (3 * gridSize) / 2, DEFAULT_EPSILON);
+    assertAlmostEqual(pos.y, docY + (2 * gridSize) / 2, DEFAULT_EPSILON);
+  });
+
+  it('projected offsets scale with correct axis (scaleX for x, scaleY for y)', () => {
+    const isoOffsets = cartesianToIso(10, 20);
+    const pos = computeTokenPlacementPosition(0, 0, 2, 3, gridSize, isoOffsets);
+    const expectedX = (2 * gridSize) / 2 + 2 * isoOffsets.x;
+    const expectedY = (3 * gridSize) / 2 + 3 * isoOffsets.y;
+    assertAlmostEqual(pos.x, expectedX, DEFAULT_EPSILON);
+    assertAlmostEqual(pos.y, expectedY, DEFAULT_EPSILON);
+  });
+
+  it('covers all rectangular token fixtures (2x1, 1x2, 3x2)', () => {
+    const rects = [
+      { width: 2, height: 1 },
+      { width: 1, height: 2 },
+      { width: 3, height: 2 }
+    ];
+    for (const { width, height } of rects) {
+      const pos = computeTokenPlacementPosition(0, 0, width, height, gridSize, { x: 0, y: 0 });
+      assert(Number.isFinite(pos.x) && Number.isFinite(pos.y), `${width}x${height}`);
+      assertAlmostEqual(pos.x, (width * gridSize) / 2, DEFAULT_EPSILON);
+      assertAlmostEqual(pos.y, (height * gridSize) / 2, DEFAULT_EPSILON);
+    }
   });
 });

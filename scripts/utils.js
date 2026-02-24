@@ -18,6 +18,24 @@ export function cartesianToIso(isoX, isoY) {
   };
 }
 
+/**
+ * Computes isometric token placement position with axis-correct scaling.
+ * X uses scaleX (width); Y uses scaleY (height) so rectangular tokens don't drift.
+ * @param {number} docX - Document top-left X (scene coords)
+ * @param {number} docY - Document top-left Y (scene coords)
+ * @param {number} scaleX - Token width in grid cells
+ * @param {number} scaleY - Token height in grid cells
+ * @param {number} gridSize - Pixels per grid cell
+ * @param {{x: number, y: number}} isoOffsets - Projected offset from cartesianToIso
+ * @returns {{x: number, y: number}} Mesh position
+ */
+export function computeTokenPlacementPosition(docX, docY, scaleX, scaleY, gridSize, isoOffsets) {
+  return {
+    x: docX + (scaleX * gridSize / 2) + (scaleX * (isoOffsets?.x ?? 0)),
+    y: docY + (scaleY * gridSize / 2) + (scaleY * (isoOffsets?.y ?? 0))
+  };
+}
+
 // Função auxiliar para calcular a menor diagonal do losango (distância vertical entre vértices)
 export function calculateIsometricVerticalDistance(width, height) {
   // Em uma projeção isométrica com rotação de 45°, a distância vertical

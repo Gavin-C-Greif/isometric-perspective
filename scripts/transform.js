@@ -1,5 +1,5 @@
 import { isometricModuleConfig } from './consts.js';
-import { cartesianToIso } from './utils.js';
+import { cartesianToIso, computeTokenPlacementPosition } from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
 import { debugLog, debugWarn, logWarn } from './logger.js';
 
@@ -342,20 +342,16 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     
     // transformed distances
     const isoOffsets = cartesianToIso(offsetX, offsetY);
-    
+
     // Create shadow and line graphics elements
     updateTokenVisuals(object, elevation, gridSize, gridDistance);
 
-    // Position the token
-    object.mesh.position.set(
-      object.document.x + (scaleX * gridSize/2) + (scaleX * isoOffsets.x),
-      object.document.y + (scaleX * gridSize/2) + (scaleX * isoOffsets.y)
+    // Position the token with axis-correct scaling (scaleX for X, scaleY for Y)
+    const pos = computeTokenPlacementPosition(
+      object.document.x, object.document.y,
+      scaleX, scaleY, gridSize, isoOffsets
     );
-    // original code
-    //object.mesh.position.set(
-      //object.document.x + (isoOffsets.x * scaleX),
-      //object.document.y + (isoOffsets.y * scaleY)
-    //);
+    object.mesh.position.set(pos.x, pos.y);
   }
 
   
