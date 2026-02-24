@@ -12,6 +12,7 @@ Started: 2026-02-24
 - All scripts are in `scripts/` directory, entry point is `scripts/main.js`
 - Projection types and isometric constants are defined in `scripts/consts.js`
 - Use `node --check <file>` for basic syntax validation (no tsconfig/typecheck infra yet)
+- Background transform uses save/restore pattern in `transform.js` — `resetBackgroundTracking()` must be called before transforms on each new canvas (called in `handleCanvasReady`)
 
 ---
 
@@ -27,4 +28,20 @@ Started: 2026-02-24
   - Config must be initialized before register*() calls in the init hook — order matters
   - PowerShell shell: use `-m` flags for git commit messages, not heredoc syntax
   - `game.version` and `game.settings` are available during the `init` hook in Foundry VTT
+---
+
+## 2026-02-24 - US-002
+- Fixed incomplete background transform reset: disabling isometric only reset rotation/skew but left anchor, scale, and position in their modified state
+- Added save/restore pattern: `captureBackgroundDefaults()` snapshots the Foundry-default background state before first isometric transform; `restoreBackgroundDefaults()` fully restores all 5 properties (rotation, skew, anchor, scale, position)
+- Added `resetBackgroundTracking()` called from `handleCanvasReady` so scene switches start with fresh tracking state
+- Stage transform (`applyIsometricPerspective`) was already correct — only rotation and skew are modified, and the reset path already zeroes both
+- Removed dead commented-out code (foreground handler, old reset attempts) from `applyBackgroundTransformation`
+- Added US-002 smoke test section to SMOKE-TEST.md
+- Files changed: scripts/transform.js, scripts/scene.js, SMOKE-TEST.md
+- **Learnings for future iterations:**
+  - Background is at `canvas.environment.primary.background` — a PIXI SpriteMesh whose default anchor/scale/position are set by Foundry during canvas setup
+  - You cannot simply reset scale to (1,1) or anchor to (0,0) — Foundry's defaults depend on the scene image; save/restore is the safe pattern
+  - `_bgTransformed` flag prevents re-capturing state when re-applying transforms (e.g., projection change while already isometric)
+  - `handleCanvasReady` runs after Foundry fully sets up the canvas — background is in default state at that point, ideal for capturing defaults
+  - Manual browser verification is needed — no browser testing MCP available in this environment
 ---
