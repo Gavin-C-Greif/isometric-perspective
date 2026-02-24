@@ -62,8 +62,8 @@
         "Typecheck passes"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Introduced shared logger helper with `[Isometric Perspective]` prefix, gated all runtime logging behind debug flag, and removed remaining unconditional console output."
     },
     {
       "id": "US-005",

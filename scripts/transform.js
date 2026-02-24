@@ -1,6 +1,7 @@
 import { isometricModuleConfig } from './consts.js';
 import { cartesianToIso } from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
+import { debugLog, debugWarn } from './logger.js';
 
 const canvasTile = foundry.canvas.placeables.Tile;
 const canvasToken = foundry.canvas.placeables.Token;
@@ -213,7 +214,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
   // Don't make any transformation if the isometric module isn't active
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
   if (!object.mesh) {
-    if (isometricModuleConfig.DEBUG_PRINT) {console.warn("Mesh not found:", object)}
+    debugWarn("Mesh not found:", object);
     return;
   }
 
@@ -403,7 +404,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
 
 export function applyBackgroundTransformation(scene, isSceneIsometric, shouldTransform) {
   if (!canvas?.primary?.background) {
-    if (isometricModuleConfig.DEBUG_PRINT) console.warn("Background not found.");
+    debugWarn("Background not found.");
     return;
   }
 
@@ -449,7 +450,7 @@ export function applyBackgroundTransformation(scene, isSceneIsometric, shouldTra
     }
     _bgTransformed = false;
     
-    if (isometricModuleConfig.DEBUG_PRINT) console.log("applyBackgroundTransformation RESET");
+    debugLog("applyBackgroundTransformation RESET");
   }
 }
 

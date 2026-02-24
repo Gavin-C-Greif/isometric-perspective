@@ -17,7 +17,7 @@ Run through this checklist after each change to verify core functionality.
 | 5 | Enable isometric on a scene, place a token | Token renders with isometric transform (no errors in console) | |
 | 6 | Toggle isometric off and back on | Transforms apply/remove without console errors | |
 | 7 | Check console output with debug setting **off** | No noisy log output from the module | |
-| 8 | Check console output with debug setting **on** | Debug logs appear with recognizable prefix | |
+| 8 | Check console output with debug setting **on** | Debug logs appear with `[Isometric Perspective]` prefix | |
 
 ## US-002: Reversible Scene/Background Transforms
 
@@ -32,7 +32,7 @@ Run through this checklist after each change to verify core functionality.
 | 7 | With isometric + background on, change projection type (e.g., True Isometric → Dimetric 2:1) | Background updates to new projection without corruption | |
 | 8 | After step 7, disable isometric | Background returns to original Foundry defaults | |
 | 9 | Open console with debug **off** during all above steps | No noisy log output | |
-| 10 | Open console with debug **on** during disable | "applyBackgroundTransformation RESET" log appears | |
+| 10 | Open console with debug **on** during disable | `[Isometric Perspective] applyBackgroundTransformation RESET` log appears | |
 
 ## US-003: Token/Tile Transform Reset
 
@@ -44,6 +44,17 @@ Run through this checklist after each change to verify core functionality.
 | 4 | Set `isoTokenDisabled` on a token and `isoTileDisabled` on a tile, then enable isometric | Flagged token/tile stay in standard projection (no iso offsets, scale, or anchor changes) | |
 | 5 | Move a token while isometric is enabled, then disable isometric | Token returns to the correct non-isometric position/size with no lingering offsets | |
 | 6 | Open console with debug **off** while toggling | No noisy log output from token/tile transforms | |
+
+## US-004: Structured Debug Logging / No Production Noise
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Load Foundry with debug setting **off** | No `isometric-perspective` console output during startup, canvas ready, or HUD sync | |
+| 2 | Toggle isometric on/off with debug **off** | No console output from background/token/tile transforms | |
+| 3 | Enable module debug setting and reload | All module logs use `[Isometric Perspective]` prefix | |
+| 4 | With debug **on**, disable isometric on a scene with background transforms | Background reset log appears with prefix; no unrelated noise | |
+| 5 | With debug **on** and auto-sort enabled, move a token | Autosorting debug block logs with prefix/grouping only | |
+| 6 | Open token/tile config with debug **on** | Context debug log uses prefix; does not appear when debug **off** | |
 
 ## General Startup
 

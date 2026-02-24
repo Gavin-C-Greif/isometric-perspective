@@ -1,4 +1,5 @@
 import { isometricModuleConfig } from './consts.js';
+import { debugLog } from './logger.js';
 // Função auxiliar para converter coordenadas isométricas para cartesianas
 export function isoToCartesian(isoX, isoY) {
   const angle = Math.PI / 4; // 45 graus em radianos
@@ -103,14 +104,12 @@ export function patchConfig(documentSheet, config, args) {
       
       const flags = doc.flags?.[config.moduleConfig.MODULE_ID] ?? {};
 
-      console.log("ARGS", 
-        {
+      debugLog("Token/Tile config context", {
         ...flags,
         ...args,
         document: doc,
         tab: context.tabs?.[partId],
-      }
-      ) 
+      });
 
       return {
         ...flags,
@@ -159,9 +158,7 @@ export function calculateTokenSortValue(token) {
   const sinR = Math.sin(r);
   const visualY = xSkewed * sinR + ySkewed * cosR;
 
-  if (game.settings.get(isometricModuleConfig.MODULE_ID, "debug")) {
-     console.log(`[SortCalc] ${token.name || token.id} | (${x},${y}) -> VisY: ${visualY.toFixed(2)} | Sort: ${Math.round(visualY * 10)}`);
-  }
+  debugLog(`[SortCalc] ${token.name || token.id} | (${x},${y}) -> VisY: ${visualY.toFixed(2)} | Sort: ${Math.round(visualY * 10)}`);
 
   // Multiply by 10 to keep precision in integer sort
   return Math.round(visualY * 10);

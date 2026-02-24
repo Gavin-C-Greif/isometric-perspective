@@ -1,5 +1,6 @@
 import { isometricModuleConfig } from './consts.js';
 import { calculateTokenSortValue } from './utils.js';
+import { debugWarn } from './logger.js';
 
 export function registerDynamicTileConfig() {
   const enableOcclusionDynamicTile = game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionDynamicTile");
@@ -277,7 +278,7 @@ function cloneTileSprite(tile, walls) {
 
 function cloneTokenSprite(token) {
   if (!token || !token.texture) {
-    if (isometricModuleConfig.DEBUG_PRINT) { console.warn("Dynamic Tile cloneTokenSprite() common error.") }
+    debugWarn("Dynamic Tile cloneTokenSprite() common error.");
     return null;
   }
   try {

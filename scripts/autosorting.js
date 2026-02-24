@@ -1,5 +1,6 @@
 import { isometricModuleConfig } from './consts.js';
 import { calculateTokenSortValue } from './utils.js';
+import { debugGroup, debugLog, debugTable } from './logger.js';
 
 export function registerSortingConfig() {
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
@@ -71,10 +72,10 @@ async function updateTokenSort(token) {
   // Calculates the new sort value for the token
   const newSort = calculateTokenSortValue(token);
 
-  if (game.settings.get(isometricModuleConfig.MODULE_ID, "debug")) {
+  if (isometricModuleConfig.DEBUG_PRINT) {
     const others = canvas.tokens.placeables.filter(t => t.id !== token.id);
-    console.group(`Autosorting Debug: ${token.name} (${token.id})`);
-    console.log(`Pos: (${token.document.x}, ${token.document.y}) -> Calculated Sort: ${newSort}`);
+    const closeGroup = debugGroup(`Autosorting Debug: ${token.name} (${token.id})`);
+    debugLog(`Pos: (${token.document.x}, ${token.document.y}) -> Calculated Sort: ${newSort}`);
 
     // Sort others by Visual Y to see expected order
     const sortedOthers = others.map(t => {
@@ -84,15 +85,16 @@ async function updateTokenSort(token) {
       return { name: t.name, sort: calculateTokenSortValue(t), currentSort: t.document.sort };
     }).sort((a, b) => b.sort - a.sort); // Highest sort first
 
-    // console.table(sortedOthers);
+    debugTable(sortedOthers);
 
     // Check if we are correctly placed
     // const potentiallyOccluded = sortedOthers.filter(t => t.sort > newSort);
     // const potentiallyOccluding = sortedOthers.filter(t => t.sort < newSort);
 
-    // console.log(`Should be BEHIND (Higher Sort):`, potentiallyOccluded.map(t => `${t.name} (${t.id})`));
-    // console.log(`Should be IN FRONT OF (Lower Sort):`, potentiallyOccluding.map(t => `${t.name} (${t.id})`));
-    // console.groupEnd();
+    // debugLog(`Should be BEHIND (Higher Sort):`, potentiallyOccluded.map(t => `${t.name} (${t.id})`));
+    // debugLog(`Should be IN FRONT OF (Lower Sort):`, potentiallyOccluding.map(t => `${t.name} (${t.id})`));
+
+    closeGroup();
   }
 
   // Creates a refresh object for the token

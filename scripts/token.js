@@ -10,6 +10,7 @@ import {
   calculateTokenSortValue,
   createAdjustableButton
 } from './utils.js';
+import { debugLog } from './logger.js';
 
 /**
  * Patch Token.prototype._refreshSort to ensure isometric tokens always use
@@ -116,14 +117,14 @@ export function handleUpdateToken(tokenDocument, updateData, options, userId) {
         applyIsometricTransformation(token, isSceneIsometric);
   }*/
 
-  if (isometricModuleConfig.DEBUG_PRINT) console.log("Hooks.on token.js updateToken");
+  debugLog("Hooks.on token.js updateToken");
 }
 
 export function handleRefreshToken(token) {
   const isSceneIsometric = token.scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   applyIsometricTransformation(token, isSceneIsometric);
   
-  if (isometricModuleConfig.DEBUG_PRINT) console.log("Hooks.on token.js refreshToken");
+  debugLog("Hooks.on token.js refreshToken");
 }
 
 

@@ -14,6 +14,7 @@ Started: 2026-02-24
 - Use `node --check <file>` for basic syntax validation (no tsconfig/typecheck infra yet)
 - Background transform uses save/restore pattern in `transform.js` — `resetBackgroundTracking()` must be called before transforms on each new canvas (called in `handleCanvasReady`)
 - Stage toggles must re-run `adjustAllTokensAndTilesForIsometric` for both enable and disable so token/tile meshes fully reset
+- Use `scripts/logger.js` helpers (debugLog/debugWarn/debugGroup/debugTable) for any debug output; logs are gated by `isometricModuleConfig.DEBUG_PRINT` and prefixed with `[Isometric Perspective]`
 
 ---
 
@@ -56,4 +57,16 @@ Started: 2026-02-24
   - Recomputing token/tile width/height/position from document dimensions prevents drift even when iso flags like isoScaleDisabled/offsets are present
   - `adjustAllTokensAndTilesForIsometric(false)` gives a deterministic non-iso restore without touching feature flags
   - Manual smoke/browser verification still needed; ran `node --check scripts/transform.js` for syntax
+---
+
+## 2026-02-24 - US-004
+- Added structured logging helpers with `[Isometric Perspective]` prefix and switched all runtime debug output to use debugLog/debugWarn/debugGroup/debugTable gated by module debug setting
+- Removed the last unconditional console output (token/tile config context) and kept autosorting debug grouping behind the shared helper
+- Updated SMOKE-TEST with US-004 steps and marked PRD story as passing
+- Files changed: scripts/logger.js, scripts/utils.js, scripts/transform.js, scripts/scene.js, scripts/autosorting.js, scripts/ruler.js, scripts/hud.js, scripts/dynamictile.js, SMOKE-TEST.md, prd.json
+- **Learnings for future iterations:**
+  - Use the shared logger helpers for any debug output; they automatically gate on `isometricModuleConfig.DEBUG_PRINT` and prefix messages for filtering
+  - Autosorting debug output now lives behind the shared helper; enable module debug if you need grouped logs when moving tokens
+  - Token/tile config context logging is debug-only to avoid console noise during normal play
+  - Manual smoke/browser verification still needed; rerun SMOKE-TEST US-004 steps after enabling debug setting
 ---
