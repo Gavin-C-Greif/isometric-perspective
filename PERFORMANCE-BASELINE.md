@@ -93,3 +93,39 @@ Occlusion overlay updates now explicitly destroy replaced sprites and masks on e
 - **Re-initialization**: `initializeOcclusionLayer` uses the same explicit destroy path when replacing an existing container.
 
 **Stress test recommendation**: Run 10+ minutes of repeated token movement and pan/zoom with occlusion enabled (gpu or cpu modes). Use browser DevTools Memory profiler to confirm heap does not continuously grow.
+
+## Long-Session Stress Scenario (US-008)
+
+Required for release. Run at least one completed stress scenario and record results below.
+
+### Scenario: 15-Minute Continuous Interaction
+
+| Step | Action | Duration |
+|------|--------|----------|
+| 1 | Enable isometric + Dynamic Tile + Token Silhouette (cpu or gpu) on a scene with 20+ tokens and 10+ occluding tiles | — |
+| 2 | Move tokens repeatedly across the scene | 5 min |
+| 3 | Pan and zoom the canvas (50% ↔ 200%) | 3 min |
+| 4 | Switch controlled token every 30 sec | 2 min |
+| 5 | Open/close linked doors 10× | 1 min |
+| 6 | Switch to another scene and back | 2 min |
+| 7 | Repeat projection change (True Iso → Dimetric → Overhead → True Iso) 3× | 2 min |
+
+### Expected Outcomes
+
+- No console errors
+- No visible lag or refresh storms
+- Memory (DevTools heap) does not continuously grow; stable or sawtooth pattern
+- All overlays (occlusion, dynamic tile) remain correct after scene return
+
+### Run Record Template
+
+| Field | Value |
+|-------|-------|
+| Date/Time | |
+| Build/Commit | |
+| Foundry Version | |
+| Browser/OS | |
+| Heap before (MB) | |
+| Heap after (MB) | |
+| Pass? (Y/N) | |
+| Notes | |

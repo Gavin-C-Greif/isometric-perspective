@@ -38,6 +38,7 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 8 | Occlusion mode validation (CPU/GPU/Off as configured) | Occlusion behavior matches mode expectations without refresh storms or runtime errors | | |
 | 8a | **Occlusion lifecycle (US-003)** | No stale containers after scene switch; memory stable during repeated token movement/pan cycles | | |
 | 9 | Console noise gate with debug OFF/ON | Debug OFF: no noisy logs. Debug ON: prefixed `[Isometric Perspective]` diagnostics appear | | |
+| 10 | **High-risk interaction matrix (US-008)** | All 5 interaction types pass: projection switch, pan/zoom, scene switch, token control switch, door state changes | | |
 
 ### Release Gate Checklist
 
@@ -181,6 +182,22 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 3 | Set invalid custom projection (e.g. "1,2,3" instead of 8 numbers) in Scene Settings > Isometric | UI notification appears: "Custom projection invalid. Expected 8 comma-separated numbers"; console shows prefixed `logError` | |
 | 4 | Enable debug setting and reload | All debug logs use `[Isometric Perspective]` prefix; no unconditional noisy logs in normal operation | |
 | 5 | With debug **on**, perform HUD sync (pan canvas with token selected) | Debug logs appear only when debug enabled; no `console.log` for matrix/obj in hud.js | |
+
+## US-008 (PRD): High-Risk Interaction Matrix
+
+Required evidence for release. Each row must pass before shipping.
+
+| # | Interaction | Steps | Expected | Pass? |
+|---|-------------|-------|----------|-------|
+| 1 | **Projection switch** | Enable isometric; change projection True Iso → Dimetric 2:1 → Overhead → True Iso (3 cycles) | Canvas updates immediately each change; no corruption, no console errors; tokens/tiles/background remain correctly transformed | |
+| 2 | **Pan/zoom** | With isometric + tokens + HUD visible: pan canvas 10× in different directions; zoom 50% → 200% → 50%; repeat 3× | HUD stays aligned; no transform drift; ruler measurements remain correct; no refresh storms | |
+| 3 | **Scene switch** | Iso scene A (tokens, tiles, background) → non-iso scene B → back to A; repeat 2× | Scene B has no stale iso transforms; scene A re-applies transforms correctly; no orphaned occlusion/dynamic-tile containers | |
+| 4 | **Token control switch** | With Dynamic Tile + auto-sort: rapidly switch control token A → B → C → A (10× in ~30 sec) | Always-visible layer follows latest token only; no duplicates; sort order correct; no console errors | |
+| 5 | **Door state changes** | With linked-wall dynamic tiles: open/close linked door 5×; toggle wall state if applicable | Tiles behind closed door hide; tiles reappear when door opens; no duplicate overlays; visibility correct after each toggle | |
+
+### Release Evidence
+
+The release process (see `RELEASE-PROCESS.md`) requires this matrix to be completed and all rows marked `PASS` before publishing a release candidate.
 
 ## US-007: Safer Token Sorting Interop Patch
 

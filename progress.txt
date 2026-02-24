@@ -96,3 +96,14 @@ Started: 2026-02-24
   - Use logWarn/logError for non-debug runtime issues; use debugLog/debugWarn for debug-only output
   - ui?.notifications?.warn() surfaces parsing errors to users; combine with logError for console trace
 ---
+
+## 2026-02-24 - US-008
+- Added US-008 (PRD): High-Risk Interaction Matrix to SMOKE-TEST.md with 5 rows: projection switch, pan/zoom, scene switch, token control switch, door state changes
+- Added row 10 to Release Smoke Suite referencing high-risk matrix
+- Updated RELEASE-PROCESS.md: high-risk matrix required; long-session stress scenario required; evidence section updated
+- Added Long-Session Stress Scenario (15-min continuous interaction) to PERFORMANCE-BASELINE.md with run record template
+- Files changed: SMOKE-TEST.md, RELEASE-PROCESS.md, PERFORMANCE-BASELINE.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Release gate now requires both smoke suite + high-risk matrix + performance baseline (US-010 + long-session stress)
+  - High-risk matrix covers the 5 interaction types most likely to expose transform/overlay/sorting regressions
+---
