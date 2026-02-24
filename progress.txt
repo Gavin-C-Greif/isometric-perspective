@@ -1,0 +1,30 @@
+# Ralph Progress Log
+Started: 2026-02-24
+---
+
+## Codebase Patterns
+- Global config lives in `scripts/consts.js` as `isometricModuleConfig` (MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG, FOUNDRY_VERSION)
+- Config values are initialized in the `Hooks.once("init")` handler in `scripts/main.js`, BEFORE register*() feature calls
+- Version-conditional code uses `isometricModuleConfig.FOUNDRY_VERSION === 11` to branch between v11 and v13 APIs
+- Foundry v11 vs v13 API differences: wall endpoints (wall.A/B vs wall.edge.a/b), visibility testing (canvas.effects.visibility vs canvas.visibility), token sorting API
+- `module.json` compatibility is set to minimum v13 — v11 branches are legacy compat code
+- No build step for JS — plain ES modules loaded directly by Foundry VTT
+- All scripts are in `scripts/` directory, entry point is `scripts/main.js`
+- Projection types and isometric constants are defined in `scripts/consts.js`
+- Use `node --check <file>` for basic syntax validation (no tsconfig/typecheck infra yet)
+
+---
+
+## 2026-02-24 - US-001
+- Fixed critical bug: `isometricModuleConfig.CONST` was being set in main.js but all consumers read `isometricModuleConfig.FOUNDRY_VERSION` from consts.js — the field was never populated, always 0
+- Moved config initialization (FOUNDRY_VERSION, DEBUG_PRINT, WORLD_ISO_FLAG) before register*() calls so values are available during feature registration
+- Updated autosorting.js to use centralized `isometricModuleConfig.FOUNDRY_VERSION` instead of re-parsing `game.version.startsWith("11")`
+- Added jsconfig.json for IDE support
+- Added SMOKE-TEST.md checklist for US-001 verification
+- Files changed: scripts/main.js, scripts/autosorting.js, jsconfig.json, SMOKE-TEST.md
+- **Learnings for future iterations:**
+  - The `isometricModuleConfig` object in consts.js is the single source of truth for module-wide config — always use it, never parse game.version directly
+  - Config must be initialized before register*() calls in the init hook — order matters
+  - PowerShell shell: use `-m` flags for git commit messages, not heredoc syntax
+  - `game.version` and `game.settings` are available during the `init` hook in Foundry VTT
+---
