@@ -40,6 +40,21 @@ ARCHIVE_DIR="$SCRIPT_DIR/archive"
 LAST_BRANCH_FILE="$SCRIPT_DIR/.last-branch"
 INSTRUCTIONS_FILE="$SCRIPT_DIR/CURSOR.md"
 
+# Resolve Cursor agent CLI command across platforms/shell contexts.
+CURSOR_AGENT_CMD=""
+for cmd in agent agent.cmd cursor-agent cursor-agent.cmd; do
+  if command -v "$cmd" >/dev/null 2>&1; then
+    CURSOR_AGENT_CMD="$cmd"
+    break
+  fi
+done
+
+if [[ "$TOOL" == "cursor" && -z "$CURSOR_AGENT_CMD" ]]; then
+  echo "Error: Could not find Cursor agent CLI (tried: agent, agent.cmd, cursor-agent, cursor-agent.cmd)."
+  echo "Run this script from a shell where your Cursor agent CLI is on PATH."
+  exit 1
+fi
+
 # Archive previous run if branch changed
 if [ -f "$PRD_FILE" ] && [ -f "$LAST_BRANCH_FILE" ]; then
   CURRENT_BRANCH=$(jq -r '.branchName // empty' "$PRD_FILE" 2>/dev/null || echo "")
@@ -96,7 +111,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     OUTPUT=$(claude --dangerously-skip-permissions --print < "$INSTRUCTIONS_FILE" 2>&1 | tee /dev/stderr) || true
   else
     # Cursor CLI headless mode: print + force for autonomous operation
-    OUTPUT=$(agent -p --force "$(cat "$INSTRUCTIONS_FILE")" 2>&1 | tee /dev/stderr) || true
+    OUTPUT=$("$CURSOR_AGENT_CMD" -p --force "$(cat "$INSTRUCTIONS_FILE")" 2>&1 | tee /dev/stderr) || true
   fi
   
   # Check for completion signal
