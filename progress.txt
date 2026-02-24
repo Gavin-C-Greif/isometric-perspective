@@ -7,6 +7,7 @@ Started: 2026-02-24
 - Use optional chaining (html.querySelector?.()) when targeting Foundry DOM elements that may vary by version
 - HUD sync: canvas.hud.token/tile/drawing have .object and .element when active; canvasPan re-syncs HUD positions for isometric stage transforms
 - Occlusion: PIXI removeChildren() does not destroy; explicitly destroy sprites and masks; use texture: false for shared textures; canvasTearDown for teardown cleanup
+- Dynamic tile: same pattern—destroy cloned sprites with texture: false before rebuild; destroyAlwaysVisibleContainer clears lastControlledToken
 ---
 
 ## 2026-02-24 - US-001
@@ -45,4 +46,16 @@ Started: 2026-02-24
   - PIXI removeChildren() does NOT destroy by default; must explicitly destroy sprites and masks to avoid memory churn
   - sprite.mask is a Graphics object; destroy it before destroying the sprite; use texture: false when sprite shares token texture
   - canvasTearDown fires when canvas is torn down (e.g. before reload); use it for cleanup alongside changeScene
+---
+
+## 2026-02-24 - US-004
+- Added destroyDynamicTileSprite() and destroyLayerSprites() to explicitly destroy cloned sprites with texture: false
+- updateAlwaysVisibleElements now calls destroyLayerSprites() instead of removeChildren(); prior sprites destroyed before rebuild
+- destroyAlwaysVisibleContainer iterates layers and destroys sprites explicitly before destroying container; resets lastControlledToken
+- Added US-004 (PRD): Dynamic Tile Overlay Lifecycle section to SMOKE-TEST.md with 5 steps; added row 7a to Release Smoke Suite
+- Files changed: scripts/dynamictile.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Dynamic tile clones tile/token textures; use texture: false when destroying cloned sprites to preserve shared textures
+  - Same pattern as occlusion: removeChildren() does not destroy; explicit destroy loop before rebuild
+  - No controlled token: layers stay empty (defined behavior); lastControlledToken cleared on teardown
 ---

@@ -186,16 +186,44 @@ let tilesOpacity = 1.0;
 let tokensOpacity = 1.0;
 let lastControlledToken = null;
 
+/**
+ * Destroy a cloned sprite without destroying its shared texture (US-004).
+ */
+function destroyDynamicTileSprite(sprite) {
+  if (!sprite) return;
+  sprite.destroy({ texture: false, textureSource: false });
+}
+
+/**
+ * Destroy all sprites in a layer. Preserves shared tile/token textures.
+ */
+function destroyLayerSprites(layer) {
+  if (!layer) return;
+  const children = layer.removeChildren();
+  for (const sprite of children) {
+    destroyDynamicTileSprite(sprite);
+  }
+}
+
 function destroyAlwaysVisibleContainer() {
   if (alwaysVisibleContainer && alwaysVisibleContainer.parent) {
     alwaysVisibleContainer.parent.removeChild(alwaysVisibleContainer);
   }
   if (alwaysVisibleContainer) {
-    alwaysVisibleContainer.destroy({ children: true });
+    // Destroy cloned sprites explicitly (texture: false) before destroying container
+    const children = alwaysVisibleContainer.removeChildren();
+    for (const layer of children) {
+      if (layer?.children?.length) {
+        destroyLayerSprites(layer);
+      }
+      layer?.destroy({ children: false });
+    }
+    alwaysVisibleContainer.destroy({ children: false });
   }
   alwaysVisibleContainer = null;
   tilesLayer = null;
   tokensLayer = null;
+  lastControlledToken = null;
 }
 
 
@@ -338,11 +366,11 @@ function getInitialToken() {
 function updateAlwaysVisibleElements() {
   if (!canvas.ready || !alwaysVisibleContainer) return;
 
-  // Clear layers
-  tilesLayer.removeChildren();
-  tokensLayer.removeChildren();
+  // Destroy prior cloned sprites deterministically to avoid memory churn (US-004)
+  destroyLayerSprites(tilesLayer);
+  destroyLayerSprites(tokensLayer);
 
-  // Get the selected token
+  // Get the selected token; if none, layers stay empty (defined behavior)
   const controlled = getInitialToken();
   if (!controlled) return;
 

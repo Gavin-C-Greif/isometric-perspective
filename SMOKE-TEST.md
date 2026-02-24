@@ -33,6 +33,7 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 5a | **Grid/Ruler config (US-001)** | Scene Settings > Grid > Ruler Tool: measure on canvas updates grid; canvas refreshes without manual `canvas.draw()` | | |
 | 6 | Auto-sort depth ordering | Moving tokens updates depth order by isometric position; controlled token remains visible | | |
 | 7 | Dynamic tile linked-wall behavior | Linked tiles hide/show correctly when crossing linked walls and after scene switch | | |
+| 7a | **Dynamic tile lifecycle (US-004)** | No sprite accumulation; multi-token control switch and door toggling behave consistently | | |
 | 8 | Occlusion mode validation (CPU/GPU/Off as configured) | Occlusion behavior matches mode expectations without refresh storms or runtime errors | | |
 | 8a | **Occlusion lifecycle (US-003)** | No stale containers after scene switch; memory stable during repeated token movement/pan cycles | | |
 | 9 | Console noise gate with debug OFF/ON | Debug OFF: no noisy logs. Debug ON: prefixed `[Isometric Perspective]` diagnostics appear | | |
@@ -117,6 +118,16 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 2 | Move tokens repeatedly for 2–3 minutes | Occlusion updates; no visible lag or refresh storms | | |
 | 3 | Switch to another scene, then back | No stale occlusion containers; layer reinitializes cleanly | | |
 | 4 | (Optional) Use DevTools Memory profiler during step 2 | Heap does not continuously grow; stable or sawtooth pattern | | |
+
+## US-004 (PRD): Dynamic Tile Overlay Lifecycle
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable Dynamic Tile; scene with linked-wall tiles | Always-visible layer renders; no console errors | | |
+| 2 | With no controlled token | Layer is empty (no sprites); defined behavior | | |
+| 3 | Select token A, then rapidly switch to token B, then C | Layer follows latest controlled token only; no duplicates or stale sprites | | |
+| 4 | Open/close a door linked to a dynamic tile | Tile visibility updates; tiles behind closed door hide correctly | | |
+| 5 | Switch scenes with Dynamic Tile enabled | Containers destroyed cleanly; no stale references on return | | |
 
 ## US-004: Structured Debug Logging / No Production Noise
 
