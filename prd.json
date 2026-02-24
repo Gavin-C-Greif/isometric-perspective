@@ -140,8 +140,8 @@
         "Typecheck passes"
       ],
       "priority": 9,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Updated README compatibility messaging and Foundry badge to v13, and removed stale repository/action reference in release.js so release guidance matches the current repo."
     },
     {
       "id": "US-010",

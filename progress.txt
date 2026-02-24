@@ -8,6 +8,7 @@ Started: 2026-02-24
 - Version-conditional code uses `isometricModuleConfig.FOUNDRY_VERSION === 11` to branch between v11 and v13 APIs
 - Foundry v11 vs v13 API differences: wall endpoints (wall.A/B vs wall.edge.a/b), visibility testing (canvas.effects.visibility vs canvas.visibility), token sorting API
 - `module.json` compatibility is set to minimum v13 — v11 branches are legacy compat code
+- Keep README Foundry-version badges and compatibility copy aligned with `module.json` compatibility fields to avoid mixed support signals
 - No build step for JS — plain ES modules loaded directly by Foundry VTT
 - All scripts are in `scripts/` directory, entry point is `scripts/main.js`
 - Projection types and isometric constants are defined in `scripts/consts.js`
@@ -119,4 +120,14 @@ Started: 2026-02-24
   - Keep `SMOKE-TEST.md` as the single source of smoke validation evidence by recording Actual outcomes and PASS/FAIL for each scenario
   - Release docs should point directly to the smoke suite section to make pre-release validation discoverable and repeatable
   - Maintain a strict no-release-on-fail gate when any smoke scenario or lint/build check is red
+---
+
+## 2026-02-24 15:04 - US-009
+- Updated README support signaling to v13 by fixing the Foundry badge and removing outdated v13 disclaimers from compatibility/bugs/todo headers
+- Updated `release.js` post-release guidance to reference the current repository actions URL instead of a stale repository reference
+- Marked PRD story US-009 as passing
+- Files changed: README.md, release.js, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Keep support messaging synchronized across README badges/text and `module.json` compatibility to avoid contradictory installation expectations
+  - Validate release automation/log messages after repository transfers or forks to prevent stale links in maintainer workflow scripts
 ---
