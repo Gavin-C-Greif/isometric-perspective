@@ -15,8 +15,11 @@ import { debugLog, debugWarn } from './logger.js';
 let tokenSortPatchRegistered = false;
 
 /**
- * Register Token.prototype._refreshSort patch via a chain-friendly wrapper.
- * Prefer libWrapper when present, with a guarded fallback for environments without it.
+ * Register Token.prototype._refreshSort patch (US-005).
+ *
+ * DISPLAY-ONLY: Sets mesh.zIndex for visual order. Does NOT write to document.sort.
+ * The authoritative document writes are in autosorting.js (canvasReady, updateToken).
+ * Controlled tokens get +0.1 zIndex boost so they remain visible when selected.
  */
 export function registerTokenSortingPatch() {
   if (tokenSortPatchRegistered) return;

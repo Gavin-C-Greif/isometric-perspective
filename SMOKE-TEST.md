@@ -32,6 +32,7 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 5 | Ruler alignment and distance interaction | Ruler tool tracks pointer and reports usable measurements without visual desync | | |
 | 5a | **Grid/Ruler config (US-001)** | Scene Settings > Grid > Ruler Tool: measure on canvas updates grid; canvas refreshes without manual `canvas.draw()` | | |
 | 6 | Auto-sort depth ordering | Moving tokens updates depth order by isometric position; controlled token remains visible | | |
+| 6a | **Sort pipeline (US-005)** | No sort jitter or update loops during movement; stable ordering across movement and selection | | |
 | 7 | Dynamic tile linked-wall behavior | Linked tiles hide/show correctly when crossing linked walls and after scene switch | | |
 | 7a | **Dynamic tile lifecycle (US-004)** | No sprite accumulation; multi-token control switch and door toggling behave consistently | | |
 | 8 | Occlusion mode validation (CPU/GPU/Off as configured) | Occlusion behavior matches mode expectations without refresh storms or runtime errors | | |
@@ -160,6 +161,16 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 4 | Click "Clear Wall" again when already empty | No extra tile update is fired for unchanged data; UI remains empty | |
 | 5 | Switch scenes back and forth with dynamic tile enabled | Always-visible containers are destroyed/recreated cleanly; no stale references or duplicated overlays | |
 | 6 | Toggle doors linked to normalized walls after scene switch | Linked-wall visibility behavior remains correct after scene transitions | |
+
+## US-005 (PRD): Sorting Pipeline Rationalization
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable isometric + "Enable Automatic Token Sorting" | Token movement updates depth order by isometric Y-sort | | |
+| 2 | Move token A in front of token B | A renders in front; no jitter or flicker | | |
+| 3 | Select the moved token | Controlled token remains visible (zIndex boost); relative depth preserved | | |
+| 4 | Rapidly move tokens back and forth | No update loops; no console errors; order stable | | |
+| 5 | Switch selection between tokens | Each token's depth correct; no sort jitter | | |
 
 ## US-007: Safer Token Sorting Interop Patch
 

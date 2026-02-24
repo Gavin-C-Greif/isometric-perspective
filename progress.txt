@@ -8,6 +8,7 @@ Started: 2026-02-24
 - HUD sync: canvas.hud.token/tile/drawing have .object and .element when active; canvasPan re-syncs HUD positions for isometric stage transforms
 - Occlusion: PIXI removeChildren() does not destroy; explicitly destroy sprites and masks; use texture: false for shared textures; canvasTearDown for teardown cleanup
 - Dynamic tile: same pattern—destroy cloned sprites with texture: false before rebuild; destroyAlwaysVisibleContainer clears lastControlledToken
+- Token sort: autosorting.js = authoritative document.sort writes; token.js _refreshSort = display-only mesh.zIndex; both use calculateTokenSortValue
 ---
 
 ## 2026-02-24 - US-001
@@ -58,4 +59,15 @@ Started: 2026-02-24
   - Dynamic tile clones tile/token textures; use texture: false when destroying cloned sprites to preserve shared textures
   - Same pattern as occlusion: removeChildren() does not destroy; explicit destroy loop before rebuild
   - No controlled token: layers stay empty (defined behavior); lastControlledToken cleared on teardown
+---
+
+## 2026-02-24 - US-005
+- Added documentation block to autosorting.js: single authoritative path for document.sort writes (canvasReady batch, updateToken/createToken per-move)
+- Added documentation block to token.js _refreshSort: display-only (mesh.zIndex), does not write to document; controlled token +0.1 boost
+- Added US-005 (PRD): Sorting Pipeline Rationalization section to SMOKE-TEST.md with 5 steps; added row 6a to Release Smoke Suite
+- Files changed: scripts/autosorting.js, scripts/token.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Token sort: autosorting.js is the only module that writes token.sort to document; _refreshSort only sets mesh.zIndex for display
+  - Do not add scene.updateEmbeddedDocuments('Token', {sort: ...}) elsewhere; would duplicate/conflict with autosorting
+  - calculateTokenSortValue() in utils.js is the shared formula; both autosorting and _refreshSort use it
 ---
