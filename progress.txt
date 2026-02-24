@@ -16,6 +16,7 @@ Started: 2026-02-24
 - Stage toggles must re-run `adjustAllTokensAndTilesForIsometric` for both enable and disable so token/tile meshes fully reset
 - Use `scripts/logger.js` helpers (debugLog/debugWarn/debugGroup/debugTable) for any debug output; logs are gated by `isometricModuleConfig.DEBUG_PRINT` and prefixed with `[Isometric Perspective]`
 - Expensive hook-driven layers (occlusion, dynamic tiles) should call the shared `throttle` helper (scripts/utils.js) and schedule updates instead of firing per-hook
+- Normalize `linkedWallIds` through `normalizeLinkedWallIds` before read/write; only call `setFlag` when normalized output differs to avoid recursive update churn
 
 ---
 
@@ -79,4 +80,17 @@ Started: 2026-02-24
   - Use `throttle` from `scripts/utils.js` to coalesce frequent hook-driven updates; it runs immediately then trails once per window
   - Dynamic tile/occlusion hooks fire from many sources; schedule updates instead of calling heavy refresh logic directly in each handler
   - Manual browser verification still needed for movement/pan/door scenarios; no automated browser tools available here
+---
+
+## 2026-02-24 14:57 - US-006
+- Hardened linked-wall lifecycle by centralizing `linkedWallIds` normalization/deduplication and only writing flags when normalized values actually change
+- Added scene-safe container teardown/rebuild on `canvasInit`, `changeScene`, and `canvasTearDown`, plus per-scene linked-wall normalization on `canvasReady`
+- Made tile config wall select/clear actions robust against legacy string flags and no-op clears
+- Updated US-006 checklist section in SMOKE-TEST and marked PRD story as passing
+- Files changed: scripts/dynamictile.js, scripts/tile.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Treat `linkedWallIds` as migration-prone data: normalize before all comparisons and UI operations so legacy values do not break dedupe logic
+  - Avoid redundant `setFlag` writes in `updateTile` paths; they can trigger avoidable hook churn and hard-to-track update loops
+  - Dynamic containers should always be explicitly destroyed on scene/canvas lifecycle boundaries to prevent stale references
+  - Manual browser verification still needed for linked-wall selection and scene-switch behavior; no automated browser tools available here
 ---

@@ -66,6 +66,17 @@ Run through this checklist after each change to verify core functionality.
 | 4 | Pan/zoom the canvas repeatedly | Containers stay in sync without stacking duplicates | |
 | 5 | Switch control between multiple tokens quickly | Always-visible layer follows the latest controlled token only | |
 
+## US-006: Dynamic Tile Linked-Wall Lifecycle Hardening
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Open a tile config that has legacy `linkedWallIds` data (comma-separated string or mixed values), then save | Flag is normalized to a clean string array without duplicates; no repeated update loop | |
+| 2 | Click "Select Wall" repeatedly on the same wall | Wall ID is added once only; no duplicate IDs in tile flag | |
+| 3 | Click "Clear Wall" when links exist | `linkedWallIds` is cleared to `[]` and the UI input is emptied | |
+| 4 | Click "Clear Wall" again when already empty | No extra tile update is fired for unchanged data; UI remains empty | |
+| 5 | Switch scenes back and forth with dynamic tile enabled | Always-visible containers are destroyed/recreated cleanly; no stale references or duplicated overlays | |
+| 6 | Toggle doors linked to normalized walls after scene switch | Linked-wall visibility behavior remains correct after scene transitions | |
+
 ## General Startup
 
 | # | Step | Expected | Pass? |

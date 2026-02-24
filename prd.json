@@ -94,8 +94,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added centralized linkedWallIds normalization + dedupe, guarded setFlag writes to avoid redundant update loops, normalized scene tiles on canvasReady, and hardened dynamic container teardown/rebuild on scene transitions."
     },
     {
       "id": "US-007",
