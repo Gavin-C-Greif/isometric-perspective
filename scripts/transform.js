@@ -2,6 +2,38 @@ import { isometricModuleConfig } from './consts.js';
 import { cartesianToIso } from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
 
+// --- Background state tracking for reversible transforms ---
+let _originalBgState = null;
+let _bgTransformed = false;
+
+export function resetBackgroundTracking() {
+  _originalBgState = null;
+  _bgTransformed = false;
+}
+
+function captureBackgroundDefaults(bg) {
+  return {
+    rotation: bg.rotation,
+    skewX: bg.skew.x,
+    skewY: bg.skew.y,
+    anchorX: bg.anchor.x,
+    anchorY: bg.anchor.y,
+    scaleX: bg.transform.scale.x,
+    scaleY: bg.transform.scale.y,
+    posX: bg.position.x,
+    posY: bg.position.y,
+  };
+}
+
+function restoreBackgroundDefaults(bg) {
+  if (!_originalBgState) return;
+  bg.rotation = _originalBgState.rotation;
+  bg.skew.set(_originalBgState.skewX, _originalBgState.skewY);
+  bg.anchor.set(_originalBgState.anchorX, _originalBgState.anchorY);
+  bg.transform.scale.set(_originalBgState.scaleX, _originalBgState.scaleY);
+  bg.position.set(_originalBgState.posX, _originalBgState.posY);
+}
+
 
 // Função principal que muda o canvas da cena
 export function applyIsometricPerspective(scene, isSceneIsometric) {
@@ -232,20 +264,21 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
 
 
 
-// Função para transformar o background da cena
 export function applyBackgroundTransformation(scene, isSceneIsometric, shouldTransform) {
   if (!canvas?.primary?.background) {
     if (isometricModuleConfig.DEBUG_PRINT) console.warn("Background not found.");
     return;
   }
 
-  //const background = scene.stage.background; //don't work
   const background = canvas.environment.primary.background;
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
   const scale = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricScale") ?? 1;
   
   if (isometricWorldEnabled && isSceneIsometric && shouldTransform) {
-    // Aplica rotação isométrica
+    if (!_bgTransformed) {
+      _originalBgState = captureBackgroundDefaults(background);
+    }
+
     background.rotation = ISOMETRIC_CONST.reverseRotation;
     background.skew.set(
       ISOMETRIC_CONST.reverseSkewX,
@@ -254,47 +287,32 @@ export function applyBackgroundTransformation(scene, isSceneIsometric, shouldTra
     background.anchor.set(0.5, 0.5);
     background.transform.scale.set(
       scale,
-      scale * ISOMETRIC_CONST.ratio // Math.sqrt(3)
+      scale * ISOMETRIC_CONST.ratio
     );
     
-    // Calculate scene dimensions and padding
     const isoScene = canvas.scene;
     const padding = isoScene.padding;
     const paddingX = isoScene.width * padding;
     const paddingY = isoScene.height * padding;
-      
-    // Account for background offset settings
     const offsetX = isoScene.background.offsetX || 0;
     const offsetY = isoScene.background.offsetY || 0;
     
-    // Set position considering padding and offset
     background.position.set(
       (isoScene.width / 2) + paddingX + offsetX,
       (isoScene.height / 2) + paddingY + offsetY
     );
-    
-    // Handle foreground if it exists
-    /*if (canvas.environment.primary.foreground) {
-      const foreground = canvas.environment.primary.foreground;
-      foreground.anchor.set(0.5, 0.5);
-      foreground.transform.scale.set(1, 1);
-      foreground.transform.setFromMatrix(canvas.stage.transform.worldTransform.invert());
-      foreground.position.set(
-        (s.width / 2) + paddingX + (s.foreground?.offsetX || 0),
-        (s.height / 2) + paddingY + (s.foreground?.offsetY || 0)
-      );
-    }*/
 
+    _bgTransformed = true;
   } else {
-    // Reset transformações
-    background.rotation = 0;
-    background.skew.set(0, 0);
-    //background.transform.scale.set(1, 1);
-    //background.anchor.set(0.5, 0.5);
-    //background.scale.set(1, 1);
-    //background.transform.position.set(canvas.scene.width/2, canvas.scene.height/2);
+    if (_bgTransformed && _originalBgState) {
+      restoreBackgroundDefaults(background);
+    } else {
+      background.rotation = 0;
+      background.skew.set(0, 0);
+    }
+    _bgTransformed = false;
     
-    if (isometricModuleConfig.DEBUG_PRINT) console.log("applyBackgroundTransformation RESET")
+    if (isometricModuleConfig.DEBUG_PRINT) console.log("applyBackgroundTransformation RESET");
   }
 }
 
