@@ -15,6 +15,7 @@ Started: 2026-02-24
 - Background transform uses save/restore pattern in `transform.js` — `resetBackgroundTracking()` must be called before transforms on each new canvas (called in `handleCanvasReady`)
 - Stage toggles must re-run `adjustAllTokensAndTilesForIsometric` for both enable and disable so token/tile meshes fully reset
 - Use `scripts/logger.js` helpers (debugLog/debugWarn/debugGroup/debugTable) for any debug output; logs are gated by `isometricModuleConfig.DEBUG_PRINT` and prefixed with `[Isometric Perspective]`
+- Expensive hook-driven layers (occlusion, dynamic tiles) should call the shared `throttle` helper (scripts/utils.js) and schedule updates instead of firing per-hook
 
 ---
 
@@ -69,4 +70,13 @@ Started: 2026-02-24
   - Autosorting debug output now lives behind the shared helper; enable module debug if you need grouped logs when moving tokens
   - Token/tile config context logging is debug-only to avoid console noise during normal play
   - Manual smoke/browser verification still needed; rerun SMOKE-TEST US-004 steps after enabling debug setting
+---
+
+## 2026-02-24 15:00 - US-005
+- Consolidated occlusion and dynamic tile update hooks behind shared throttled schedulers to prevent refresh storms while keeping visuals in sync
+- Files changed: scripts/utils.js, scripts/dynamictile.js, scripts/occlusion.js, SMOKE-TEST.md, prd.json
+- **Learnings for future iterations:**
+  - Use `throttle` from `scripts/utils.js` to coalesce frequent hook-driven updates; it runs immediately then trails once per window
+  - Dynamic tile/occlusion hooks fire from many sources; schedule updates instead of calling heavy refresh logic directly in each handler
+  - Manual browser verification still needed for movement/pan/door scenarios; no automated browser tools available here
 ---

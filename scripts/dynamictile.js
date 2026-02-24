@@ -1,6 +1,8 @@
 import { isometricModuleConfig } from './consts.js';
-import { calculateTokenSortValue } from './utils.js';
+import { calculateTokenSortValue, throttle } from './utils.js';
 import { debugWarn } from './logger.js';
+
+const scheduleDynamicTileUpdate = throttle(updateAlwaysVisibleElements, 50);
 
 export function registerDynamicTileConfig() {
   const enableOcclusionDynamicTile = game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionDynamicTile");
@@ -51,14 +53,14 @@ export function registerDynamicTileConfig() {
     }
   });
   Hooks.on('canvasReady', () => {
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('canvasTokensRefresh', () => {
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('updateUser', (user, changes) => {
     if (user.id === game.user.id && 'character' in changes) {
-      updateAlwaysVisibleElements();
+      scheduleDynamicTileUpdate();
     }
   });
 
@@ -67,6 +69,7 @@ export function registerDynamicTileConfig() {
   // ---------------------- TILE ----------------------
   Hooks.on('createTile', (tile, data, options, userId) => {
     tile.setFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds', []); // Changed to array
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('updateTile', async (tileDocument, change, options, userId) => {
     if ('flags' in change && isometricModuleConfig.MODULE_ID in change.flags) {
@@ -76,13 +79,13 @@ export function registerDynamicTileConfig() {
         await tileDocument.setFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds', validArray);
       }
     }
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('refreshTile', (tile) => {
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('deleteTile', (tile, options, userId) => {
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
 
 
@@ -91,30 +94,30 @@ export function registerDynamicTileConfig() {
   Hooks.on('createToken', (token, options, userId) => {
     // Adiciona um pequeno atraso para garantir que o token esteja completamente inicializado
     setTimeout(() => {
-      updateAlwaysVisibleElements();
+      scheduleDynamicTileUpdate();
     }, 100);
   });
   Hooks.on('controlToken', (token, controlled) => {
     if (controlled) {
       lastControlledToken = token; // Store the last controlled token
     }
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('updateToken', (tokenDocument, change, options, userId) => {
     // Se o token atualizado for o último controlado, atualize a referência
     if (lastControlledToken && tokenDocument.id === lastControlledToken.id) {
       lastControlledToken = canvas.tokens.get(tokenDocument.id);
     }
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('deleteToken', (token, options, userId) => {
     if (lastControlledToken && token.id === lastControlledToken.id) {
       lastControlledToken = null;
     }
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on("refreshToken", (token) => {
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   /*
   Hooks.on('renderTokenConfig', (app, html, data) => {
@@ -133,7 +136,7 @@ export function registerDynamicTileConfig() {
   // ---------------------- OTHERS ----------------------
   Hooks.on('sightRefresh', () => {
     if (canvas.ready && alwaysVisibleContainer) {
-      updateAlwaysVisibleElements();
+      scheduleDynamicTileUpdate();
     }
   });
 
@@ -148,7 +151,7 @@ export function registerDynamicTileConfig() {
       
       // Se encontrou algum tile vinculado, atualiza os elementos visíveis
       if (linkedTiles.length > 0) {
-        updateAlwaysVisibleElements();
+        scheduleDynamicTileUpdate();
       }
     }
   });

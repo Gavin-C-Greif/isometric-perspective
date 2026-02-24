@@ -164,6 +164,36 @@ export function calculateTokenSortValue(token) {
   return Math.round(visualY * 10);
 }
 
+/**
+ * Lightweight leading+trailing throttle to coalesce noisy hook updates.
+ * First call runs immediately; subsequent calls within the wait window
+ * collapse into a single trailing execution with the latest arguments.
+ */
+export function throttle(fn, wait = 50) {
+  let timeoutId = null;
+  let trailing = false;
+  let lastArgs;
+
+  return (...args) => {
+    lastArgs = args;
+
+    if (timeoutId) {
+      trailing = true;
+      return;
+    }
+
+    fn(...lastArgs);
+
+    timeoutId = setTimeout(() => {
+      timeoutId = null;
+      if (trailing) {
+        trailing = false;
+        fn(...lastArgs);
+      }
+    }, wait);
+  };
+}
+
 // Generic function to create adjustable buttons with drag functionality
 export function createAdjustableButton(options) {
   // Destructure configuration options with default values

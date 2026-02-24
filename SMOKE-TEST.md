@@ -56,6 +56,16 @@ Run through this checklist after each change to verify core functionality.
 | 5 | With debug **on** and auto-sort enabled, move a token | Autosorting debug block logs with prefix/grouping only | |
 | 6 | Open token/tile config with debug **on** | Context debug log uses prefix; does not appear when debug **off** | |
 
+## US-005: Throttled Occlusion/Dynamic Tile Updates
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable Dynamic Tile + Token Silhouette features; open a scene with linked-wall tiles | Always-visible/occlusion layers render once on load; no console spam | |
+| 2 | Drag a token rapidly across the scene | Occlusion/dynamic layers track the token without refresh storms or visible lag | |
+| 3 | Open/close a linked door or toggle a tile’s linked walls flag | Visibility updates once per change; tiles behind closed doors hide and reappear correctly | |
+| 4 | Pan/zoom the canvas repeatedly | Containers stay in sync without stacking duplicates | |
+| 5 | Switch control between multiple tokens quickly | Always-visible layer follows the latest controlled token only | |
+
 ## General Startup
 
 | # | Step | Expected | Pass? |
