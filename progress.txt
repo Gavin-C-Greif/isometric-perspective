@@ -87,3 +87,14 @@ Started: 2026-02-24
   - Origin (0,0) maps to (0,0) for all projections; custom vs standard differs only for non-zero offsets.
   - Matrix test runs 5×4×3×2×4×4 = 1920 finite-output combos; keep assertions focused to avoid slow runs.
 ---
+## 2026-02-24 - US-008
+- Added Math Hardening Visual Matrix to SMOKE-TEST.md with four sections: projection mode, rectangular token, offset/elevation, sorting overlap.
+- Each section has explicit pass/fail steps and expected outcomes (tables with Step, Expected, Pass? columns).
+- Updated RELEASE-PROCESS.md: Math Hardening Visual Matrix is required gate item; release evidence includes completed checklist.
+- Added "Math Hardening Visual Matrix completed" row to Release Gate Checklist in SMOKE-TEST.md.
+- Files changed: SMOKE-TEST.md, RELEASE-PROCESS.md, prd.json, progress.txt.
+- **Learnings for future iterations:**
+  - Manual visual checklist complements automated matrix tests; release gate requires both.
+  - Checklist steps map to PRD acceptance criteria (projection, rectangular token, offset/elevation, sorting overlap).
+  - Manual browser verification needed: run through checklist in Foundry isometric scene to confirm all steps pass.
+---

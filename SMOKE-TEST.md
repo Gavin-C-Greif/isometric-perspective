@@ -45,9 +45,54 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | Gate Item | Status (PASS/FAIL) | Evidence/Notes |
 |-----------|--------------------|----------------|
 | All Release Smoke Suite rows passed | | |
+| Math Hardening Visual Matrix (see below) completed | | |
 | Lint passed (`npm run lint`) | | |
 | Package build/archive step passed (`npm run build`, if release candidate) | | |
 | Any failures captured with follow-up issue/task ID | | |
+
+## Math Hardening Visual Matrix (v13 math-calculation-hardening)
+
+Required for release validation. Complete this checklist in-browser to confirm math correctness for high-risk scenarios. See `RELEASE-PROCESS.md` for gate requirements.
+
+### 1. Projection Mode
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable isometric on a scene; set projection to **True Isometric** | Tokens and tiles render with correct isometric skew; no drift | |
+| 2 | Change projection to **Dimetric (2:1)** | Canvas updates immediately; tokens/tiles remain correctly placed | |
+| 3 | Change projection to **Overhead (√2:1)** | Canvas updates; no corruption or NaN positions | |
+| 4 | Change projection to **Projection (3:2)** | Canvas updates; ruler measurements remain usable | |
+| 5 | Set **Custom Projection** (e.g. reverseRotation 0 or custom values) | Custom values are reflected; conversion outputs differ from standard presets | |
+| 6 | Cycle back to **True Isometric** | Scene returns to baseline; no accumulated drift | |
+
+### 2. Rectangular Token
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Place a **1×1** (square) token on the grid | Token centers on grid cell; no drift | |
+| 2 | Place a **2×1** (wide) token | Token art spans 2 cells horizontally; center uses correct X scale; no vertical drift | |
+| 3 | Place a **1×2** (tall) token | Token art spans 2 cells vertically; center uses correct Y scale; no horizontal drift | |
+| 4 | Place a **3×2** token | Token art spans 3×2 cells; axis-correct center; no drift | |
+| 5 | Move each token shape to different grid positions | Placement remains correct; no accumulated offset | |
+
+### 3. Offset and Elevation
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Set token **Art Offset** (e.g. X: 10, Y: 10) | Token sprite shifts as configured; transform and ruler labels align | |
+| 2 | Set token **Elevation** to a non-zero value (e.g. 10) | Elevation line/shadow appears; token visual offset reflects elevation | |
+| 3 | Use Token Ruler to measure distance with offset+elevation token | Ruler label aligns with token visual; no desync | |
+| 4 | Change grid size (e.g. 100 → 128) with offset+elevation token | Offset and elevation scale correctly; no NaN/Infinity | |
+
+### 4. Sorting Overlap
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable **Automatic Token Sorting** | Depth order updates when tokens move | |
+| 2 | Place two tokens so they **overlap** (one north, one south) | Southern token renders in front; order matches visual depth | |
+| 3 | Move the northern token to overlap the southern | Order updates; moved token renders in front when south | |
+| 4 | Use **2×1** and **1×2** tokens that overlap | Scaled/offset tokens sort by visual center; no inversion | |
+| 5 | Rapidly move overlapping tokens | No sort jitter; order remains stable and deterministic | |
 
 ## US-001: Grid/Ruler Configuration (Scene Settings)
 
