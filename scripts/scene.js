@@ -196,6 +196,8 @@ function reapplyTransformsAfterGridConfig() {
   }
 }
 
+const gridConfigChangeHandlers = new WeakMap();
+
 Hooks.on("renderGridConfig", (app, html, data) => {
   const scene = app.object;
   if (!scene) return;
@@ -212,14 +214,27 @@ Hooks.on("renderGridConfig", (app, html, data) => {
 
   const gridConfigEl = html.querySelector?.(".grid-config");
   if (gridConfigEl) {
-    gridConfigEl.on?.("change", () => {
-      if (isIsometric) {
+    const previousHandler = gridConfigChangeHandlers.get(gridConfigEl);
+    if (previousHandler) {
+      gridConfigEl.removeEventListener("change", previousHandler);
+    }
+
+    const onGridConfigChange = () => {
+      const currentScene = app.object;
+      if (!currentScene) return;
+      const currentIsometric = currentScene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
+      const currentTransformBackground = currentScene.getFlag(isometricModuleConfig.MODULE_ID, "isometricBackground") ?? false;
+
+      if (currentIsometric) {
         requestAnimationFrame(() => {
-          applyIsometricPerspective(scene, isIsometric);
-          applyBackgroundTransformation(scene, isIsometric, shouldTransformBackground);
+          applyIsometricPerspective(currentScene, currentIsometric);
+          applyBackgroundTransformation(currentScene, currentIsometric, currentTransformBackground);
         });
       }
-    });
+    };
+
+    gridConfigEl.addEventListener("change", onGridConfigChange);
+    gridConfigChangeHandlers.set(gridConfigEl, onGridConfigChange);
   }
 });
 

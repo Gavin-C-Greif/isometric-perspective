@@ -30,7 +30,8 @@ function syncActiveHUDPositions() {
 }
 
 export function handleRenderTokenHUD(hud, html, _data) {
-  const scene = game.scenes.current;
+  const scene = game.scenes?.current;
+  if (!scene) return;
   const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
 
@@ -40,7 +41,8 @@ export function handleRenderTokenHUD(hud, html, _data) {
 }
 
 export function handleRenderTileHUD(hud, html, _data) {
-  const scene = game.scenes.current;
+  const scene = game.scenes?.current;
+  if (!scene) return;
   const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
 
@@ -50,7 +52,8 @@ export function handleRenderTileHUD(hud, html, _data) {
 }
 
 export function handleRenderDrawingHUD(hud, html, _data) {
-  const scene = game.scenes.current;
+  const scene = game.scenes?.current;
+  if (!scene) return;
   const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
 
