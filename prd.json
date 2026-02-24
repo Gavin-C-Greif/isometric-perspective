@@ -125,8 +125,8 @@
         "Typecheck passes"
       ],
       "priority": 8,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added dedicated v13 Release Smoke Suite section with Expected/Actual/PASS-FAIL tracking in SMOKE-TEST.md and created RELEASE-PROCESS.md that requires this checklist as a pre-release gate."
     },
     {
       "id": "US-009",

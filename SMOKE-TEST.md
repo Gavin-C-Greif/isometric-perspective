@@ -6,6 +6,43 @@ Run through this checklist after each change to verify core functionality.
 - Foundry VTT v13 instance running
 - A scene with a grid configured
 
+## US-008: v13 Release Smoke Suite + Gate Record
+
+Use this section for every release candidate. Fill **Actual** with observed behavior and set **Result** to `PASS` or `FAIL`.
+
+### Run Metadata
+
+| Field | Value |
+|---|---|
+| Date/Time | |
+| Build/Commit | |
+| Foundry Version | |
+| Browser/OS | |
+| Tester | |
+
+### Release Smoke Suite
+
+| # | Scenario | Expected | Actual | Result (PASS/FAIL) |
+|---|----------|----------|--------|--------------------|
+| 1 | Scene toggle (enable/disable isometric) | Scene enters/exits isometric mode cleanly; no lingering transform artifacts | | |
+| 2 | Projection change (True Iso -> Dimetric -> Overhead) | Active scene updates projection immediately and remains stable across changes | | |
+| 3 | Token/tile offsets and scale controls | Token/tile offset, anchor, and scaling settings apply correctly without drift after toggles | | |
+| 4 | HUD alignment (token + tile HUD actions) | HUD controls remain positioned and usable on selected token/tile in isometric scenes | | |
+| 5 | Ruler alignment and distance interaction | Ruler tool tracks pointer and reports usable measurements without visual desync | | |
+| 6 | Auto-sort depth ordering | Moving tokens updates depth order by isometric position; controlled token remains visible | | |
+| 7 | Dynamic tile linked-wall behavior | Linked tiles hide/show correctly when crossing linked walls and after scene switch | | |
+| 8 | Occlusion mode validation (CPU/GPU/Off as configured) | Occlusion behavior matches mode expectations without refresh storms or runtime errors | | |
+| 9 | Console noise gate with debug OFF/ON | Debug OFF: no noisy logs. Debug ON: prefixed `[Isometric Perspective]` diagnostics appear | | |
+
+### Release Gate Checklist
+
+| Gate Item | Status (PASS/FAIL) | Evidence/Notes |
+|-----------|--------------------|----------------|
+| All Release Smoke Suite rows passed | | |
+| Lint passed (`npm run lint`) | | |
+| Package build/archive step passed (`npm run build`, if release candidate) | | |
+| Any failures captured with follow-up issue/task ID | | |
+
 ## US-001: Version/Config Consistency
 
 | # | Step | Expected | Pass? |

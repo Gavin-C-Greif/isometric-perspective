@@ -18,6 +18,7 @@ Started: 2026-02-24
 - Expensive hook-driven layers (occlusion, dynamic tiles) should call the shared `throttle` helper (scripts/utils.js) and schedule updates instead of firing per-hook
 - Normalize `linkedWallIds` through `normalizeLinkedWallIds` before read/write; only call `setFlag` when normalized output differs to avoid recursive update churn
 - Core Foundry prototype patches should be registered during `init` and prefer `libWrapper` `WRAPPER` mode for interop; use guarded direct fallback only when `libWrapper` is unavailable
+- Use `SMOKE-TEST.md` US-008 section as the release validation artifact: every scenario should capture Actual + PASS/FAIL before tagging
 
 ---
 
@@ -106,4 +107,16 @@ Started: 2026-02-24
   - Prefer wrapper-based extension points for core Foundry methods to reduce module conflict risk; avoid top-level prototype reassignment at import time
   - Register compatibility patches in the `init` hook after settings/config are available, so behavior gates can be evaluated deterministically
   - Manual browser verification still needed for movement/selection sorting behavior and libWrapper/no-libWrapper startup paths in Foundry v13
+---
+
+## 2026-02-24 15:02 - US-008
+- Added a dedicated v13 Release Smoke Suite in `SMOKE-TEST.md` covering scene toggle, projection changes, token/tile offsets, HUD/ruler alignment, auto-sort, dynamic tile behavior, and occlusion modes
+- Added explicit run tracking fields (`Actual`, `Result PASS/FAIL`) plus a Release Gate checklist for lint/build evidence and release blocking decisions
+- Added `RELEASE-PROCESS.md` to define release-gate workflow and require completion of the US-008 smoke suite before publishing
+- Marked PRD story US-008 as passing
+- Files changed: SMOKE-TEST.md, RELEASE-PROCESS.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Keep `SMOKE-TEST.md` as the single source of smoke validation evidence by recording Actual outcomes and PASS/FAIL for each scenario
+  - Release docs should point directly to the smoke suite section to make pre-release validation discoverable and repeatable
+  - Maintain a strict no-release-on-fail gate when any smoke scenario or lint/build check is red
 ---
