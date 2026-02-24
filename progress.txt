@@ -77,3 +77,13 @@ Started: 2026-02-24
   - Use cartesianToIsoProjection/isoToCartesianProjection when projection may vary; pass ISOMETRIC_CONST for default.
   - PROJECTION_PRESETS_RAD provides test fixtures for all projection types including custom.
 ---
+## 2026-02-24 - US-007
+- Created tests/matrix.test.mjs with automated matrix core combinations.
+- Matrix dimensions: projection × token shape × grid config × offsets × elevation.
+- Assertions: finite outputs (all combos), transform/ruler equivalence (proj × token × offset), sorting stability (token × offset + overlap), custom projection effect (non-zero offsets).
+- Failure messages use label() to identify exact failing dimension combination (proj, token, gs, gd, off, elev).
+- Files changed: tests/matrix.test.mjs (new), prd.json, progress.txt.
+- **Learnings for future iterations:**
+  - Origin (0,0) maps to (0,0) for all projections; custom vs standard differs only for non-zero offsets.
+  - Matrix test runs 5×4×3×2×4×4 = 1920 finite-output combos; keep assertions focused to avoid slow runs.
+---
