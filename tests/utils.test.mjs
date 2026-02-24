@@ -11,10 +11,11 @@ import {
   computeTokenPlacementPosition,
   safeDivide,
   computeElevationOffsetDelta,
-  computeElevationVisualOffset
+  computeElevationVisualOffset,
+  computeOffsetComponentsForProjection
 } from '../scripts/utils.js';
 import { assertPointAlmostEqual, assertAlmostEqual, DEFAULT_EPSILON } from './helpers/tolerance.js';
-import { OFFSETS, TOKEN_DIMENSIONS } from './fixtures/math-fixtures.js';
+import { OFFSETS, TOKEN_DIMENSIONS, GRID_SIZES, GRID_DISTANCES, ELEVATIONS } from './fixtures/math-fixtures.js';
 
 describe('cartesianToIso', () => {
   it('converts (0,0) to (0,0)', () => {
@@ -181,5 +182,60 @@ describe('computeElevationVisualOffset', () => {
     const r = computeElevationVisualOffset(5, 100, 10);
     assert(Number.isFinite(r));
     assert.strictEqual(r, 5 * (100 / 10));
+  });
+});
+
+describe('transform/ruler equivalence (computeOffsetComponentsForProjection)', () => {
+  const docX = 0;
+  const docY = 0;
+
+  it('equivalent inputs produce matching projected coordinates', () => {
+    for (const { width: scaleX, height: scaleY } of TOKEN_DIMENSIONS) {
+      for (const { x: artOffsetX, y: artOffsetY } of OFFSETS) {
+        const gridSize = 100;
+        const gridDistance = 10;
+        const elevation = 5;
+
+        const { offsetX, offsetY } = computeOffsetComponentsForProjection(
+          artOffsetX, artOffsetY, elevation, gridSize, gridDistance, scaleX
+        );
+        const isoOffsets = cartesianToIso(offsetX, offsetY);
+
+        const transformPos = computeTokenPlacementPosition(
+          docX, docY, scaleX, scaleY, gridSize, isoOffsets
+        );
+        const centerX = docX + (scaleX * gridSize) / 2;
+        const centerY = docY + (scaleY * gridSize) / 2;
+        const rulerPos = {
+          x: centerX + scaleX * isoOffsets.x,
+          y: centerY + scaleY * isoOffsets.y
+        };
+
+        assertPointAlmostEqual(transformPos, rulerPos, 1e-9);
+        assert(Number.isFinite(transformPos.x) && Number.isFinite(transformPos.y));
+      }
+    }
+  });
+
+  it('finite outputs for matrix combinations (token shape, offset, elevation, grid)', () => {
+    for (const { width: scaleX, height: scaleY } of TOKEN_DIMENSIONS) {
+      for (const { x: artOffsetX, y: artOffsetY } of OFFSETS) {
+        for (const gridSize of GRID_SIZES) {
+          for (const gridDistance of GRID_DISTANCES) {
+            for (const elevation of ELEVATIONS) {
+              const { offsetX, offsetY } = computeOffsetComponentsForProjection(
+                artOffsetX, artOffsetY, elevation, gridSize, gridDistance, scaleX
+              );
+              const isoOffsets = cartesianToIso(offsetX, offsetY);
+              const pos = computeTokenPlacementPosition(
+                docX, docY, scaleX, scaleY, gridSize, isoOffsets
+              );
+              assert(Number.isFinite(pos.x) && Number.isFinite(pos.y),
+                `${scaleX}x${scaleY} off=(${artOffsetX},${artOffsetY}) gs=${gridSize} gd=${gridDistance} elev=${elevation}`);
+            }
+          }
+        }
+      }
+    }
   });
 });

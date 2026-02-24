@@ -3,7 +3,7 @@ import {
   cartesianToIso,
   computeTokenPlacementPosition,
   safeDivide,
-  computeElevationOffsetDelta,
+  computeOffsetComponentsForProjection,
   computeElevationVisualOffset
 } from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
@@ -340,13 +340,11 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
       object.mesh.width = Math.abs(sx * scaleX * gridSize * isoScale * Math.sqrt(2))
       object.mesh.height = Math.abs(sy * scaleX * gridSize * isoScale * Math.sqrt(2) * ISOMETRIC_CONST.ratio)
     }
-    // Elevation math (guarded: gridDistance=0 or scaleX=0 yields 0, no NaN/Infinity)
-    offsetX += computeElevationOffsetDelta(elevation, gridDistance, scaleX);
-    offsetX *= safeDivide(gridSize, 100, 1);   // grid ratio; fallback 1 when invalid
-    offsetY *= safeDivide(gridSize, 100, 1);   // grid ratio; fallback 1 when invalid
-    
-    // transformed distances
-    const isoOffsets = cartesianToIso(offsetX, offsetY);
+    // Shared offset/elevation projection (unified with ruler)
+    const { offsetX: ox, offsetY: oy } = computeOffsetComponentsForProjection(
+      offsetX, offsetY, elevation, gridSize, gridDistance, scaleX
+    );
+    const isoOffsets = cartesianToIso(ox, oy);
 
     // Create shadow and line graphics elements
     updateTokenVisuals(object, elevation, gridSize, gridDistance);

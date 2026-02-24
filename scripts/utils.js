@@ -41,6 +41,26 @@ export function computeElevationVisualOffset(elevation, gridSize, gridDistance) 
   return elevation * safeDivide(gridSize, gridDistance, 0);
 }
 
+/**
+ * Shared offset/elevation projection: computes (offsetX, offsetY) in grid space for transform and ruler.
+ * Both modules use this so projected coordinates match within tolerance.
+ * @param {number} artOffsetX - Art offset X from flags
+ * @param {number} artOffsetY - Art offset Y from flags
+ * @param {number} elevation - Token elevation
+ * @param {number} gridSize - Pixels per grid cell
+ * @param {number} gridDistance - Grid distance (units per cell)
+ * @param {number} scaleX - Token width in grid cells
+ * @returns {{offsetX: number, offsetY: number}}
+ */
+export function computeOffsetComponentsForProjection(artOffsetX, artOffsetY, elevation, gridSize, gridDistance, scaleX) {
+  const elevationDelta = computeElevationOffsetDelta(elevation, gridDistance, scaleX);
+  const gridScale = safeDivide(gridSize, 100, 1);
+  return {
+    offsetX: (artOffsetX + elevationDelta) * gridScale,
+    offsetY: (artOffsetY ?? 0) * gridScale
+  };
+}
+
 // Função auxiliar para converter coordenadas isométricas para cartesianas
 export function isoToCartesian(isoX, isoY) {
   const angle = Math.PI / 4; // 45 graus em radianos

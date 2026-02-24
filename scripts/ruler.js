@@ -1,5 +1,5 @@
 import { isometricModuleConfig } from './consts.js';
-import { cartesianToIso, safeDivide } from './utils.js';
+import { cartesianToIso, safeDivide, computeOffsetComponentsForProjection } from './utils.js';
 import { debugLog } from './logger.js';
 
 /**
@@ -20,28 +20,26 @@ function applyIsometricLabelAdjustments(ctx, token) {
   let x = ctx.position.x;
   let y = ctx.position.y;
 
-  // 2. Apply Token Offsets (Elevation/Art Offset) to match the mesh exactly
-  // Only if a valid token is provided (e.g. from TokenRuler)
+  // 2. Apply Token Offsets (Elevation/Art Offset) - shared helper with transform.js
   if (token?.document) {
       const doc = token.document;
       const elevationAdjustment = game.settings.get(isometricModuleConfig.MODULE_ID, "enableHeightAdjustment");
-      let ox = doc.getFlag(isometricModuleConfig.MODULE_ID, "offsetX") || 0;
-      let oy = doc.getFlag(isometricModuleConfig.MODULE_ID, "offsetY") || 0;
-        
-      if (elevationAdjustment) {
-          const elev = doc.elevation || 0;
-          const gridSize = canvas.scene.grid.size;
-          const gridDist = canvas.scene.grid.distance;
-          // Formulas from transform.js to match visual height (guarded: gridDist=0 yields 0)
-          const factor = safeDivide(gridSize, gridDist, 0) * Math.sqrt(2);
-          ox += safeDivide(elev * factor, doc.width || 1, 0);
-      }
+      const elev = elevationAdjustment ? (doc.elevation || 0) : 0;
+      const gridSize = canvas.scene.grid.size;
+      const gridDist = canvas.scene.grid.distance;
+      const scaleX = doc.width || 1;
+      const scaleY = doc.height || 1;
+
+      const { offsetX: ox, offsetY: oy } = computeOffsetComponentsForProjection(
+        doc.getFlag(isometricModuleConfig.MODULE_ID, "offsetX") || 0,
+        doc.getFlag(isometricModuleConfig.MODULE_ID, "offsetY") || 0,
+        elev, gridSize, gridDist, scaleX
+      );
 
       if (ox !== 0 || oy !== 0) {
-          // Apply projection for height/art offsets as used in transform.js
           const isoOffsets = cartesianToIso(ox, oy);
-          x += isoOffsets.x * (doc.width || 1);
-          y += isoOffsets.y * (doc.height || 1);
+          x += isoOffsets.x * scaleX;
+          y += isoOffsets.y * scaleY;
       }
   }
 

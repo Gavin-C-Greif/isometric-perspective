@@ -8,6 +8,7 @@ Started: 2026-02-24
 - Pure coordinate math (cartesianToIso, isoToCartesian) in utils.js has no Foundry deps and can be tested in Node.
 - Extract placement/transform math to pure functions in utils.js for unit testing; transform.js calls them with document values.
 - Use safeDivide(num, denom, fallback) for any division where denominator can be 0 or non-finite.
+- computeOffsetComponentsForProjection is the shared path for offset/elevation; transform and ruler both use it.
 
 ---
 ## 2026-02-24 - US-001
@@ -42,4 +43,14 @@ Started: 2026-02-24
 - **Learnings for future iterations:**
   - Use safeDivide for any division where denominator can be 0 or non-finite (gridDistance, gridSize, scaleX, originalWidth/Height, objTxtRatio).
   - computeElevationOffsetDelta and computeElevationVisualOffset centralize elevation math with guards; transform and ruler both use them.
+---
+## 2026-02-24 - US-004
+- Added computeOffsetComponentsForProjection(artOffsetX, artOffsetY, elevation, gridSize, gridDistance, scaleX) in utils.js as shared helper.
+- Transform and ruler now both use this helper for offset/elevation projection; equivalent inputs produce matching projected coordinates.
+- Added 2 integration tests: transform/ruler equivalence (matching coords for token shapes × offsets), finite outputs for matrix (token × offset × elevation × grid).
+- Files changed: scripts/utils.js, scripts/transform.js, scripts/ruler.js, tests/utils.test.mjs, prd.json, progress.txt.
+- **Learnings for future iterations:**
+  - computeOffsetComponentsForProjection is the single source of truth for offset+elevation in grid space; transform and ruler must both use it.
+  - Ruler previously omitted gridSize/100 scaling for art offsets; unification fixes label drift for non-100 grid sizes.
+  - Manual browser verification: measure with Token Ruler in isometric scene; labels should align with token visuals.
 ---
