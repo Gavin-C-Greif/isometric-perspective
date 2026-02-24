@@ -7,6 +7,7 @@ import {
   handleCreateToken,
   handleUpdateToken,
   handleRefreshToken,
+  registerTokenSortingPatch,
 
  } from './token.js';
  
@@ -199,6 +200,7 @@ Hooks.once("init", function() {
   isometricModuleConfig.WORLD_ISO_FLAG = !!game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
 
   // ------------- Executa os hooks de funcionalidades adicionais do módulo -------------
+  registerTokenSortingPatch();
   registerDynamicTileConfig();
   registerSortingConfig();
   registerOcclusionConfig();

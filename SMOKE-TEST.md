@@ -77,6 +77,16 @@ Run through this checklist after each change to verify core functionality.
 | 5 | Switch scenes back and forth with dynamic tile enabled | Always-visible containers are destroyed/recreated cleanly; no stale references or duplicated overlays | |
 | 6 | Toggle doors linked to normalized walls after scene switch | Linked-wall visibility behavior remains correct after scene transitions | |
 
+## US-007: Safer Token Sorting Interop Patch
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable scene isometric + module `Enable Automatic Token Sorting` setting | Token movement updates depth order by isometric Y-sort without regressions | |
+| 2 | Select a moved token while auto-sort is enabled | Controlled token remains visible (slight zIndex boost) while preserving relative depth behavior | |
+| 3 | Disable `Enable Automatic Token Sorting`, then move tokens | Token sorting falls back to Foundry/other-module default behavior | |
+| 4 | Reload with `libWrapper` active (if installed) and move/select tokens | No patch conflict warnings; sorting behavior remains correct | |
+| 5 | Reload without `libWrapper` and move/select tokens | Fallback path keeps sorting functional; no runtime errors | |
+
 ## General Startup
 
 | # | Step | Expected | Pass? |

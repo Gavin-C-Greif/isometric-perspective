@@ -10,30 +10,51 @@ import {
   calculateTokenSortValue,
   createAdjustableButton
 } from './utils.js';
-import { debugLog } from './logger.js';
+import { debugLog, debugWarn } from './logger.js';
+
+let tokenSortPatchRegistered = false;
 
 /**
- * Patch Token.prototype._refreshSort to ensure isometric tokens always use
- * our custom depth sorting, even when selected.
+ * Register Token.prototype._refreshSort patch via a chain-friendly wrapper.
+ * Prefer libWrapper when present, with a guarded fallback for environments without it.
  */
-function patchTokenSorting() {
-  const originalRefreshSort = foundry.canvas.placeables.Token.prototype._refreshSort;
-  foundry.canvas.placeables.Token.prototype._refreshSort = function() {
-    // If isometric is enabled for this scene, use our custom sort
+export function registerTokenSortingPatch() {
+  if (tokenSortPatchRegistered) return;
+  if (isometricModuleConfig.FOUNDRY_VERSION === 11) return;
+
+  const tokenPrototype = foundry.canvas.placeables.Token.prototype;
+  if (!tokenPrototype?._refreshSort) return;
+
+  const wrappedRefreshSort = function (wrapped, ...args) {
+    const result = wrapped?.call(this, ...args);
+
     const isSceneIsometric = this.scene?.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
     const autoSortEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "enableAutoSorting");
-    
-    if (isSceneIsometric && autoSortEnabled) {
-      this.mesh.zIndex = calculateTokenSortValue(this);
-      if (this.controlled) this.mesh.zIndex += 0.1; // Minimal boost for selection visibility without breaking depth
-    } else {
-      return originalRefreshSort.apply(this);
-    }
-  };
-}
+    if (!isSceneIsometric || !autoSortEnabled || !this.mesh) return result;
 
-// Execute patch
-patchTokenSorting();
+    this.mesh.zIndex = calculateTokenSortValue(this);
+    if (this.controlled) this.mesh.zIndex += 0.1;
+    return result;
+  };
+
+  if (globalThis.libWrapper?.register) {
+    globalThis.libWrapper.register(
+      isometricModuleConfig.MODULE_ID,
+      "foundry.canvas.placeables.Token.prototype._refreshSort",
+      wrappedRefreshSort,
+      "WRAPPER"
+    );
+    tokenSortPatchRegistered = true;
+    return;
+  }
+
+  const originalRefreshSort = tokenPrototype._refreshSort;
+  tokenPrototype._refreshSort = function (...args) {
+    return wrappedRefreshSort.call(this, originalRefreshSort, ...args);
+  };
+  tokenSortPatchRegistered = true;
+  debugWarn("libWrapper not detected; using direct _refreshSort fallback patch");
+}
 
 export async function createTokenIsometricTab(app, html, data) {
 

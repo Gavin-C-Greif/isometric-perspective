@@ -17,6 +17,7 @@ Started: 2026-02-24
 - Use `scripts/logger.js` helpers (debugLog/debugWarn/debugGroup/debugTable) for any debug output; logs are gated by `isometricModuleConfig.DEBUG_PRINT` and prefixed with `[Isometric Perspective]`
 - Expensive hook-driven layers (occlusion, dynamic tiles) should call the shared `throttle` helper (scripts/utils.js) and schedule updates instead of firing per-hook
 - Normalize `linkedWallIds` through `normalizeLinkedWallIds` before read/write; only call `setFlag` when normalized output differs to avoid recursive update churn
+- Core Foundry prototype patches should be registered during `init` and prefer `libWrapper` `WRAPPER` mode for interop; use guarded direct fallback only when `libWrapper` is unavailable
 
 ---
 
@@ -93,4 +94,16 @@ Started: 2026-02-24
   - Avoid redundant `setFlag` writes in `updateTile` paths; they can trigger avoidable hook churn and hard-to-track update loops
   - Dynamic containers should always be explicitly destroyed on scene/canvas lifecycle boundaries to prevent stale references
   - Manual browser verification still needed for linked-wall selection and scene-switch behavior; no automated browser tools available here
+---
+
+## 2026-02-24 15:18 - US-007
+- Replaced eager `Token.prototype._refreshSort` monkey-patch with init-time registration via `registerTokenSortingPatch()`
+- Implemented chain-friendly wrapper strategy: use `libWrapper.register(..., "WRAPPER")` when available; apply guarded direct fallback patch only when `libWrapper` is missing
+- Preserved behavior by running Foundry's original `_refreshSort` first, then applying isometric z-index depth logic (plus controlled-token visibility boost) only when scene is isometric and auto-sort is enabled
+- Added US-007 smoke checklist section for interop and fallback validation; marked PRD story as passing
+- Files changed: scripts/token.js, scripts/main.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Prefer wrapper-based extension points for core Foundry methods to reduce module conflict risk; avoid top-level prototype reassignment at import time
+  - Register compatibility patches in the `init` hook after settings/config are available, so behavior gates can be evaluated deterministically
+  - Manual browser verification still needed for movement/selection sorting behavior and libWrapper/no-libWrapper startup paths in Foundry v13
 ---
