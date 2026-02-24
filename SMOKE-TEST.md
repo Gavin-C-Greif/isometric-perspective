@@ -29,6 +29,7 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 3 | Token/tile offsets and scale controls | Token/tile offset, anchor, and scaling settings apply correctly without drift after toggles | | |
 | 4 | HUD alignment (token + tile HUD actions) | HUD controls remain positioned and usable on selected token/tile in isometric scenes | | |
 | 5 | Ruler alignment and distance interaction | Ruler tool tracks pointer and reports usable measurements without visual desync | | |
+| 5a | **Grid/Ruler config (US-001)** | Scene Settings > Grid > Ruler Tool: measure on canvas updates grid; canvas refreshes without manual `canvas.draw()` | | |
 | 6 | Auto-sort depth ordering | Moving tokens updates depth order by isometric position; controlled token remains visible | | |
 | 7 | Dynamic tile linked-wall behavior | Linked tiles hide/show correctly when crossing linked walls and after scene switch | | |
 | 8 | Occlusion mode validation (CPU/GPU/Off as configured) | Occlusion behavior matches mode expectations without refresh storms or runtime errors | | |
@@ -42,6 +43,17 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | Lint passed (`npm run lint`) | | |
 | Package build/archive step passed (`npm run build`, if release candidate) | | |
 | Any failures captured with follow-up issue/task ID | | |
+
+## US-001: Grid/Ruler Configuration (Scene Settings)
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable isometric on a scene with a background image | Scene displays in isometric projection | | |
+| 2 | Open Scene Config > Grid tab, click Ruler Tool (ruler icon) | Grid config ruler tool activates; canvas remains visible | | |
+| 3 | Measure between two grid points on the canvas | Ruler shows distance; grid size/distance updates when applied | | |
+| 4 | Apply/close grid config after ruler measurement | Canvas refreshes immediately; no manual `canvas.draw()` needed; background transforms remain correct | | |
+| 5 | Change grid size or offset via Grid tab inputs (no ruler) | Changes apply; canvas updates; no regression in isometric background | | |
+| 6 | Toggle isometric off and back on after grid edits | Transforms apply/remove cleanly; no drift or stale state | | |
 
 ## US-001: Version/Config Consistency
 

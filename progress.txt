@@ -3,6 +3,18 @@ Started: 2026-02-24
 ---
 
 ## Codebase Patterns
-# Ralph Progress Log
-Started: 2026-02-24
+- Grid config: Use renderGridConfig, gridConfigUpdate, closeGridConfig hooks; call canvas.draw() after grid/ruler edits to force refresh in isometric scenes
+- Use optional chaining (html.querySelector?.()) when targeting Foundry DOM elements that may vary by version
+---
+
+## 2026-02-24 - US-001
+- Re-enabled grid config hooks (renderGridConfig, gridConfigUpdate, closeGridConfig) in scripts/scene.js that were previously commented out
+- Added reapplyTransformsAfterGridConfig() helper that re-applies isometric transforms and calls canvas.draw() to force canvas refresh after grid/ruler edits
+- Updated README Known Bugs: documented fix for Scene Grid Configuration; kept fallback options
+- Added US-001: Grid/Ruler Configuration section to SMOKE-TEST.md with 6 explicit steps; added row 5a to Release Smoke Suite
+- Files changed: scripts/scene.js, README.md, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Grid config hooks (renderGridConfig, gridConfigUpdate, closeGridConfig) may not be in Foundry's public API docs but exist in v13; use optional chaining for html.querySelector('.grid-config') in case DOM structure differs
+  - canvas.draw() forces a full canvas redraw; use sparingly but effective for fixing "canvas doesn't refresh" after config changes
+  - handleUpdateScene already reacts to grid/gridType/gridSize changes; grid config hooks handle the ruler-tool flow and form-change flow that may not trigger updateScene
 ---

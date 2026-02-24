@@ -82,8 +82,8 @@ LockerView _(needs a 330° rotation to make a working isometric rotation)_
 
 ## Known Bugs
 
-- **Scene Grid Configuration**: The canvas background configuration in Scene Settings > Grid > Ruler Tool ( <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/37eff7fa00de26db41183a3ad8ed0e9119fbc44b/svgs/solid/ruler-combined.svg" width="15" height="15"></i> ) does not work.
-  - **Workaround**: The art scale function has been recreated in the Isometric tab, and you can set the offset in the Grid tab. For align the grid, you really should use the module [Grid Scaler](https://github.com/atomdmac/scaleGrid/) for that.
+- **Scene Grid Configuration** *(fixed in US-001)*: The canvas background configuration in Scene Settings > Grid > Ruler Tool ( <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/37eff7fa00de26db41183a3ad8ed0e9119fbc44b/svgs/solid/ruler-combined.svg" width="15" height="15"></i> ) previously did not work in isometric scenes—the canvas would not refresh after grid/ruler edits. The module now re-applies transforms and forces a canvas redraw on `renderGridConfig`, `gridConfigUpdate`, and `closeGridConfig`.
+  - **Fallback**: The art scale function is also available in the Isometric tab; you can set the offset in the Grid tab. For grid alignment, the [Grid Scaler](https://github.com/atomdmac/scaleGrid/) module remains an alternative.
 
 - **TokenHud and TileHud Position**: The position of the TileHud (menu on right-clicking a tile) is aligned with the left vertex, but sometimes will be far away from the token/tile.
 
