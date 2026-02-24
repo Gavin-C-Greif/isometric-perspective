@@ -124,6 +124,18 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 4 | Reload with `libWrapper` active (if installed) and move/select tokens | No patch conflict warnings; sorting behavior remains correct | |
 | 5 | Reload without `libWrapper` and move/select tokens | Fallback path keeps sorting functional; no runtime errors | |
 
+## US-010: Occlusion Performance Profiling Baseline
+
+Record one completed run in `PERFORMANCE-BASELINE.md` while executing these checks.
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Build baseline scene set for low/medium/high density (`10/40/80` tokens, `10/40/80` occluding tiles) | Scenario matrix is fully populated with token count, tile count, and zoom ranges (`50%`, `100%`, `200%`) | |
+| 2 | For each scenario, run `enableOcclusionTokenSilhouette` in `off`, `gpu`, `cpu2`, `cpu4`, `cpu6`, `cpu8`, `cpu10` | Capture avg frame time/FPS and worst-frame (or stutter count) consistently across all modes | |
+| 3 | Compare CPU chunk modes across quality/perf tradeoffs | Document where silhouette quality becomes visibly blocky and where CPU cost becomes unacceptable | |
+| 4 | Select recommended defaults for release | Default policy is written and justified using measured data (global default + recommended CPU fallback) | |
+| 5 | Cross-check release docs | `RELEASE-PROCESS.md` references the baseline artifact as part of release evidence | |
+
 ## General Startup
 
 | # | Step | Expected | Pass? |

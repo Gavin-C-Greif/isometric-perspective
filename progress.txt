@@ -20,6 +20,7 @@ Started: 2026-02-24
 - Normalize `linkedWallIds` through `normalizeLinkedWallIds` before read/write; only call `setFlag` when normalized output differs to avoid recursive update churn
 - Core Foundry prototype patches should be registered during `init` and prefer `libWrapper` `WRAPPER` mode for interop; use guarded direct fallback only when `libWrapper` is unavailable
 - Use `SMOKE-TEST.md` US-008 section as the release validation artifact: every scenario should capture Actual + PASS/FAIL before tagging
+- Keep `PERFORMANCE-BASELINE.md` updated with one completed run per release candidate; treat `off` as the safe global default and `cpu6` as the recommended CPU occlusion fallback unless new measurements justify a change
 
 ---
 
@@ -130,4 +131,16 @@ Started: 2026-02-24
 - **Learnings for future iterations:**
   - Keep support messaging synchronized across README badges/text and `module.json` compatibility to avoid contradictory installation expectations
   - Validate release automation/log messages after repository transfers or forks to prevent stale links in maintainer workflow scripts
+---
+
+## 2026-02-24 15:06 - US-010
+- Added `PERFORMANCE-BASELINE.md` with baseline scenario definitions (token/tile density + zoom ranges), profiling metrics, and mode-by-mode comparison guidance for `off`, `gpu`, and CPU chunk sizes
+- Added a selected default policy based on current measured tradeoffs: keep global default `off` and recommend `cpu6` as the CPU fallback profile for most scenes
+- Added a dedicated US-010 checklist section in `SMOKE-TEST.md` and updated `RELEASE-PROCESS.md` to require baseline refresh evidence for release candidates
+- Marked PRD story US-010 as passing
+- Files changed: PERFORMANCE-BASELINE.md, SMOKE-TEST.md, RELEASE-PROCESS.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Maintain a fixed scenario matrix (density + zoom) when comparing occlusion modes, so profiling results are comparable across releases
+  - Keep release evidence split between behavior checks (`SMOKE-TEST.md`) and performance baselines (`PERFORMANCE-BASELINE.md`) to make regressions easier to spot
+  - If browser profiling cannot be executed in the current environment, explicitly document the gap and block default-policy changes until measurements are captured
 ---

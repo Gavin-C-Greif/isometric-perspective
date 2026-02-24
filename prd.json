@@ -156,8 +156,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 10,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Defined baseline scenario matrix (token/tile density + zoom ranges), documented CPU chunk-mode tradeoffs and selected default policy in PERFORMANCE-BASELINE.md, and added US-010 smoke checklist plus release-gate reference."
     }
   ]
 }
