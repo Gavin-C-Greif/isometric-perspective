@@ -1,5 +1,5 @@
 import { isometricModuleConfig } from './consts.js';
-import { debugLog } from './logger.js';
+import { debugLog, logWarn } from './logger.js';
 // Função auxiliar para converter coordenadas isométricas para cartesianas
 export function isoToCartesian(isoX, isoY) {
   const angle = Math.PI / 4; // 45 graus em radianos
@@ -98,7 +98,7 @@ export function patchConfig(documentSheet, config, args) {
       // Handle both 'document' and 'token' properties for compatibility
       const doc = this.document || this.token;
       if (!doc) {
-        console.warn("Isometric Perspective: Unable to access token document");
+        logWarn("Unable to access token document");
         return { tab: context.tabs?.[partId] };
       }
       

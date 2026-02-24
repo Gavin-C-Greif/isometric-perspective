@@ -1,13 +1,37 @@
 import { isometricModuleConfig } from './consts.js';
-import { ISOMETRIC_CONST, PROJECTION_TYPES, DEFAULT_PROJECTION } from './consts.js';
+import { ISOMETRIC_CONST } from './consts.js';
 import { debugLog } from './logger.js';
 
 export function registerHUDConfig() {
-
+  Hooks.on("canvasPan", syncActiveHUDPositions);
 }
 
-export function handleRenderTokenHUD(hud, html, data) {
+/**
+ * Re-adjust HUD positions for any active Token/Tile/Drawing HUDs when the canvas pans or zooms.
+ * Keeps HUD controls aligned with their placeables in isometric scenes (US-002).
+ */
+function syncActiveHUDPositions() {
+  if (!canvas?.ready || !game.scenes?.current) return;
   const scene = game.scenes.current;
+  const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
+  const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
+  if (!isometricWorldEnabled || !isSceneIsometric) return;
+
+  requestAnimationFrame(() => {
+    const hud = canvas.hud;
+    if (!hud) return;
+    for (const key of ["token", "tile", "drawing"]) {
+      const layer = hud[key];
+      if (layer?.object && layer?.element) {
+        adjustHUDPosition(layer, layer.element);
+      }
+    }
+  });
+}
+
+export function handleRenderTokenHUD(hud, html, _data) {
+  const scene = game.scenes?.current;
+  if (!scene) return;
   const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
 
@@ -16,8 +40,9 @@ export function handleRenderTokenHUD(hud, html, data) {
   }
 }
 
-export function handleRenderTileHUD(hud, html, data) {
-  const scene = game.scenes.current;
+export function handleRenderTileHUD(hud, html, _data) {
+  const scene = game.scenes?.current;
+  if (!scene) return;
   const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
 
@@ -26,11 +51,9 @@ export function handleRenderTileHUD(hud, html, data) {
   }
 }
 
-
-
-
-export function handleRenderDrawingHUD(hud, html, data) {
-  const scene = game.scenes.current;
+export function handleRenderDrawingHUD(hud, html, _data) {
+  const scene = game.scenes?.current;
+  if (!scene) return;
   const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
 
@@ -132,7 +155,6 @@ function isometricToCartesianGPT(x_iso, y_iso) {
   // Cria uma matriz de transformação com base nas rotações e distorções fornecidas
   // Criando um objeto "dummy" para aplicar a transformação
   const obj = new PIXI.Graphics();
-  console.log("obj", obj);
 
   // Aplica a transformação com setTransform
   obj.setTransform(x_iso, y_iso, 0, 0, 1, 1, -rotation, skewX, skewY);
@@ -142,8 +164,7 @@ function isometricToCartesianGPT(x_iso, y_iso) {
 
   // Inverter a matriz para reverter a transformação
   const invertedMatrix = matrix.invert();
-  console.log(matrix);
-  console.log(invertedMatrix);
+  debugLog("cartesianToIso matrix", { matrix, invertedMatrix });
 
   // Aplicar a inversa da matriz nas coordenadas isométricas
   const cartesian = invertedMatrix.apply({ x: x_iso, y: y_iso });

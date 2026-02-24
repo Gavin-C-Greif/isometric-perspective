@@ -3,6 +3,107 @@ Started: 2026-02-24
 ---
 
 ## Codebase Patterns
-# Ralph Progress Log
-Started: 2026-02-24
+- Logging: logWarn/logError for always-on prefixed output; debugLog/debugWarn for debug-only; avoid raw console.warn/error
+- Legacy v11 paths: marked with "// LEGACY: v11-only; not executed on v13"; module targets v13 so these branches never run
+- Grid config: Use renderGridConfig, gridConfigUpdate, closeGridConfig hooks; call canvas.draw() after grid/ruler edits to force refresh in isometric scenes
+- Use optional chaining (html.querySelector?.()) when targeting Foundry DOM elements that may vary by version
+- HUD sync: canvas.hud.token/tile/drawing have .object and .element when active; canvasPan re-syncs HUD positions for isometric stage transforms
+- Occlusion: PIXI removeChildren() does not destroy; explicitly destroy sprites and masks; use texture: false for shared textures; canvasTearDown for teardown cleanup
+- Dynamic tile: same pattern—destroy cloned sprites with texture: false before rebuild; destroyAlwaysVisibleContainer clears lastControlledToken
+- Token sort: autosorting.js = authoritative document.sort writes; token.js _refreshSort = display-only mesh.zIndex; both use calculateTokenSortValue
+---
+
+## 2026-02-24 - US-001
+- Re-enabled grid config hooks (renderGridConfig, gridConfigUpdate, closeGridConfig) in scripts/scene.js that were previously commented out
+- Added reapplyTransformsAfterGridConfig() helper that re-applies isometric transforms and calls canvas.draw() to force canvas refresh after grid/ruler edits
+- Updated README Known Bugs: documented fix for Scene Grid Configuration; kept fallback options
+- Added US-001: Grid/Ruler Configuration section to SMOKE-TEST.md with 6 explicit steps; added row 5a to Release Smoke Suite
+- Files changed: scripts/scene.js, README.md, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Grid config hooks (renderGridConfig, gridConfigUpdate, closeGridConfig) may not be in Foundry's public API docs but exist in v13; use optional chaining for html.querySelector('.grid-config') in case DOM structure differs
+  - canvas.draw() forces a full canvas redraw; use sparingly but effective for fixing "canvas doesn't refresh" after config changes
+  - handleUpdateScene already reacts to grid/gridType/gridSize changes; grid config hooks handle the ruler-tool flow and form-change flow that may not trigger updateScene
+---
+
+## 2026-02-24 - US-002
+- Added canvasPan hook in hud.js to re-sync TokenHUD/TileHUD/DrawingHUD positions when the canvas pans or zooms
+- registerHUDConfig() now registers the canvasPan handler; called from main.js init
+- Updated README Known Bugs: documented US-002 improvement for TokenHud/TileHud position
+- Added US-002: HUD Placement section to SMOKE-TEST.md with 8 steps; added row 4a to Release Smoke Suite
+- Files changed: scripts/hud.js, scripts/main.js, README.md, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - canvas.hud.token, canvas.hud.tile, canvas.hud.drawing are the HUD layer instances; each has .object (bound placeable) and .element (HTML) when active
+  - canvasPan fires on both pan and zoom; use it to keep HUD positions in sync with transformed stage coordinates
+  - handleCanvasReady's forced canvas.pan() triggers canvasPan, so HUD sync runs automatically on scene load
+---
+
+## 2026-02-24 - US-003
+- Added explicit destroy path for occlusion sprites and masks in updateOcclusionLayer; replaced removeChildren() with destroyOcclusionSprite() for each sprite
+- Added teardownOcclusionLayer() and canvasTearDown hook; changeScene now uses teardownOcclusionLayer
+- Added destroyOcclusionContainer() and destroyOcclusionSprite() helpers; preserve shared token textures (texture: false)
+- initializeOcclusionLayer uses destroyOcclusionContainer when replacing existing container
+- Appended US-003: Occlusion Lifecycle and Memory Notes to PERFORMANCE-BASELINE.md
+- Added US-003 (PRD): Occlusion Lifecycle section to SMOKE-TEST.md; added row 8a to Release Smoke Suite
+- Files changed: scripts/occlusion.js, PERFORMANCE-BASELINE.md, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - PIXI removeChildren() does NOT destroy by default; must explicitly destroy sprites and masks to avoid memory churn
+  - sprite.mask is a Graphics object; destroy it before destroying the sprite; use texture: false when sprite shares token texture
+  - canvasTearDown fires when canvas is torn down (e.g. before reload); use it for cleanup alongside changeScene
+---
+
+## 2026-02-24 - US-004
+- Added destroyDynamicTileSprite() and destroyLayerSprites() to explicitly destroy cloned sprites with texture: false
+- updateAlwaysVisibleElements now calls destroyLayerSprites() instead of removeChildren(); prior sprites destroyed before rebuild
+- destroyAlwaysVisibleContainer iterates layers and destroys sprites explicitly before destroying container; resets lastControlledToken
+- Added US-004 (PRD): Dynamic Tile Overlay Lifecycle section to SMOKE-TEST.md with 5 steps; added row 7a to Release Smoke Suite
+- Files changed: scripts/dynamictile.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Dynamic tile clones tile/token textures; use texture: false when destroying cloned sprites to preserve shared textures
+  - Same pattern as occlusion: removeChildren() does not destroy; explicit destroy loop before rebuild
+  - No controlled token: layers stay empty (defined behavior); lastControlledToken cleared on teardown
+---
+
+## 2026-02-24 - US-005
+- Added documentation block to autosorting.js: single authoritative path for document.sort writes (canvasReady batch, updateToken/createToken per-move)
+- Added documentation block to token.js _refreshSort: display-only (mesh.zIndex), does not write to document; controlled token +0.1 boost
+- Added US-005 (PRD): Sorting Pipeline Rationalization section to SMOKE-TEST.md with 5 steps; added row 6a to Release Smoke Suite
+- Files changed: scripts/autosorting.js, scripts/token.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Token sort: autosorting.js is the only module that writes token.sort to document; _refreshSort only sets mesh.zIndex for display
+  - Do not add scene.updateEmbeddedDocuments('Token', {sort: ...}) elsewhere; would duplicate/conflict with autosorting
+  - calculateTokenSortValue() in utils.js is the shared formula; both autosorting and _refreshSort use it
+---
+
+## 2026-02-24 - US-006
+- Marked v11-only runtime paths as LEGACY in transform.js (3 locations), autosorting.js, token.js, dynamictile.js (3 locations)
+- Archived occlusion experiment files to archive/legacy-occlusion-experiments/: occlusion2 v15, occlusion2 v21, occlusion3.js
+- Added archive/legacy-occlusion-experiments/README.md documenting non-production experiments
+- Replaced ambiguous commented occlusion imports in main.js with single clear comment
+- Files changed: scripts/transform.js, scripts/autosorting.js, scripts/token.js, scripts/dynamictile.js, scripts/main.js, archive/legacy-occlusion-experiments/ (3 files + README), prd.json, progress.txt
+- **Learnings for future iterations:**
+  - v11 branches never execute on v13 (module.json compatibility minimum 13); LEGACY comments clarify intent
+  - Occlusion experiments were already not in runtime (commented imports); archiving removes them from scripts/ and documents them
+---
+
+## 2026-02-24 - US-007
+- Added logWarn and logError to logger.js for always-on structured prefixed logging
+- Replaced raw console.warn/error with logWarn/logError in utils.js, transform.js, token.js, scene.js, occlusion.js
+- Custom projection parsing errors now surface via ui.notifications.warn and logError
+- Removed unconditional noisy console.log in hud.js (cartesianToIso); converted to debugLog
+- Added US-007 (PRD): Error and Logging Standardization section to SMOKE-TEST.md with 5 steps
+- Files changed: scripts/logger.js, scripts/utils.js, scripts/transform.js, scripts/token.js, scripts/scene.js, scripts/occlusion.js, scripts/hud.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Use logWarn/logError for non-debug runtime issues; use debugLog/debugWarn for debug-only output
+  - ui?.notifications?.warn() surfaces parsing errors to users; combine with logError for console trace
+---
+
+## 2026-02-24 - US-008
+- Added US-008 (PRD): High-Risk Interaction Matrix to SMOKE-TEST.md with 5 rows: projection switch, pan/zoom, scene switch, token control switch, door state changes
+- Added row 10 to Release Smoke Suite referencing high-risk matrix
+- Updated RELEASE-PROCESS.md: high-risk matrix required; long-session stress scenario required; evidence section updated
+- Added Long-Session Stress Scenario (15-min continuous interaction) to PERFORMANCE-BASELINE.md with run record template
+- Files changed: SMOKE-TEST.md, RELEASE-PROCESS.md, PERFORMANCE-BASELINE.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Release gate now requires both smoke suite + high-risk matrix + performance baseline (US-010 + long-session stress)
+  - High-risk matrix covers the 5 interaction types most likely to expose transform/overlay/sorting regressions
 ---

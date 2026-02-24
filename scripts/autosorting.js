@@ -1,3 +1,16 @@
+/**
+ * Token sorting pipeline (US-005): Single authoritative path for document.sort writes.
+ *
+ * AUTHORITATIVE PATH: This module is the only place that writes token.sort to the document.
+ * - canvasReady: Batch update all tokens when scene loads (initial sync).
+ * - updateToken/createToken: Update single token when position changes (user movement).
+ *
+ * DISPLAY LAYER: token.js _refreshSort patch sets mesh.zIndex for immediate visual order.
+ * It uses the same calculateTokenSortValue() and does NOT write to document.
+ * Controlled tokens get +0.1 zIndex boost for visibility.
+ *
+ * No other module should call scene.updateEmbeddedDocuments('Token', {sort: ...}).
+ */
 import { isometricModuleConfig } from './consts.js';
 import { calculateTokenSortValue } from './utils.js';
 import { debugGroup, debugLog, debugTable } from './logger.js';
@@ -6,7 +19,7 @@ export function registerSortingConfig() {
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
   const enableAutoSorting = game.settings.get(isometricModuleConfig.MODULE_ID, "enableAutoSorting");
   if (!isometricWorldEnabled || !enableAutoSorting) return;
-  if (isometricModuleConfig.FOUNDRY_VERSION === 11) return;
+  if (isometricModuleConfig.FOUNDRY_VERSION === 11) return; // LEGACY: v11-only; not executed on v13
 
   Hooks.on('createToken', async (tokenDocument, options, userId) => {
     const scene = tokenDocument.parent;

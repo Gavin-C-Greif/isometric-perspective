@@ -1,7 +1,7 @@
 import { isometricModuleConfig } from './consts.js';
 import { cartesianToIso } from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
-import { debugLog, debugWarn } from './logger.js';
+import { debugLog, debugWarn, logWarn } from './logger.js';
 
 const canvasTile = foundry.canvas.placeables.Tile;
 const canvasToken = foundry.canvas.placeables.Token;
@@ -89,6 +89,7 @@ function resetTokenTransform(token, baseState) {
       sy = 1;
       break;
     default:
+      // LEGACY: v11-only; not executed on v13 (module targets v13)
       if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
         sx = objTxtRatio_W / objTxtRatio_H;
         sy = 1;
@@ -316,14 +317,14 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
           sy = 1
           break;
         default:
-          // V11 Compatibility change
+          // LEGACY: v11-only; not executed on v13 (module targets v13)
           if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
             sx = (objTxtRatio_W) / (objTxtRatio_H);
             sy = 1;
             break;
           }
           //throw new Error(`Invalid fill type passed to ${this.constructor.name}#resize (fit=${fit}).`);
-          console.warn("Invalid fill type passed to: ", object);
+          logWarn("Invalid fill type passed to resize", { object, fit });
           sx = 1;
           sy = 1;
       }
@@ -555,7 +556,7 @@ Hooks.on('deleteToken', (token) => {
 
 
 
-// HOOK SETUP FOR COMPATIBILITY WITH FOUNDRY V11
+// LEGACY: v11-only; not executed on v13 (module targets v13)
 Hooks.once('ready', () => {
   setupCompatibilityHooks();
 });

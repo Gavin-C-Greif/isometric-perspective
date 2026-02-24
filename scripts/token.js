@@ -10,17 +10,20 @@ import {
   calculateTokenSortValue,
   createAdjustableButton
 } from './utils.js';
-import { debugLog, debugWarn } from './logger.js';
+import { debugLog, debugWarn, logWarn } from './logger.js';
 
 let tokenSortPatchRegistered = false;
 
 /**
- * Register Token.prototype._refreshSort patch via a chain-friendly wrapper.
- * Prefer libWrapper when present, with a guarded fallback for environments without it.
+ * Register Token.prototype._refreshSort patch (US-005).
+ *
+ * DISPLAY-ONLY: Sets mesh.zIndex for visual order. Does NOT write to document.sort.
+ * The authoritative document writes are in autosorting.js (canvasReady, updateToken).
+ * Controlled tokens get +0.1 zIndex boost so they remain visible when selected.
  */
 export function registerTokenSortingPatch() {
   if (tokenSortPatchRegistered) return;
-  if (isometricModuleConfig.FOUNDRY_VERSION === 11) return;
+  if (isometricModuleConfig.FOUNDRY_VERSION === 11) return; // LEGACY: v11-only; not executed on v13
 
   const tokenPrototype = foundry.canvas.placeables.Token.prototype;
   if (!tokenPrototype?._refreshSort) return;
@@ -344,7 +347,7 @@ export class TokenPrecisionConfig {
       scaleInput.min = '0.1';
       //console.log('Scale input adjusted', scaleInput);
     } else {
-      console.warn('Scale input not found');
+      logWarn('Scale input not found in token config');
     }
   }
 
@@ -370,7 +373,7 @@ export class TokenPrecisionConfig {
     });
 
     if (!foundInputs) {
-      console.warn('No texture anchor inputs found. Token configuration might have different selectors.');
+      logWarn('No texture anchor inputs found; token config may use different selectors');
       
       // Log all inputs in the token config for debugging
       //const allInputs = document.querySelectorAll('input');

@@ -186,16 +186,44 @@ let tilesOpacity = 1.0;
 let tokensOpacity = 1.0;
 let lastControlledToken = null;
 
+/**
+ * Destroy a cloned sprite without destroying its shared texture (US-004).
+ */
+function destroyDynamicTileSprite(sprite) {
+  if (!sprite) return;
+  sprite.destroy({ texture: false, textureSource: false });
+}
+
+/**
+ * Destroy all sprites in a layer. Preserves shared tile/token textures.
+ */
+function destroyLayerSprites(layer) {
+  if (!layer) return;
+  const children = layer.removeChildren();
+  for (const sprite of children) {
+    destroyDynamicTileSprite(sprite);
+  }
+}
+
 function destroyAlwaysVisibleContainer() {
   if (alwaysVisibleContainer && alwaysVisibleContainer.parent) {
     alwaysVisibleContainer.parent.removeChild(alwaysVisibleContainer);
   }
   if (alwaysVisibleContainer) {
-    alwaysVisibleContainer.destroy({ children: true });
+    // Destroy cloned sprites explicitly (texture: false) before destroying container
+    const children = alwaysVisibleContainer.removeChildren();
+    for (const layer of children) {
+      if (layer?.children?.length) {
+        destroyLayerSprites(layer);
+      }
+      layer?.destroy({ children: false });
+    }
+    alwaysVisibleContainer.destroy({ children: false });
   }
   alwaysVisibleContainer = null;
   tilesLayer = null;
   tokensLayer = null;
+  lastControlledToken = null;
 }
 
 
@@ -338,11 +366,11 @@ function getInitialToken() {
 function updateAlwaysVisibleElements() {
   if (!canvas.ready || !alwaysVisibleContainer) return;
 
-  // Clear layers
-  tilesLayer.removeChildren();
-  tokensLayer.removeChildren();
+  // Destroy prior cloned sprites deterministically to avoid memory churn (US-004)
+  destroyLayerSprites(tilesLayer);
+  destroyLayerSprites(tokensLayer);
 
-  // Get the selected token
+  // Get the selected token; if none, layers stay empty (defined behavior)
   const controlled = getInitialToken();
   if (!controlled) return;
 
@@ -590,14 +618,15 @@ function getWallDirection(x1, y1, x2, y2) {
 * @returns {boolean} - true se o token estiver em frente à parede, false caso contrário
 */
 function isTokenInFrontOfWall(token, wall) {
+  // LEGACY: v11 uses wall.A/B; v13 uses wall.edge.a/b (module targets v13)
   if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
     if (!wall?.A || !wall?.B || !token?.center) return false;
   } else {
     if (!wall?.edge?.a || !wall?.edge?.b || !token?.center) return false;
   }
 
-  const { x: x1, y: y1 } = isometricModuleConfig.FOUNDRY_VERSION === 11 ? wall.A : wall.edge.a;
-  const { x: x2, y: y2 } = isometricModuleConfig.FOUNDRY_VERSION === 11 ? wall.B : wall.edge.b;
+  const { x: x1, y: y1 } = isometricModuleConfig.FOUNDRY_VERSION === 11 ? wall.A : wall.edge.a; // v11: wall.A
+  const { x: x2, y: y2 } = isometricModuleConfig.FOUNDRY_VERSION === 11 ? wall.B : wall.edge.b; // v11: wall.B
   const { x: tokenX, y: tokenY } = token.center;
 
   // Verifica se a parede é horizontal (ângulo próximo a 0°)
@@ -654,6 +683,7 @@ function canTokenSeeWall(token, wall) {
   if (!isInFront) return false;
 
   // Verifica colisão com outros objetos entre o token e os pontos da parede
+  // LEGACY: v11 uses wall.A/B and canvas.effects.visibility; v13 uses wall.edge.a/b and canvas.visibility
   const wallPoints = isometricModuleConfig.FOUNDRY_VERSION === 11 ? [wall.A, wall.center, wall.B] : [wall.edge.a, wall.center, wall.edge.b];
   const tokenPosition = token.center;
 
