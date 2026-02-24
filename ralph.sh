@@ -43,6 +43,6 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
 
   (
     cd "$SCRIPT_DIR"
-    printf '%s\n' "$PROMPT" | "$AGENT_CMD" -p --force --output-format stream-json || true
+    printf '%s\n' "$PROMPT" | "$AGENT_CMD" -p --force || true
   )
 done
