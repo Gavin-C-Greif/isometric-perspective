@@ -1,0 +1,132 @@
+{
+  "project": "Isometric Perspective",
+  "branchName": "ralph/v13-post-stabilization-hardening",
+  "description": "Harden the stabilized v13 isometric stack by fixing known defects, tightening lifecycle behavior, reducing performance churn, and strengthening regression validation.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Fix scene grid/ruler configuration incompatibility",
+      "description": "As a GM, I want scene grid and ruler tooling to behave correctly in isometric scenes so I can configure maps without fallback hacks.",
+      "acceptanceCriteria": [
+        "Reproduce and document the current failure mode from README Known Bugs.",
+        "Scene grid/ruler interactions work in isometric scenes without requiring manual canvas redraw workarounds.",
+        "No regression in scene background transforms after grid/ruler edits.",
+        "Smoke checklist is updated with explicit grid/ruler configuration steps.",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Stabilize HUD positioning for token/tile interactions",
+      "description": "As a user, I want token and tile HUD controls to appear reliably near the selected object so editing is usable in isometric mode.",
+      "acceptanceCriteria": [
+        "TokenHUD and TileHUD placement is stable across pan/zoom and repeated selection changes.",
+        "HUD placement remains correct after scene switch and projection changes.",
+        "No overlap regressions on non-isometric scenes.",
+        "Smoke checklist captures pass/fail evidence for HUD placement scenarios.",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Harden occlusion overlay lifecycle and memory behavior",
+      "description": "As a maintainer, I want occlusion updates to avoid stale objects and memory churn so long sessions stay performant.",
+      "acceptanceCriteria": [
+        "Occlusion update loop explicitly cleans up and destroys replaced sprites and masks where needed.",
+        "Scene changes and canvas teardown leave no stale occlusion containers or orphaned display objects.",
+        "Repeated token movement and pan cycles do not continuously grow memory footprint in profiling spot checks.",
+        "Performance notes are appended to PERFORMANCE-BASELINE.md.",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Harden dynamic tile overlay lifecycle and multi-token behavior",
+      "description": "As a player/GM, I want dynamic tile visibility to remain correct during fast interaction, scene transitions, and changing controlled tokens.",
+      "acceptanceCriteria": [
+        "Dynamic overlay rebuild path cleans up prior cloned sprites deterministically.",
+        "Behavior with no controlled token and with rapid control switching is defined and consistent.",
+        "Linked-wall visibility remains correct for doors and wall state changes.",
+        "Smoke checklist includes multi-token control switching and door toggling cases.",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Rationalize sorting pipeline to a single authoritative path",
+      "description": "As a maintainer, I want one clear sorting strategy so depth ordering is correct without duplicated or conflicting sort writes.",
+      "acceptanceCriteria": [
+        "Sorting responsibilities between _refreshSort wrapper and updateToken/canvasReady document updates are clarified and de-duplicated.",
+        "Controlled-token visibility boost remains intact.",
+        "No sort jitter or update loops during token movement.",
+        "Smoke checklist verifies stable ordering across movement and selection scenarios.",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Remove dead legacy compatibility paths not aligned with v13 support",
+      "description": "As a maintainer, I want unsupported-version branches and dormant experimental code paths reduced so future changes are safer.",
+      "acceptanceCriteria": [
+        "v11-only runtime paths are removed, isolated, or clearly marked as non-executed legacy code.",
+        "Alternative occlusion experiment files are archived from runtime scope or documented as non-production artifacts.",
+        "Runtime entry path scripts/main.js is free of ambiguous or misleading commented import options.",
+        "README compatibility and limitations text remains accurate after cleanup.",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Standardize error and logging behavior with actionable diagnostics",
+      "description": "As a maintainer, I want runtime diagnostics to be consistent and actionable so debugging production issues is faster.",
+      "acceptanceCriteria": [
+        "Non-critical runtime errors use structured prefixed logging with context.",
+        "Unconditional noisy logs are avoided in normal operation.",
+        "Parsing and validation errors, including custom projection input, are surfaced clearly to users.",
+        "Smoke checklist includes debug off/on verification for changed areas.",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Add targeted regression harness for high-risk interactions",
+      "description": "As a maintainer, I want focused regression coverage around transforms, overlays, and sorting so future releases detect breakage early.",
+      "acceptanceCriteria": [
+        "SMOKE-TEST.md is extended with a high-risk interaction matrix covering projection switch, pan/zoom, scene switch, token control switch, and door state changes.",
+        "Release process references these new checks as required evidence.",
+        "Baseline performance capture includes at least one long-session stress scenario.",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": ""
+    }
+  ]
+}
