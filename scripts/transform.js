@@ -1,5 +1,11 @@
 import { isometricModuleConfig } from './consts.js';
-import { cartesianToIso, computeTokenPlacementPosition } from './utils.js';
+import {
+  cartesianToIso,
+  computeTokenPlacementPosition,
+  safeDivide,
+  computeElevationOffsetDelta,
+  computeElevationVisualOffset
+} from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
 import { debugLog, debugWarn, logWarn } from './logger.js';
 
@@ -52,8 +58,8 @@ function resetTokenTransform(token, baseState) {
   token.mesh.anchor.set(anchor.anchorX, anchor.anchorY);
 
   // Recompute native token dimensions without any isometric adjustments or iso flags.
-  const objTxtRatio_W = token.texture.width / gridSize;
-  const objTxtRatio_H = token.texture.height / gridSize;
+  const objTxtRatio_W = safeDivide(token.texture.width, gridSize, 1);
+  const objTxtRatio_H = safeDivide(token.texture.height, gridSize, 1);
   let sx = 1;
   let sy = 1;
 
@@ -65,33 +71,33 @@ function resetTokenTransform(token, baseState) {
     case "contain":
       if (Math.max(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
         sx = 1;
-        sy = objTxtRatio_H / objTxtRatio_W;
+        sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
       } else {
-        sx = objTxtRatio_W / objTxtRatio_H;
+        sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
         sy = 1;
       }
       break;
     case "cover":
       if (Math.min(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
         sx = 1;
-        sy = objTxtRatio_H / objTxtRatio_W;
+        sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
       } else {
-        sx = objTxtRatio_W / objTxtRatio_H;
+        sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
         sy = 1;
       }
       break;
     case "width":
       sx = 1;
-      sy = objTxtRatio_H / objTxtRatio_W;
+      sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
       break;
     case "height":
-      sx = objTxtRatio_W / objTxtRatio_H;
+      sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
       sy = 1;
       break;
     default:
       // LEGACY: v11-only; not executed on v13 (module targets v13)
       if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
-        sx = objTxtRatio_W / objTxtRatio_H;
+        sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
         sy = 1;
         break;
       }
@@ -127,8 +133,8 @@ function resetTileTransform(tile, baseState) {
   tile.mesh.anchor.set(anchor.anchorX, anchor.anchorY);
 
   // Rebuild scale directly from document dimensions so repeated toggles do not drift.
-  const scaleX = docWidth / originalWidth;
-  const scaleY = docHeight / originalHeight;
+  const scaleX = safeDivide(docWidth, originalWidth, 1);
+  const scaleY = safeDivide(docHeight, originalHeight, 1);
   tile.mesh.scale.set(scaleX, scaleY);
 
   const posX = (doc?.x ?? 0) + (docWidth / 2);
@@ -280,46 +286,45 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     //We should only use the token art ratio if the ring is disabled
     //Otherwise it scales the dynamic ring subject based on the token art dimensions
     if (!object.document.ring?.enabled) {
-      let objTxtRatio_W = object.texture.width / canvas.scene.grid.size;
-      let objTxtRatio_H = object.texture.height / canvas.scene.grid.size;
-      
+      const gs = canvas.scene.grid.size;
+      let objTxtRatio_W = safeDivide(object.texture.width, gs, 1);
+      let objTxtRatio_H = safeDivide(object.texture.height, gs, 1);
+
       switch ( object.document.texture.fit ) {
         case "fill":
           sx = 1;
           sy = 1;
           break;
         case "contain":
-          if (Math.max(objTxtRatio_W, objTxtRatio_H) ==  objTxtRatio_W){
-            sx = 1
-            sy = (objTxtRatio_H) / (objTxtRatio_W)
-          }
-          else{
-            sx = (objTxtRatio_W) / (objTxtRatio_H)
-            sy = 1
+          if (Math.max(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
+            sx = 1;
+            sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
+          } else {
+            sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
+            sy = 1;
           }
           break;
         case "cover":
-          if (Math.min(objTxtRatio_W, objTxtRatio_H) == objTxtRatio_W){
-            sx = 1
-            sy = (objTxtRatio_H) / (objTxtRatio_W)
-          }
-          else{
-            sx = (objTxtRatio_W) / (objTxtRatio_H)
-            sy = 1
+          if (Math.min(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
+            sx = 1;
+            sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
+          } else {
+            sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
+            sy = 1;
           }
           break;
         case "width":
-          sx = 1
-          sy = (objTxtRatio_H) / (objTxtRatio_W)
+          sx = 1;
+          sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
           break;
         case "height":
-          sx = (objTxtRatio_W) / (objTxtRatio_H)
-          sy = 1
+          sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
+          sy = 1;
           break;
         default:
           // LEGACY: v11-only; not executed on v13 (module targets v13)
           if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
-            sx = (objTxtRatio_W) / (objTxtRatio_H);
+            sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
             sy = 1;
             break;
           }
@@ -335,10 +340,10 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
       object.mesh.width = Math.abs(sx * scaleX * gridSize * isoScale * Math.sqrt(2))
       object.mesh.height = Math.abs(sy * scaleX * gridSize * isoScale * Math.sqrt(2) * ISOMETRIC_CONST.ratio)
     }
-    // Elevation math
-    offsetX += elevation * (1/gridDistance) * 100 * Math.sqrt(2) * (1/scaleX);
-    offsetX *= gridSize / 100;   // grid ratio in comparison with default 100
-    offsetY *= gridSize / 100;   // grid ratio in comparison with default 100
+    // Elevation math (guarded: gridDistance=0 or scaleX=0 yields 0, no NaN/Infinity)
+    offsetX += computeElevationOffsetDelta(elevation, gridDistance, scaleX);
+    offsetX *= safeDivide(gridSize, 100, 1);   // grid ratio; fallback 1 when invalid
+    offsetY *= safeDivide(gridSize, 100, 1);   // grid ratio; fallback 1 when invalid
     
     // transformed distances
     const isoOffsets = cartesianToIso(offsetX, offsetY);
@@ -370,8 +375,8 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
       finalMeshScaleX = isoScale;
       finalMeshScaleY = isoScale * ISOMETRIC_CONST.ratio;
     } else {
-      finalMeshScaleX = (scaleX / originalWidth) * isoScale;
-      finalMeshScaleY = (scaleY / originalHeight) * isoScale * ISOMETRIC_CONST.ratio;
+      finalMeshScaleX = safeDivide(scaleX, originalWidth, 1) * isoScale;
+      finalMeshScaleY = safeDivide(scaleY, originalHeight, 1) * isoScale * ISOMETRIC_CONST.ratio;
     }
     object.mesh.scale.set(finalMeshScaleX, finalMeshScaleY);
     
@@ -503,17 +508,17 @@ export function updateTokenVisuals(token, elevacao, gridSize, gridDistance) {
   const centerX = token.w ? token.w / 2 : token.h / 2;
   const centerY = token.h / 2;
 
-  // Criar uma sombra circular no chão
+  // Criar uma sombra circular no chão (guarded: gridSize=0 yields radius 0)
   const shadow = new PIXI.Graphics();
   shadow.beginFill(0x000000, 0.3);
-  shadow.drawCircle(0, 0, (canvas.grid.size/2) * (token.h/canvas.grid.size));
+  const radius = (safeDivide(gridSize, 2, 1)) * safeDivide(token.h ?? 0, gridSize, 0);
+  shadow.drawCircle(0, 0, radius);
   shadow.endFill();
   shadow.position.set(centerX, centerY);
   container.addChild(shadow);
 
-  // Criar uma linha conectando o chão ao token
-  // Offset da elevação
-  const offset = elevacao * (gridSize/gridDistance);
+  // Criar uma linha conectando o chão ao token (guarded: gridDistance=0 yields 0)
+  const offset = computeElevationVisualOffset(elevacao, gridSize, gridDistance);
 
   const line = new PIXI.Graphics();
   line.lineStyle(2, 0xff0000, 0.5);

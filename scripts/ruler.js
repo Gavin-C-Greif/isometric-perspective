@@ -1,5 +1,5 @@
 import { isometricModuleConfig } from './consts.js';
-import { cartesianToIso } from './utils.js';
+import { cartesianToIso, safeDivide } from './utils.js';
 import { debugLog } from './logger.js';
 
 /**
@@ -32,9 +32,9 @@ function applyIsometricLabelAdjustments(ctx, token) {
           const elev = doc.elevation || 0;
           const gridSize = canvas.scene.grid.size;
           const gridDist = canvas.scene.grid.distance;
-          // Formulas from transform.js to match visual height
-          const factor = (gridSize / gridDist) * Math.sqrt(2);
-          ox += (elev * factor) / (doc.width || 1);
+          // Formulas from transform.js to match visual height (guarded: gridDist=0 yields 0)
+          const factor = safeDivide(gridSize, gridDist, 0) * Math.sqrt(2);
+          ox += safeDivide(elev * factor, doc.width || 1, 0);
       }
 
       if (ox !== 0 || oy !== 0) {
@@ -51,12 +51,13 @@ function applyIsometricLabelAdjustments(ctx, token) {
   
   // 4. Map screen coordinates back to HUD relative coordinates (accounting for zoom scale)
   const hud = document.getElementById("hud");
-  if ( hud ) {
+  if (hud) {
       const hudRect = hud.getBoundingClientRect();
       const zoom = canvas.stage.scale.x;
-
-      ctx.position.x = (projected.x - hudRect.left) / zoom;
-      ctx.position.y = (projected.y - hudRect.top) / zoom;
+      const dx = projected.x - hudRect.left;
+      const dy = projected.y - hudRect.top;
+      ctx.position.x = safeDivide(dx, zoom, dx);
+      ctx.position.y = safeDivide(dy, zoom, dy);
   }
   
   if ( !ctx.cssClass ) ctx.cssClass = "";

@@ -1,5 +1,46 @@
 import { isometricModuleConfig } from './consts.js';
 import { debugLog, logWarn } from './logger.js';
+
+/**
+ * Safe division: returns fallback when denominator is 0, NaN, or non-finite.
+ * Prevents NaN/Infinity in transform formulas.
+ * @param {number} num - Numerator
+ * @param {number} denom - Denominator
+ * @param {number} [fallback=0] - Value when division is invalid
+ * @returns {number}
+ */
+export function safeDivide(num, denom, fallback = 0) {
+  if (!Number.isFinite(num) || !Number.isFinite(denom) || denom === 0) return fallback;
+  return num / denom;
+}
+
+/**
+ * Elevation contribution to art offset (before gridSize/100 scaling).
+ * Returns 0 when gridDistance or scaleX is invalid to avoid NaN/Infinity.
+ * @param {number} elevation - Token elevation
+ * @param {number} gridDistance - Grid distance (units per cell)
+ * @param {number} scaleX - Token width in grid cells
+ * @returns {number}
+ */
+export function computeElevationOffsetDelta(elevation, gridDistance, scaleX) {
+  if (!Number.isFinite(elevation)) return 0;
+  const invDist = safeDivide(1, gridDistance, 0);
+  const invScale = safeDivide(1, scaleX, 0);
+  return elevation * invDist * 100 * Math.sqrt(2) * invScale;
+}
+
+/**
+ * Elevation visual offset (gridSize/gridDistance) for elevation line. Returns 0 when invalid.
+ * @param {number} elevation - Token elevation
+ * @param {number} gridSize - Pixels per grid cell
+ * @param {number} gridDistance - Grid distance (units per cell)
+ * @returns {number}
+ */
+export function computeElevationVisualOffset(elevation, gridSize, gridDistance) {
+  if (!Number.isFinite(elevation)) return 0;
+  return elevation * safeDivide(gridSize, gridDistance, 0);
+}
+
 // Função auxiliar para converter coordenadas isométricas para cartesianas
 export function isoToCartesian(isoX, isoY) {
   const angle = Math.PI / 4; // 45 graus em radianos

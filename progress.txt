@@ -7,6 +7,7 @@ Started: 2026-02-24
 - Project uses `"type":"module"` in package.json; release.cjs is CommonJS for build script compatibility.
 - Pure coordinate math (cartesianToIso, isoToCartesian) in utils.js has no Foundry deps and can be tested in Node.
 - Extract placement/transform math to pure functions in utils.js for unit testing; transform.js calls them with document values.
+- Use safeDivide(num, denom, fallback) for any division where denominator can be 0 or non-finite.
 
 ---
 ## 2026-02-24 - US-001
@@ -30,4 +31,15 @@ Started: 2026-02-24
   - Token placement formula: pos.x = docX + (scaleX * gridSize/2) + (scaleX * isoOffsets.x); pos.y = docY + (scaleY * gridSize/2) + (scaleY * isoOffsets.y).
   - Extracting pure placement math to utils enables Node tests without Foundry mocks.
   - Manual browser verification needed: place 2x1, 1x2, 3x2 tokens in Foundry isometric scene to confirm no drift.
+---
+## 2026-02-24 - US-003
+- Added safeDivide(num, denom, fallback) in utils.js: returns fallback when denominator is 0/NaN or numerator non-finite.
+- Added computeElevationOffsetDelta and computeElevationVisualOffset with guards for gridDistance=0, scaleX=0, non-finite elevation.
+- Guarded transform.js: elevation math, objTxtRatio divisions, tile scale (originalWidth/Height), resetTokenTransform, resetTileTransform, updateTokenVisuals shadow/line.
+- Guarded ruler.js: gridSize/gridDist factor, elev*factor/(doc.width), zoom division.
+- Added 10 unit tests for safeDivide, computeElevationOffsetDelta, computeElevationVisualOffset (grid distance 0, scaleX 0, non-finite inputs).
+- Files changed: scripts/utils.js, scripts/transform.js, scripts/ruler.js, tests/utils.test.mjs, prd.json, progress.txt.
+- **Learnings for future iterations:**
+  - Use safeDivide for any division where denominator can be 0 or non-finite (gridDistance, gridSize, scaleX, originalWidth/Height, objTxtRatio).
+  - computeElevationOffsetDelta and computeElevationVisualOffset centralize elevation math with guards; transform and ruler both use them.
 ---

@@ -8,7 +8,10 @@ import {
   cartesianToIso,
   isoToCartesian,
   calculateIsometricVerticalDistance,
-  computeTokenPlacementPosition
+  computeTokenPlacementPosition,
+  safeDivide,
+  computeElevationOffsetDelta,
+  computeElevationVisualOffset
 } from '../scripts/utils.js';
 import { assertPointAlmostEqual, assertAlmostEqual, DEFAULT_EPSILON } from './helpers/tolerance.js';
 import { OFFSETS, TOKEN_DIMENSIONS } from './fixtures/math-fixtures.js';
@@ -121,5 +124,62 @@ describe('computeTokenPlacementPosition', () => {
       assertAlmostEqual(pos.x, (width * gridSize) / 2, DEFAULT_EPSILON);
       assertAlmostEqual(pos.y, (height * gridSize) / 2, DEFAULT_EPSILON);
     }
+  });
+});
+
+describe('safeDivide', () => {
+  it('returns fallback when denominator is 0', () => {
+    assert.strictEqual(safeDivide(10, 0), 0);
+    assert.strictEqual(safeDivide(10, 0, 99), 99);
+  });
+
+  it('returns fallback when denominator is NaN', () => {
+    assert.strictEqual(safeDivide(10, NaN), 0);
+    assert.strictEqual(safeDivide(10, NaN, -1), -1);
+  });
+
+  it('returns fallback when numerator is non-finite', () => {
+    assert.strictEqual(safeDivide(Infinity, 5), 0);
+    assert.strictEqual(safeDivide(NaN, 5), 0);
+  });
+
+  it('returns normal quotient when inputs are valid', () => {
+    assert.strictEqual(safeDivide(10, 2), 5);
+    assert.strictEqual(safeDivide(100, 10, 0), 10);
+  });
+});
+
+describe('computeElevationOffsetDelta', () => {
+  it('returns 0 when gridDistance is 0', () => {
+    const r = computeElevationOffsetDelta(10, 0, 1);
+    assert(Number.isFinite(r) && r === 0);
+  });
+
+  it('returns 0 when scaleX is 0', () => {
+    const r = computeElevationOffsetDelta(10, 5, 0);
+    assert(Number.isFinite(r) && r === 0);
+  });
+
+  it('returns finite value for valid inputs', () => {
+    const r = computeElevationOffsetDelta(5, 10, 1);
+    assert(Number.isFinite(r));
+  });
+
+  it('returns 0 for non-finite elevation', () => {
+    assert.strictEqual(computeElevationOffsetDelta(NaN, 10, 1), 0);
+    assert.strictEqual(computeElevationOffsetDelta(Infinity, 10, 1), 0);
+  });
+});
+
+describe('computeElevationVisualOffset', () => {
+  it('returns 0 when gridDistance is 0', () => {
+    const r = computeElevationVisualOffset(10, 100, 0);
+    assert(Number.isFinite(r) && r === 0);
+  });
+
+  it('returns finite value for valid inputs', () => {
+    const r = computeElevationVisualOffset(5, 100, 10);
+    assert(Number.isFinite(r));
+    assert.strictEqual(r, 5 * (100 / 10));
   });
 });
