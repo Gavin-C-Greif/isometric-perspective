@@ -1,5 +1,6 @@
 import { isometricModuleConfig } from './consts.js';
 import { cartesianToIso } from './utils.js';
+import { debugLog } from './logger.js';
 
 /**
  * Helper to apply isometric adjustments to label context.
@@ -88,7 +89,7 @@ function extendTokenRuler() {
       }
 
       CONFIG.Token.rulerClass = TokenRulerIsometric;
-      if (isometricModuleConfig.DEBUG_PRINT) console.log("Isometric Perspective | Extended TokenRuler via subclassing.");
+      debugLog("Extended TokenRuler via subclassing.");
   }
 }
 
@@ -115,7 +116,7 @@ function extendCanvasRuler() {
       }
 
       CONFIG.Canvas.rulerClass = CanvasRulerIsometric;
-      if (isometricModuleConfig.DEBUG_PRINT) console.log("Isometric Perspective | Extended CanvasRuler via subclassing.");
+      debugLog("Extended CanvasRuler via subclassing.");
   }
 }
 

@@ -1,4 +1,5 @@
 import { isometricModuleConfig } from './consts.js';
+import { debugLog } from './logger.js';
 // Função auxiliar para converter coordenadas isométricas para cartesianas
 export function isoToCartesian(isoX, isoY) {
   const angle = Math.PI / 4; // 45 graus em radianos
@@ -103,14 +104,12 @@ export function patchConfig(documentSheet, config, args) {
       
       const flags = doc.flags?.[config.moduleConfig.MODULE_ID] ?? {};
 
-      console.log("ARGS", 
-        {
+      debugLog("Token/Tile config context", {
         ...flags,
         ...args,
         document: doc,
         tab: context.tabs?.[partId],
-      }
-      ) 
+      });
 
       return {
         ...flags,
@@ -159,12 +158,40 @@ export function calculateTokenSortValue(token) {
   const sinR = Math.sin(r);
   const visualY = xSkewed * sinR + ySkewed * cosR;
 
-  if (game.settings.get(isometricModuleConfig.MODULE_ID, "debug")) {
-     console.log(`[SortCalc] ${token.name || token.id} | (${x},${y}) -> VisY: ${visualY.toFixed(2)} | Sort: ${Math.round(visualY * 10)}`);
-  }
+  debugLog(`[SortCalc] ${token.name || token.id} | (${x},${y}) -> VisY: ${visualY.toFixed(2)} | Sort: ${Math.round(visualY * 10)}`);
 
   // Multiply by 10 to keep precision in integer sort
   return Math.round(visualY * 10);
+}
+
+/**
+ * Lightweight leading+trailing throttle to coalesce noisy hook updates.
+ * First call runs immediately; subsequent calls within the wait window
+ * collapse into a single trailing execution with the latest arguments.
+ */
+export function throttle(fn, wait = 50) {
+  let timeoutId = null;
+  let trailing = false;
+  let lastArgs;
+
+  return (...args) => {
+    lastArgs = args;
+
+    if (timeoutId) {
+      trailing = true;
+      return;
+    }
+
+    fn(...lastArgs);
+
+    timeoutId = setTimeout(() => {
+      timeoutId = null;
+      if (trailing) {
+        trailing = false;
+        fn(...lastArgs);
+      }
+    }, wait);
+  };
 }
 
 // Generic function to create adjustable buttons with drag functionality

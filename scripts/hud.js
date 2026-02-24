@@ -1,5 +1,6 @@
 import { isometricModuleConfig } from './consts.js';
 import { ISOMETRIC_CONST, PROJECTION_TYPES, DEFAULT_PROJECTION } from './consts.js';
+import { debugLog } from './logger.js';
 
 export function registerHUDConfig() {
 
@@ -83,13 +84,11 @@ export function adjustHUDPosition(hud, html) {
     transformOrigin: "center"
   });
 
-  if (isometricModuleConfig.DEBUG_PRINT) {
-    console.log(`HUD Adjustment [${object.document.documentName}]:`, {
-      worldCenter: center,
-      globalPos,
-      targetPos
-    });
-  }
+  debugLog(`HUD Adjustment [${object.document.documentName}]:`, {
+    worldCenter: center,
+    globalPos,
+    targetPos
+  });
 }
 
 

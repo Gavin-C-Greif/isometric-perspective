@@ -1,5 +1,8 @@
 import { isometricModuleConfig } from './consts.js';
-import { calculateTokenSortValue } from './utils.js';
+import { calculateTokenSortValue, throttle } from './utils.js';
+import { debugWarn } from './logger.js';
+
+const scheduleDynamicTileUpdate = throttle(updateAlwaysVisibleElements, 50);
 
 export function registerDynamicTileConfig() {
   const enableOcclusionDynamicTile = game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionDynamicTile");
@@ -9,11 +12,7 @@ export function registerDynamicTileConfig() {
   
   // ---------------------- CANVAS ----------------------
   Hooks.on('canvasInit', () => {
-    // Remove any existing container if it exists
-    if (alwaysVisibleContainer) {
-      canvas.stage.removeChild(alwaysVisibleContainer);
-      alwaysVisibleContainer.destroy({ children: true });
-    }
+    destroyAlwaysVisibleContainer();
     
     // Cria o container principal
     alwaysVisibleContainer = new PIXI.Container();
@@ -36,52 +35,47 @@ export function registerDynamicTileConfig() {
   });
   // Add a hook to reset the container when scene changes
   Hooks.on('changeScene', () => {
-    if (alwaysVisibleContainer) {
-      // Remove the container from the stage
-      canvas.stage.removeChild(alwaysVisibleContainer);
-      
-      // Destroy the container and its children
-      alwaysVisibleContainer.destroy({ children: true });
-      
-      // Reset references
-      alwaysVisibleContainer = null;
-      tilesLayer = null;
-      tokensLayer = null;
-    }
+    destroyAlwaysVisibleContainer();
+    lastControlledToken = null;
+  });
+  Hooks.on('canvasTearDown', () => {
+    destroyAlwaysVisibleContainer();
+    lastControlledToken = null;
   });
   Hooks.on('canvasReady', () => {
-    updateAlwaysVisibleElements();
+    normalizeAllTileLinkedWallFlags();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('canvasTokensRefresh', () => {
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('updateUser', (user, changes) => {
     if (user.id === game.user.id && 'character' in changes) {
-      updateAlwaysVisibleElements();
+      scheduleDynamicTileUpdate();
     }
   });
 
 
 
   // ---------------------- TILE ----------------------
-  Hooks.on('createTile', (tile, data, options, userId) => {
-    tile.setFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds', []); // Changed to array
+  Hooks.on('createTile', (tileDocument) => {
+    syncTileLinkedWallFlag(tileDocument);
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('updateTile', async (tileDocument, change, options, userId) => {
     if ('flags' in change && isometricModuleConfig.MODULE_ID in change.flags) {
       const currentFlags = change.flags[isometricModuleConfig.MODULE_ID];
       if ('linkedWallIds' in currentFlags) {
-        const validArray = ensureWallIdsArray(currentFlags.linkedWallIds);
-        await tileDocument.setFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds', validArray);
+        await syncTileLinkedWallFlag(tileDocument, currentFlags.linkedWallIds);
       }
     }
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('refreshTile', (tile) => {
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('deleteTile', (tile, options, userId) => {
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
 
 
@@ -90,30 +84,30 @@ export function registerDynamicTileConfig() {
   Hooks.on('createToken', (token, options, userId) => {
     // Adiciona um pequeno atraso para garantir que o token esteja completamente inicializado
     setTimeout(() => {
-      updateAlwaysVisibleElements();
+      scheduleDynamicTileUpdate();
     }, 100);
   });
   Hooks.on('controlToken', (token, controlled) => {
     if (controlled) {
       lastControlledToken = token; // Store the last controlled token
     }
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('updateToken', (tokenDocument, change, options, userId) => {
     // Se o token atualizado for o último controlado, atualize a referência
     if (lastControlledToken && tokenDocument.id === lastControlledToken.id) {
       lastControlledToken = canvas.tokens.get(tokenDocument.id);
     }
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on('deleteToken', (token, options, userId) => {
     if (lastControlledToken && token.id === lastControlledToken.id) {
       lastControlledToken = null;
     }
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   Hooks.on("refreshToken", (token) => {
-    updateAlwaysVisibleElements();
+    scheduleDynamicTileUpdate();
   });
   /*
   Hooks.on('renderTokenConfig', (app, html, data) => {
@@ -132,7 +126,7 @@ export function registerDynamicTileConfig() {
   // ---------------------- OTHERS ----------------------
   Hooks.on('sightRefresh', () => {
     if (canvas.ready && alwaysVisibleContainer) {
-      updateAlwaysVisibleElements();
+      scheduleDynamicTileUpdate();
     }
   });
 
@@ -147,7 +141,7 @@ export function registerDynamicTileConfig() {
       
       // Se encontrou algum tile vinculado, atualiza os elementos visíveis
       if (linkedTiles.length > 0) {
-        updateAlwaysVisibleElements();
+        scheduleDynamicTileUpdate();
       }
     }
   });
@@ -190,8 +184,19 @@ let tilesLayer;
 let tokensLayer;
 let tilesOpacity = 1.0;
 let tokensOpacity = 1.0;
-let selectedWallIds = []; // Changed to array
 let lastControlledToken = null;
+
+function destroyAlwaysVisibleContainer() {
+  if (alwaysVisibleContainer && alwaysVisibleContainer.parent) {
+    alwaysVisibleContainer.parent.removeChild(alwaysVisibleContainer);
+  }
+  if (alwaysVisibleContainer) {
+    alwaysVisibleContainer.destroy({ children: true });
+  }
+  alwaysVisibleContainer = null;
+  tilesLayer = null;
+  tokensLayer = null;
+}
 
 
 function updateLayerOpacity(layer, opacity) {
@@ -277,7 +282,7 @@ function cloneTileSprite(tile, walls) {
 
 function cloneTokenSprite(token) {
   if (!token || !token.texture) {
-    if (isometricModuleConfig.DEBUG_PRINT) { console.warn("Dynamic Tile cloneTokenSprite() common error.") }
+    debugWarn("Dynamic Tile cloneTokenSprite() common error.");
     return null;
   }
   try {
@@ -301,7 +306,7 @@ function cloneTokenSprite(token) {
 
     return sprite;
   } catch (error) {
-    console.error("Erro ao clonar sprite do token:", error);
+    debugWarn("Dynamic Tile cloneTokenSprite() failed.", error);
     return null;
   }
 }
@@ -418,50 +423,76 @@ function updateAlwaysVisibleElements() {
   tokensLayer.sortableChildren = true;
 }
 
-function ensureWallIdsArray(linkedWallIds) {
-  // Se for undefined ou null, retorna array vazio
+export function normalizeLinkedWallIds(linkedWallIds) {
   if (!linkedWallIds) return [];
 
-  // Se já for um array, retorna ele mesmo
-  if (Array.isArray(linkedWallIds)) return linkedWallIds;
+  let parsedIds = [];
 
   // Se for uma string
   if (typeof linkedWallIds === 'string') {
-    // Se for uma string vazia ou só com espaços, retorna array vazio
     if (!linkedWallIds.trim()) return [];
-    // Divide a string por vírgulas e limpa os espaços
-    return linkedWallIds.split(',').map(id => id.trim()).filter(id => id);
-  }
-
-  // Se for um objeto
-  if (typeof linkedWallIds === 'object') {
+    parsedIds = linkedWallIds.split(',');
+  } else if (Array.isArray(linkedWallIds)) {
+    parsedIds = linkedWallIds;
+  } else if (typeof linkedWallIds === 'object') {
+    // Se for um objeto
     try {
-      // Tenta converter para string e depois para array
-      return JSON.stringify(linkedWallIds)
+      parsedIds = JSON.stringify(linkedWallIds)
         .replace(/[{}\[\]"]/g, '')
-        .split(',')
-        .map(id => id.trim())
-        .filter(id => id);
+        .split(',');
     } catch {
       return [];
     }
+  } else {
+    return [];
   }
 
-  // Se não for nenhum dos casos acima, retorna array vazio
-  return [];
+  const normalized = [];
+  const seen = new Set();
+  for (const id of parsedIds) {
+    const normalizedId = `${id ?? ''}`.trim();
+    if (!normalizedId || seen.has(normalizedId)) continue;
+    seen.add(normalizedId);
+    normalized.push(normalizedId);
+  }
+  return normalized;
+}
+
+function areStringArraysEqual(left, right) {
+  if (left.length !== right.length) return false;
+  return left.every((value, index) => value === right[index]);
+}
+
+async function syncTileLinkedWallFlag(tileDocument, rawLinkedWallIds) {
+  if (!tileDocument) return [];
+  const currentValue = rawLinkedWallIds ?? tileDocument.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds');
+  const normalized = normalizeLinkedWallIds(currentValue);
+  const currentNormalized = normalizeLinkedWallIds(tileDocument.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds'));
+
+  if (!areStringArraysEqual(currentNormalized, normalized)) {
+    await tileDocument.setFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds', normalized);
+  }
+  return normalized;
+}
+
+async function normalizeAllTileLinkedWallFlags() {
+  const tileDocuments = canvas.scene?.tiles?.contents ?? [];
+  for (const tileDocument of tileDocuments) {
+    await syncTileLinkedWallFlag(tileDocument);
+  }
 }
 
 // Função para obter walls linkadas a um tile de forma segura
 function getLinkedWalls(tile) {
   if (!tile || !tile.document) return [];
-  const linkedWallIds = ensureWallIdsArray(tile.document.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds'));
+  const linkedWallIds = normalizeLinkedWallIds(tile.document.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds'));
   return linkedWallIds.map(id => canvas.walls.get(id)).filter(Boolean);
 }
 
 // Função auxiliar para verificar e corrigir flags existentes
 async function validateAndFixTileFlags(tile) {
   const currentLinkedWalls = tile.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds');
-  const validArray = ensureWallIdsArray(currentLinkedWalls);
+  const validArray = normalizeLinkedWallIds(currentLinkedWalls);
   
   // Se o valor atual for diferente do array válido, atualiza
   if (JSON.stringify(currentLinkedWalls) !== JSON.stringify(validArray)) {

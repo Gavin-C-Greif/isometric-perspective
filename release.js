@@ -102,6 +102,6 @@ askReleaseInfo((info) => {
     execCommand('git push --tags');
 
     console.log(`\n${releaseMessage}`);
-    console.log('O GitHub Actions irá criar automaticamente o release com os arquivos.');
-    console.log('Verifique o progresso em: https://github.com/marceloabner/isometric-perspective/actions');
+    console.log('Confira o workflow e publique os artefatos do release no repositório atual:');
+    console.log('https://github.com/arlosmolten/isometric-perspective/actions');
 });

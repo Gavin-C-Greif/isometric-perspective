@@ -1,6 +1,7 @@
-import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
+import { applyIsometricPerspective, applyBackgroundTransformation, resetBackgroundTracking } from './transform.js';
 import { isometricModuleConfig, updateIsometricConstants, parseCustomProjection, updateCustomProjection, PROJECTION_TYPES, DEFAULT_PROJECTION, CUSTOM_PROJECTION } from './consts.js';
 import { patchConfig} from './utils.js';
+import { debugLog } from './logger.js';
 
 export function createSceneIsometricTab(){
   
@@ -101,13 +102,11 @@ export async function handleCanvasReady(canvas) {
   const shouldTransformBackground = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricBackground") ?? false;
   let projectionType = scene.getFlag(isometricModuleConfig.MODULE_ID, "projectionType");
   
-  // If no projection type is set, set the default
   if (!projectionType) {
     projectionType = DEFAULT_PROJECTION;
     await scene.setFlag(isometricModuleConfig.MODULE_ID, "projectionType", projectionType);
   }
 
-  // logic to load and apply custom projection
   if (projectionType === 'Custom Projection') {
     const customProjectionValue = scene.getFlag(isometricModuleConfig.MODULE_ID, "customProjection");
     if (customProjectionValue) {
@@ -121,6 +120,11 @@ export async function handleCanvasReady(canvas) {
   }
   
   updateIsometricConstants(projectionType);
+
+  // Fresh canvas — reset background tracking so the default state is captured
+  // before any isometric transforms are applied.
+  resetBackgroundTracking();
+
   applyIsometricPerspective(scene, isSceneIsometric);
   applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
   
@@ -139,12 +143,12 @@ export async function handleCanvasReady(canvas) {
             scale: canvas.stage.scale.x
         });
         
-        if (isometricModuleConfig.DEBUG_PRINT) console.log("Forced HUD synchronization completed.");
+        debugLog("Forced HUD synchronization completed.");
     }, 250);
   }
   
   // debug print
-  if (isometricModuleConfig.DEBUG_PRINT) console.log("handleCanvasReady");
+  debugLog("handleCanvasReady");
 }
 
 export function handleCanvasResize(canvas) {
@@ -162,7 +166,7 @@ export function handleCanvasResize(canvas) {
   }
   
   // debug print
-  if (isometricModuleConfig.DEBUG_PRINT) console.log("handleCanvasResize");
+  debugLog("handleCanvasResize");
 }
 
 

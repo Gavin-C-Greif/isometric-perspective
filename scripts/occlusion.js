@@ -1,4 +1,7 @@
 import { isometricModuleConfig } from './consts.js';
+import { throttle } from './utils.js';
+
+const scheduleOcclusionUpdate = throttle(updateOcclusionLayer, 50);
 
 // Enhanced Occlusion Layer Module for Foundry VTT
 export function registerOcclusionConfig() {
@@ -20,7 +23,7 @@ export function registerOcclusionConfig() {
 
 		updateTriggers.forEach(hookName => {
 			Hooks.on(hookName, () => {
-				updateOcclusionLayer(); //debouncedUpdate();
+				scheduleOcclusionUpdate();
 			});
 		});
 	}
@@ -30,13 +33,16 @@ export function registerOcclusionConfig() {
 	
 	// Initial layer setup
 	Hooks.once('ready', () => {
-		if (canvas.ready)
+		if (canvas.ready) {
 			initializeOcclusionLayer();
+			scheduleOcclusionUpdate();
+		}
 	});
 
 	// Initialize on canvas setup
 	Hooks.on('canvasInit', () => {
 		initializeOcclusionLayer();
+		scheduleOcclusionUpdate();
 	});
 
 	// Reset on scene change

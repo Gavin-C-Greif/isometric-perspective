@@ -11,7 +11,7 @@ Thank you to all contributors who helped make this release possible!
 
 ![Isometric Map Example](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/banner2.jpg)
 
-![Static Badge - Foundry VTT Version](https://img.shields.io/badge/Foundry%20VTT-v11+-blue)
+![Static Badge - Foundry VTT Version](https://img.shields.io/badge/Foundry%20VTT-v13-blue)
 ![Latest Release version](https://img.shields.io/github/v/release/arlosmolten/isometric-perspective?color=green)
 ![Downloads Latest](https://img.shields.io/github/downloads/arlosmolten/isometric-perspective/isometric-perspective.zip?color=yellow)
 ![Static Badge - License](https://img.shields.io/badge/license%20-%20MIT-yellow)
@@ -51,8 +51,10 @@ Here are some of the features the module offers. You can also see how all the fe
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/elevation.jpg)
 *Elevation previews.*
 
-## Compatibility *(outdated for v13)*
-The core functionality of this module applies a transformation to the canvas (rotation and skew) to achieve an isometric perspective, while reversing that transformation on backgrounds, tokens, and tiles. This approach preserves compatibility with most Foundry core features and with modules that do not directly manipulate these systems. Native features such as templates, drawings, and lighting are expected to work as intended
+## Compatibility
+This module currently targets Foundry VTT v13 (see `module.json` compatibility fields).
+
+The core functionality applies a canvas transformation (rotation + skew) to achieve isometric perspective, then compensates background, token, and tile rendering so core interactions still behave as expected.
 
 These are the modules I've tested and their status:
 
@@ -78,7 +80,7 @@ Rideable _(if both mount and rider tokens have the same size, isn't possible to 
 Image Hover _(render the art, but it moves with the pan of the canvas. You can only see it if you use hotkeys, and will not show the entire art)_  
 LockerView _(needs a 330° rotation to make a working isometric rotation)_
 
-## Known Bugs *(outdated for v13)*
+## Known Bugs
 
 - **Scene Grid Configuration**: The canvas background configuration in Scene Settings > Grid > Ruler Tool ( <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/37eff7fa00de26db41183a3ad8ed0e9119fbc44b/svgs/solid/ruler-combined.svg" width="15" height="15"></i> ) does not work.
   - **Workaround**: The art scale function has been recreated in the Isometric tab, and you can set the offset in the Grid tab. For align the grid, you really should use the module [Grid Scaler](https://github.com/atomdmac/scaleGrid/) for that.
@@ -87,7 +89,7 @@ LockerView _(needs a 330° rotation to make a working isometric rotation)_
 
   - **Workaround**: In most cases, running the macro `canvas.draw()` is enough to fix.
 
-## To-Do List *(outdated for v13)*
+## To-Do List
 
 - [ ] Code to handle tiles and walls.
 - [ ] Code to handle occlusion of tiles and tokens.

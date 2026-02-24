@@ -1,6 +1,7 @@
 import { isometricModuleConfig } from './consts.js';
 import { applyIsometricTransformation } from './transform.js';
 import { adjustInputWithMouseDrag, parseNum, patchConfig, createAdjustableButton} from './utils.js';
+import { normalizeLinkedWallIds } from './dynamictile.js';
 
 export async function createTileIsometricTab(app, html, data) {
 
@@ -67,7 +68,9 @@ export function initTileForm(app, html, context, options){
 
     Hooks.once('controlWall', async (wall) => {
       const selectedWallId = wall.id.toString();
-      const currentWallIds = app.document.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds') || [];
+      const currentWallIds = normalizeLinkedWallIds(
+        app.document.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds')
+      );
       
       // Add the new ID only if it is not already in the list.
       if (!currentWallIds.includes(selectedWallId)) {
@@ -83,7 +86,12 @@ export function initTileForm(app, html, context, options){
   }
 
   async function clearWall () {
-    await app.document.setFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds', []);
+    const currentWallIds = normalizeLinkedWallIds(
+      app.document.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds')
+    );
+    if (currentWallIds.length > 0) {
+      await app.document.setFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds', []);
+    }
     if (linkedWallsIdInput) linkedWallsIdInput.value = '';
   }
 }

@@ -6,9 +6,16 @@
     "archiver": "^5.3.1"
   },
   "scripts": {
-    "build": "node release.js"
+    "build": "node release.js",
+    "lint": "eslint scripts docs release.js",
+    "lint:fix": "eslint scripts docs release.js --fix"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.39.3",
+    "eslint": "^9.39.3",
+    "globals": "^17.3.0"
+  }
 }
