@@ -7,6 +7,8 @@ import assert from 'node:assert';
 import {
   cartesianToIso,
   isoToCartesian,
+  cartesianToIsoProjection,
+  isoToCartesianProjection,
   calculateIsometricVerticalDistance,
   computeTokenPlacementPosition,
   safeDivide,
@@ -22,7 +24,8 @@ import {
   GRID_SIZES,
   GRID_DISTANCES,
   ELEVATIONS,
-  TRUE_ISOMETRIC_RAD
+  TRUE_ISOMETRIC_RAD,
+  PROJECTION_PRESETS_RAD
 } from './fixtures/math-fixtures.js';
 
 describe('cartesianToIso', () => {
@@ -44,6 +47,32 @@ describe('cartesianToIso', () => {
       const back = isoToCartesian(iso.x, iso.y);
       assertPointAlmostEqual(back, { x, y }, 1e-9);
     }
+  });
+});
+
+describe('cartesianToIsoProjection / isoToCartesianProjection', () => {
+  it('forward/inverse round-trip for all projection presets', () => {
+    for (const proj of PROJECTION_PRESETS_RAD) {
+      for (const { x, y } of OFFSETS) {
+        const iso = cartesianToIsoProjection(x, y, proj);
+        const back = isoToCartesianProjection(iso.x, iso.y, proj);
+        assertPointAlmostEqual(back, { x, y }, 1e-9);
+      }
+    }
+  });
+
+  it('custom projection (reverseRotation 0) produces different output than default', () => {
+    const custom = { reverseRotation: 0 };
+    const standard = { reverseRotation: Math.PI / 4 };
+    const p = cartesianToIsoProjection(10, 10, custom);
+    const q = cartesianToIsoProjection(10, 10, standard);
+    assert(p.x !== q.x || p.y !== q.y, 'custom and standard should differ');
+  });
+
+  it('custom projection values reflected in conversion outputs', () => {
+    const custom = { reverseRotation: 0 };
+    const result = cartesianToIsoProjection(5, 5, custom);
+    assertPointAlmostEqual(result, { x: 5, y: 5 }, 1e-9);
   });
 });
 

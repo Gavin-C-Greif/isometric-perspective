@@ -10,6 +10,7 @@ Started: 2026-02-24
 - Use safeDivide(num, denom, fallback) for any division where denominator can be 0 or non-finite.
 - computeOffsetComponentsForProjection is the shared path for offset/elevation; transform and ruler both use it.
 - Depth sorting uses visual center (mesh.position); computeVisualYForSort projects grid position to Visual Y for sort.
+- Coordinate conversion helpers (cartesianToIsoProjection, isoToCartesianProjection) accept projection object with reverseRotation; use ISOMETRIC_CONST for default 45° projection.
 
 ---
 ## 2026-02-24 - US-001
@@ -64,4 +65,15 @@ Started: 2026-02-24
   - calculateTokenSortValue uses mesh.position (visual center) so scaled/offset tokens sort by rendered position, not doc corner.
   - computeVisualYForSort is the pure projection; use TRUE_ISOMETRIC_RAD from fixtures for tests.
   - Manual browser verification: overlap tokens in isometric scene; front/back order should match visuals.
+---
+## 2026-02-24 - US-006
+- Implemented projection-aware conversion helpers: cartesianToIsoProjection(x, y, projection) and isoToCartesianProjection(isoX, isoY, projection) using projection.reverseRotation (radians).
+- cartesianToIso and isoToCartesian now delegate to these with default 45° projection.
+- Updated callers: transform.js, ruler.js, token.js use cartesianToIsoProjection(..., ISOMETRIC_CONST) for token/tile offsets and anchor deltas.
+- Added PROJECTION_PRESETS_RAD to math-fixtures.js (True Isometric, Dimetric, Overhead, Projection 3:2, Custom).
+- Added 3 unit tests: forward/inverse round-trip for all presets, custom vs default difference, custom (reverseRotation 0) output.
+- Files changed: scripts/utils.js, scripts/transform.js, scripts/ruler.js, scripts/token.js, tests/fixtures/math-fixtures.js, tests/utils.test.mjs, prd.json, progress.txt.
+- **Learnings for future iterations:**
+  - Use cartesianToIsoProjection/isoToCartesianProjection when projection may vary; pass ISOMETRIC_CONST for default.
+  - PROJECTION_PRESETS_RAD provides test fixtures for all projection types including custom.
 ---

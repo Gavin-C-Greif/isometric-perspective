@@ -1,5 +1,5 @@
-import { isometricModuleConfig } from './consts.js';
-import { cartesianToIso, safeDivide, computeOffsetComponentsForProjection } from './utils.js';
+import { isometricModuleConfig, ISOMETRIC_CONST } from './consts.js';
+import { cartesianToIsoProjection, safeDivide, computeOffsetComponentsForProjection } from './utils.js';
 import { debugLog } from './logger.js';
 
 /**
@@ -37,7 +37,7 @@ function applyIsometricLabelAdjustments(ctx, token) {
       );
 
       if (ox !== 0 || oy !== 0) {
-          const isoOffsets = cartesianToIso(ox, oy);
+          const isoOffsets = cartesianToIsoProjection(ox, oy, ISOMETRIC_CONST);
           x += isoOffsets.x * scaleX;
           y += isoOffsets.y * scaleY;
       }

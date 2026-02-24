@@ -61,21 +61,46 @@ export function computeOffsetComponentsForProjection(artOffsetX, artOffsetY, ele
   };
 }
 
+/** Default conversion angle (45°) when no projection is provided. */
+const DEFAULT_CONVERSION_ANGLE = Math.PI / 4;
+
 // Função auxiliar para converter coordenadas isométricas para cartesianas
 export function isoToCartesian(isoX, isoY) {
-  const angle = Math.PI / 4; // 45 graus em radianos
-  return {
-    x: (isoX * Math.cos(angle) - isoY * Math.sin(angle)),
-    y: (isoX * Math.sin(angle) + isoY * Math.cos(angle))
-  };
+  return isoToCartesianProjection(isoX, isoY, { reverseRotation: DEFAULT_CONVERSION_ANGLE });
 }
 
 // Função auxiliar para converter coordenadas cartesianas para isométricas
-export function cartesianToIso(isoX, isoY) {
-  const angle = Math.PI / 4; // 45 graus em radianos
+export function cartesianToIso(x, y) {
+  return cartesianToIsoProjection(x, y, { reverseRotation: DEFAULT_CONVERSION_ANGLE });
+}
+
+/**
+ * Projection-aware: cartesian to iso conversion using projection constants.
+ * @param {number} x - Cartesian X
+ * @param {number} y - Cartesian Y
+ * @param {{reverseRotation?: number}} projection - Projection with reverseRotation in radians
+ * @returns {{x: number, y: number}}
+ */
+export function cartesianToIsoProjection(x, y, projection) {
+  const angle = -(projection?.reverseRotation ?? DEFAULT_CONVERSION_ANGLE);
   return {
-    x: (isoX * Math.cos(-angle) - isoY * Math.sin(-angle)),
-    y: (isoX * Math.sin(-angle) + isoY * Math.cos(-angle))
+    x: x * Math.cos(angle) - y * Math.sin(angle),
+    y: x * Math.sin(angle) + y * Math.cos(angle)
+  };
+}
+
+/**
+ * Projection-aware: iso to cartesian conversion (inverse of cartesianToIsoProjection).
+ * @param {number} isoX - Iso X
+ * @param {number} isoY - Iso Y
+ * @param {{reverseRotation?: number}} projection - Projection with reverseRotation in radians
+ * @returns {{x: number, y: number}}
+ */
+export function isoToCartesianProjection(isoX, isoY, projection) {
+  const angle = projection?.reverseRotation ?? DEFAULT_CONVERSION_ANGLE;
+  return {
+    x: isoX * Math.cos(angle) - isoY * Math.sin(angle),
+    y: isoX * Math.sin(angle) + isoY * Math.cos(angle)
   };
 }
 

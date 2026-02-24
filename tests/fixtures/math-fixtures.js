@@ -47,3 +47,12 @@ export const TRUE_ISOMETRIC_RAD = {
 
 /** 45° angle in radians (used by cartesianToIso/isoToCartesian) */
 export const ANGLE_45_RAD = Math.PI / 4;
+
+/** Projection presets with reverseRotation in radians for conversion tests - matches consts.js */
+export const PROJECTION_PRESETS_RAD = [
+  { name: 'True Isometric', reverseRotation: 45 * Math.PI / 180 },
+  { name: 'Dimetric (2:1)', reverseRotation: 45 * Math.PI / 180 },
+  { name: 'Overhead (√2:1)', reverseRotation: 45 * Math.PI / 180 },
+  { name: 'Projection (3:2)', reverseRotation: 45 * Math.PI / 180 },
+  { name: 'Custom Projection', reverseRotation: 0 }
+];

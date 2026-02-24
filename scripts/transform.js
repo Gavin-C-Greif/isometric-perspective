@@ -1,6 +1,6 @@
 import { isometricModuleConfig } from './consts.js';
 import {
-  cartesianToIso,
+  cartesianToIsoProjection,
   computeTokenPlacementPosition,
   safeDivide,
   computeOffsetComponentsForProjection,
@@ -344,7 +344,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     const { offsetX: ox, offsetY: oy } = computeOffsetComponentsForProjection(
       offsetX, offsetY, elevation, gridSize, gridDistance, scaleX
     );
-    const isoOffsets = cartesianToIso(ox, oy);
+    const isoOffsets = cartesianToIsoProjection(ox, oy, ISOMETRIC_CONST);
 
     // Create shadow and line graphics elements
     updateTokenVisuals(object, elevation, gridSize, gridDistance);
@@ -387,7 +387,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     }
 
     // Defines the manual offset to center the tile
-    let isoOffsets = cartesianToIso(offsetX, offsetY);
+    let isoOffsets = cartesianToIsoProjection(offsetX, offsetY, ISOMETRIC_CONST);
     
     // Set tile's position
     object.mesh.position.set(
