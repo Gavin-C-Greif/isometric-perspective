@@ -1,3 +1,21 @@
 # Ralph Progress Log
 Started: 2026-02-24
+
+## Codebase Patterns
+- Use Node built-in test runner (`node --test`) for tests; test files use `.test.mjs` extension.
+- Shared math fixtures live in `tests/fixtures/math-fixtures.js`; tolerance helpers in `tests/helpers/tolerance.js`.
+- Project uses `"type":"module"` in package.json; release.cjs is CommonJS for build script compatibility.
+- Pure coordinate math (cartesianToIso, isoToCartesian) in utils.js has no Foundry deps and can be tested in Node.
+
+---
+## 2026-02-24 - US-001
+- Implemented shared math fixtures (projection names, token dimensions, grid sizes/distances, offsets, elevations) in tests/fixtures/math-fixtures.js.
+- Added tolerance helper (assertAlmostEqual, assertPointAlmostEqual) in tests/helpers/tolerance.js.
+- Created tests/utils.test.mjs consuming fixtures and helper to test cartesianToIso, isoToCartesian, calculateIsometricVerticalDistance.
+- Added npm test script using Node --test; added "type":"module" and release.cjs for ESM/CommonJS coexistence.
+- Files changed: tests/fixtures/math-fixtures.js (new), tests/helpers/tolerance.js (new), tests/utils.test.mjs (new), package.json, release.cjs (new), eslint.config.cjs, prd.json, progress.txt.
+- **Learnings for future iterations:**
+  - Scripts use ES modules; release.js was CommonJS—migrated to release.cjs to allow "type":"module" for tests.
+  - ESLint has a release.cjs override with globals.node; tests/** override uses globals.node for Node test files.
+  - Fixtures match the Math Test Matrix dimensions from the PRD (projection, token shape, grid, offsets, elevation).
 ---

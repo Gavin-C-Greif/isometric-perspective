@@ -44,7 +44,15 @@ module.exports = [
     },
   },
   {
-    files: ["release.js"],
+    files: ["tests/**/*.js", "tests/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: { ...globals.node },
+    },
+  },
+  {
+    files: ["release.cjs"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "commonjs",
