@@ -193,22 +193,15 @@ Hooks.once("init", function() {
   });
 
 
+  // Resolve global config values before any feature registration
+  isometricModuleConfig.FOUNDRY_VERSION = parseInt(game.version.split(".")[0]);
+  isometricModuleConfig.DEBUG_PRINT = !!game.settings.get(isometricModuleConfig.MODULE_ID, "debug");
+  isometricModuleConfig.WORLD_ISO_FLAG = !!game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
+
   // ------------- Executa os hooks de funcionalidades adicionais do módulo -------------
   registerDynamicTileConfig();
   registerSortingConfig();
   registerOcclusionConfig();
-
-  
-  // Define global debug print variable
-  if (game.settings.get(isometricModuleConfig.MODULE_ID, "debug"))
-    isometricModuleConfig.DEBUG_PRINT = true;
-  else isometricModuleConfig.DEBUG_PRINT = false;
-
-  if (game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag"))
-    isometricModuleConfig.WORLD_ISO_FLAG = true;
-  else isometricModuleConfig.WORLD_ISO_FLAG = false;
-
-  isometricModuleConfig.CONST = parseInt(game.version.split(".")[0]); // Extrai a versão principal
   registerRuler();
 });
 

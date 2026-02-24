@@ -55,6 +55,26 @@ if [[ "$TOOL" == "cursor" && -z "$CURSOR_AGENT_CMD" ]]; then
   exit 1
 fi
 
+run_cursor_agent() {
+  local prompt="$1"
+
+  # Batch files must be run through cmd.exe from POSIX shells.
+  if [[ "$CURSOR_AGENT_CMD" == *.cmd ]]; then
+    if command -v cmd.exe >/dev/null 2>&1; then
+      cmd.exe /c "$CURSOR_AGENT_CMD" -p --force "$prompt"
+      return $?
+    elif command -v powershell.exe >/dev/null 2>&1; then
+      powershell.exe -NoProfile -Command "& '$CURSOR_AGENT_CMD' -p --force @args" -- "$prompt"
+      return $?
+    else
+      echo "Error: '$CURSOR_AGENT_CMD' is a Windows .cmd file, but cmd.exe/powershell.exe was not found."
+      return 127
+    fi
+  fi
+
+  "$CURSOR_AGENT_CMD" -p --force "$prompt"
+}
+
 # Archive previous run if branch changed
 if [ -f "$PRD_FILE" ] && [ -f "$LAST_BRANCH_FILE" ]; then
   CURRENT_BRANCH=$(jq -r '.branchName // empty' "$PRD_FILE" 2>/dev/null || echo "")
@@ -111,7 +131,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     OUTPUT=$(claude --dangerously-skip-permissions --print < "$INSTRUCTIONS_FILE" 2>&1 | tee /dev/stderr) || true
   else
     # Cursor CLI headless mode: print + force for autonomous operation
-    OUTPUT=$("$CURSOR_AGENT_CMD" -p --force "$(cat "$INSTRUCTIONS_FILE")" 2>&1 | tee /dev/stderr) || true
+    OUTPUT=$(run_cursor_agent "$(cat "$INSTRUCTIONS_FILE")" 2>&1 | tee /dev/stderr) || true
   fi
   
   # Check for completion signal
