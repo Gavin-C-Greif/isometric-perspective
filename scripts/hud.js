@@ -1,12 +1,35 @@
 import { isometricModuleConfig } from './consts.js';
-import { ISOMETRIC_CONST, PROJECTION_TYPES, DEFAULT_PROJECTION } from './consts.js';
+import { ISOMETRIC_CONST } from './consts.js';
 import { debugLog } from './logger.js';
 
 export function registerHUDConfig() {
-
+  Hooks.on("canvasPan", syncActiveHUDPositions);
 }
 
-export function handleRenderTokenHUD(hud, html, data) {
+/**
+ * Re-adjust HUD positions for any active Token/Tile/Drawing HUDs when the canvas pans or zooms.
+ * Keeps HUD controls aligned with their placeables in isometric scenes (US-002).
+ */
+function syncActiveHUDPositions() {
+  if (!canvas?.ready || !game.scenes?.current) return;
+  const scene = game.scenes.current;
+  const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
+  const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
+  if (!isometricWorldEnabled || !isSceneIsometric) return;
+
+  requestAnimationFrame(() => {
+    const hud = canvas.hud;
+    if (!hud) return;
+    for (const key of ["token", "tile", "drawing"]) {
+      const layer = hud[key];
+      if (layer?.object && layer?.element) {
+        adjustHUDPosition(layer, layer.element);
+      }
+    }
+  });
+}
+
+export function handleRenderTokenHUD(hud, html, _data) {
   const scene = game.scenes.current;
   const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
@@ -16,7 +39,7 @@ export function handleRenderTokenHUD(hud, html, data) {
   }
 }
 
-export function handleRenderTileHUD(hud, html, data) {
+export function handleRenderTileHUD(hud, html, _data) {
   const scene = game.scenes.current;
   const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
@@ -26,10 +49,7 @@ export function handleRenderTileHUD(hud, html, data) {
   }
 }
 
-
-
-
-export function handleRenderDrawingHUD(hud, html, data) {
+export function handleRenderDrawingHUD(hud, html, _data) {
   const scene = game.scenes.current;
   const isSceneIsometric = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");

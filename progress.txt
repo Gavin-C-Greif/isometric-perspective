@@ -5,6 +5,7 @@ Started: 2026-02-24
 ## Codebase Patterns
 - Grid config: Use renderGridConfig, gridConfigUpdate, closeGridConfig hooks; call canvas.draw() after grid/ruler edits to force refresh in isometric scenes
 - Use optional chaining (html.querySelector?.()) when targeting Foundry DOM elements that may vary by version
+- HUD sync: canvas.hud.token/tile/drawing have .object and .element when active; canvasPan re-syncs HUD positions for isometric stage transforms
 ---
 
 ## 2026-02-24 - US-001
@@ -17,4 +18,16 @@ Started: 2026-02-24
   - Grid config hooks (renderGridConfig, gridConfigUpdate, closeGridConfig) may not be in Foundry's public API docs but exist in v13; use optional chaining for html.querySelector('.grid-config') in case DOM structure differs
   - canvas.draw() forces a full canvas redraw; use sparingly but effective for fixing "canvas doesn't refresh" after config changes
   - handleUpdateScene already reacts to grid/gridType/gridSize changes; grid config hooks handle the ruler-tool flow and form-change flow that may not trigger updateScene
+---
+
+## 2026-02-24 - US-002
+- Added canvasPan hook in hud.js to re-sync TokenHUD/TileHUD/DrawingHUD positions when the canvas pans or zooms
+- registerHUDConfig() now registers the canvasPan handler; called from main.js init
+- Updated README Known Bugs: documented US-002 improvement for TokenHud/TileHud position
+- Added US-002: HUD Placement section to SMOKE-TEST.md with 8 steps; added row 4a to Release Smoke Suite
+- Files changed: scripts/hud.js, scripts/main.js, README.md, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - canvas.hud.token, canvas.hud.tile, canvas.hud.drawing are the HUD layer instances; each has .object (bound placeable) and .element (HTML) when active
+  - canvasPan fires on both pan and zoom; use it to keep HUD positions in sync with transformed stage coordinates
+  - handleCanvasReady's forced canvas.pan() triggers canvasPan, so HUD sync runs automatically on scene load
 ---

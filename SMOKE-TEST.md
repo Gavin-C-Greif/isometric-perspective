@@ -28,6 +28,7 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 2 | Projection change (True Iso -> Dimetric -> Overhead) | Active scene updates projection immediately and remains stable across changes | | |
 | 3 | Token/tile offsets and scale controls | Token/tile offset, anchor, and scaling settings apply correctly without drift after toggles | | |
 | 4 | HUD alignment (token + tile HUD actions) | HUD controls remain positioned and usable on selected token/tile in isometric scenes | | |
+| 4a | **HUD placement stability (US-002)** | TokenHUD/TileHUD stay aligned with object across pan, zoom, and selection changes; no manual `canvas.draw()` needed | | |
 | 5 | Ruler alignment and distance interaction | Ruler tool tracks pointer and reports usable measurements without visual desync | | |
 | 5a | **Grid/Ruler config (US-001)** | Scene Settings > Grid > Ruler Tool: measure on canvas updates grid; canvas refreshes without manual `canvas.draw()` | | |
 | 6 | Auto-sort depth ordering | Moving tokens updates depth order by isometric position; controlled token remains visible | | |
@@ -67,6 +68,19 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 6 | Toggle isometric off and back on | Transforms apply/remove without console errors | |
 | 7 | Check console output with debug setting **off** | No noisy log output from the module | |
 | 8 | Check console output with debug setting **on** | Debug logs appear with `[Isometric Perspective]` prefix | |
+
+## US-002: HUD Placement (Token/Tile)
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable isometric, select a token | TokenHUD appears near the token (centered on it) | | |
+| 2 | Pan the canvas while TokenHUD is visible | HUD moves with the token; remains aligned | | |
+| 3 | Zoom in/out while TokenHUD is visible | HUD stays aligned with the token | | |
+| 4 | Right-click a tile | TileHUD appears near the tile | | |
+| 5 | Pan/zoom while TileHUD is visible | TileHUD stays aligned with the tile | | |
+| 6 | Switch selection between multiple tokens/tiles | Each HUD repositions correctly for the newly selected object | | |
+| 7 | Switch to non-isometric scene, select token | HUD appears normally; no overlap regressions | | |
+| 8 | Switch back to isometric scene | HUD placement remains correct | | |
 
 ## US-002: Reversible Scene/Background Transforms
 

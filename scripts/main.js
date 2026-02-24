@@ -22,7 +22,8 @@ import {
 import { 
   handleRenderTokenHUD,
   handleRenderTileHUD,
-  handleRenderDrawingHUD
+  handleRenderDrawingHUD,
+  registerHUDConfig
 } from './hud.js';
 
 import { registerSortingConfig } from './autosorting.js';
@@ -205,6 +206,7 @@ Hooks.once("init", function() {
   registerSortingConfig();
   registerOcclusionConfig();
   registerRuler();
+  registerHUDConfig();
 });
 
 
