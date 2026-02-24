@@ -13,6 +13,7 @@ Started: 2026-02-24
 - Projection types and isometric constants are defined in `scripts/consts.js`
 - Use `node --check <file>` for basic syntax validation (no tsconfig/typecheck infra yet)
 - Background transform uses save/restore pattern in `transform.js` — `resetBackgroundTracking()` must be called before transforms on each new canvas (called in `handleCanvasReady`)
+- Stage toggles must re-run `adjustAllTokensAndTilesForIsometric` for both enable and disable so token/tile meshes fully reset
 
 ---
 
@@ -44,4 +45,15 @@ Started: 2026-02-24
   - `_bgTransformed` flag prevents re-capturing state when re-applying transforms (e.g., projection change while already isometric)
   - `handleCanvasReady` runs after Foundry fully sets up the canvas — background is in default state at that point, ideal for capturing defaults
   - Manual browser verification is needed — no browser testing MCP available in this environment
+---
+
+## 2026-02-24 - US-003
+- applyIsometricPerspective now reprocesses every token/tile on both enable and disable, routing non-isometric toggles through the explicit reset path to clear skew/rotation/scale drift
+- Updated US-003 smoke test expectations to call out doc-dimension recomputation on disable; marked PRD story as passing
+- Files changed: scripts/transform.js, SMOKE-TEST.md, prd.json
+- **Learnings for future iterations:**
+  - When toggling isometric off, you must rerun applyIsometricTransformation for existing placeables; stage-only resets leave meshes skewed
+  - Recomputing token/tile width/height/position from document dimensions prevents drift even when iso flags like isoScaleDisabled/offsets are present
+  - `adjustAllTokensAndTilesForIsometric(false)` gives a deterministic non-iso restore without touching feature flags
+  - Manual smoke/browser verification still needed; ran `node --check scripts/transform.js` for syntax
 ---

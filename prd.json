@@ -47,8 +47,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "applyIsometricPerspective now reprocesses all tokens/tiles on both enable and disable, routing non-isometric branches through explicit reset logic to clear skew/rotation/scale drift."
     },
     {
       "id": "US-004",

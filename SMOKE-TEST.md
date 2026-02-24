@@ -34,6 +34,17 @@ Run through this checklist after each change to verify core functionality.
 | 9 | Open console with debug **off** during all above steps | No noisy log output | |
 | 10 | Open console with debug **on** during disable | "applyBackgroundTransformation RESET" log appears | |
 
+## US-003: Token/Tile Transform Reset
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Enable isometric on a scene with at least one token and one tile | Both render with isometric skew/scale | |
+| 2 | Disable isometric on that scene | Token and tile rotation/skew reset to zero; anchors return to their configured values; sizes/positions are recomputed from document dimensions (no lingering iso offsets/scale) | |
+| 3 | Toggle isometric on/off three times in a row | Token and tile visuals are identical on each enable and restore to the same baseline on each disable (no drift) | |
+| 4 | Set `isoTokenDisabled` on a token and `isoTileDisabled` on a tile, then enable isometric | Flagged token/tile stay in standard projection (no iso offsets, scale, or anchor changes) | |
+| 5 | Move a token while isometric is enabled, then disable isometric | Token returns to the correct non-isometric position/size with no lingering offsets | |
+| 6 | Open console with debug **off** while toggling | No noisy log output from token/tile transforms | |
+
 ## General Startup
 
 | # | Step | Expected | Pass? |

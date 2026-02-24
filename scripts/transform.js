@@ -2,6 +2,146 @@ import { isometricModuleConfig } from './consts.js';
 import { cartesianToIso } from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
 
+const canvasTile = foundry.canvas.placeables.Tile;
+const canvasToken = foundry.canvas.placeables.Token;
+
+// Track baseline token/tile state so we can restore cleanly when disabling isometric transforms.
+const _originalTokenState = new WeakMap();
+const _originalTileState = new WeakMap();
+
+function degToRadSafe(value = 0) {
+  if (!Number.isFinite(value)) return 0;
+  return (foundry.utils?.degToRad?.(value)) ?? (value * Math.PI / 180);
+}
+
+function ensureBaseState(object) {
+  const store = object instanceof canvasToken ? _originalTokenState : _originalTileState;
+  if (store.has(object)) return store.get(object);
+
+  const mesh = object.mesh;
+  const snapshot = {
+    anchorX: mesh?.anchor?.x ?? 0.5,
+    anchorY: mesh?.anchor?.y ?? 0.5,
+    scaleX: mesh?.scale?.x ?? 1,
+    scaleY: mesh?.scale?.y ?? 1
+  };
+
+  store.set(object, snapshot);
+  return snapshot;
+}
+
+function resolveAnchor(object, baseState) {
+  const docAnchorX = object.document?.texture?.anchorX;
+  const docAnchorY = object.document?.texture?.anchorY;
+
+  return {
+    anchorX: docAnchorX ?? baseState.anchorX ?? 0.5,
+    anchorY: docAnchorY ?? baseState.anchorY ?? 0.5
+  };
+}
+
+function resetTokenTransform(token, baseState) {
+  const gridSize = canvas.scene.grid.size;
+  const doc = token.document;
+  const anchor = resolveAnchor(token, baseState);
+
+  // Respect document rotation when returning to non-isometric mode.
+  token.mesh.rotation = degToRadSafe(doc?.rotation ?? 0);
+  token.mesh.skew.set(0, 0);
+  token.mesh.anchor.set(anchor.anchorX, anchor.anchorY);
+
+  // Recompute native token dimensions without any isometric adjustments or iso flags.
+  const objTxtRatio_W = token.texture.width / gridSize;
+  const objTxtRatio_H = token.texture.height / gridSize;
+  let sx = 1;
+  let sy = 1;
+
+  switch (doc?.texture?.fit) {
+    case "fill":
+      sx = 1;
+      sy = 1;
+      break;
+    case "contain":
+      if (Math.max(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
+        sx = 1;
+        sy = objTxtRatio_H / objTxtRatio_W;
+      } else {
+        sx = objTxtRatio_W / objTxtRatio_H;
+        sy = 1;
+      }
+      break;
+    case "cover":
+      if (Math.min(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
+        sx = 1;
+        sy = objTxtRatio_H / objTxtRatio_W;
+      } else {
+        sx = objTxtRatio_W / objTxtRatio_H;
+        sy = 1;
+      }
+      break;
+    case "width":
+      sx = 1;
+      sy = objTxtRatio_H / objTxtRatio_W;
+      break;
+    case "height":
+      sx = objTxtRatio_W / objTxtRatio_H;
+      sy = 1;
+      break;
+    default:
+      if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
+        sx = objTxtRatio_W / objTxtRatio_H;
+        sy = 1;
+        break;
+      }
+      sx = 1;
+      sy = 1;
+  }
+
+  const scaleX = doc?.width ?? 1;
+  const scaleY = doc?.height ?? 1;
+  const baseWidth = Math.abs(sx * scaleX * gridSize);
+  const baseHeight = Math.abs(sy * (doc?.ring?.enabled ? scaleX : scaleY) * gridSize);
+
+  token.mesh.width = baseWidth;
+  token.mesh.height = baseHeight;
+
+  const center = doc?.center ?? { x: (doc?.x ?? 0) + (baseWidth / 2), y: (doc?.y ?? 0) + (baseHeight / 2) };
+  token.mesh.position.set(center.x, center.y);
+
+  // Clear any elevation visuals when leaving isometric mode.
+  removeTokenVisuals(token);
+}
+
+function resetTileTransform(tile, baseState) {
+  const doc = tile.document;
+  const anchor = resolveAnchor(tile, baseState);
+  const originalWidth = tile.texture.width;
+  const originalHeight = tile.texture.height;
+  const docWidth = doc?.width ?? originalWidth;
+  const docHeight = doc?.height ?? originalHeight;
+
+  tile.mesh.rotation = degToRadSafe(doc?.rotation ?? 0);
+  tile.mesh.skew.set(0, 0);
+  tile.mesh.anchor.set(anchor.anchorX, anchor.anchorY);
+
+  // Rebuild scale directly from document dimensions so repeated toggles do not drift.
+  const scaleX = docWidth / originalWidth;
+  const scaleY = docHeight / originalHeight;
+  tile.mesh.scale.set(scaleX, scaleY);
+
+  const posX = (doc?.x ?? 0) + (docWidth / 2);
+  const posY = (doc?.y ?? 0) + (docHeight / 2);
+  tile.mesh.position.set(posX, posY);
+}
+
+function resetObjectTransform(object, baseState) {
+  if (object instanceof canvasToken) {
+    resetTokenTransform(object, baseState);
+  } else if (object instanceof canvasTile) {
+    resetTileTransform(object, baseState);
+  }
+}
+
 // --- Background state tracking for reversible transforms ---
 let _originalBgState = null;
 let _bgTransformed = false;
@@ -38,20 +178,21 @@ function restoreBackgroundDefaults(bg) {
 // Função principal que muda o canvas da cena
 export function applyIsometricPerspective(scene, isSceneIsometric) {
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
-  //const isoAngle = ISOMETRIC_TRUE_ROTATION;
-  //const scale = scene.getFlag(isometricModuleConfig.MODULE_ID, "isometricScale") ?? 1;
-  
-  if (isometricWorldEnabled && isSceneIsometric) {
+  const shouldIsoTransform = isometricWorldEnabled && isSceneIsometric;
+
+  if (shouldIsoTransform) {
     canvas.app.stage.rotation = ISOMETRIC_CONST.rotation;
     canvas.app.stage.skew.set(
       ISOMETRIC_CONST.skewX,
       ISOMETRIC_CONST.skewY
     );
-    adjustAllTokensAndTilesForIsometric();
   } else {
     canvas.app.stage.rotation = 0;
     canvas.app.stage.skew.set(0, 0);
   }
+
+  // Re-apply or reset transforms for every token/tile so toggles are reversible.
+  adjustAllTokensAndTilesForIsometric(shouldIsoTransform);
 }
 
 
@@ -62,43 +203,39 @@ export function applyIsometricPerspective(scene, isSceneIsometric) {
   canvas.tiles.placeables.forEach(tile => applyIsometricTransformation(tile, true));
 }*/
 // Batch process to speed up this function
-export function adjustAllTokensAndTilesForIsometric() {
+export function adjustAllTokensAndTilesForIsometric(isSceneIsometric = true) {
   const tokensAndTiles = [...canvas.tokens.placeables, ...canvas.tiles.placeables];
-  tokensAndTiles.forEach(obj => applyIsometricTransformation(obj, true));
+  tokensAndTiles.forEach(obj => applyIsometricTransformation(obj, isSceneIsometric));
 }
-
-const canvasTile = foundry.canvas.placeables.Tile;
-const canvasToken = foundry.canvas.placeables.Token;
 
 // Função que aplica a transformação isométrica para um token ou tile -------------------------------------------------
 export function applyIsometricTransformation(object, isSceneIsometric) {
   // Don't make any transformation if the isometric module isn't active
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
-  if (!isometricWorldEnabled) return
-
-  // Don't make any transformation if there isn't any mesh
   if (!object.mesh) {
     if (isometricModuleConfig.DEBUG_PRINT) {console.warn("Mesh not found:", object)}
     return;
   }
-  
+
+  const baseState = ensureBaseState(object);
+
+  if (!isometricWorldEnabled) {
+    resetObjectTransform(object, baseState);
+    return;
+  }
+
   // Disable isometric token projection, if the flag is active
   let isoTileDisabled = object.document.getFlag(isometricModuleConfig.MODULE_ID, 'isoTileDisabled') ?? 0;
   let isoTokenDisabled = object.document.getFlag(isometricModuleConfig.MODULE_ID, 'isoTokenDisabled') ?? 0;
   if (isoTileDisabled || isoTokenDisabled) {
-    object.mesh.anchor.set(0.5, 0.5);  // This is set to make isometric anchor don't mess with non-iso scenes
-    return
+    resetObjectTransform(object, baseState);
+    return;
   }
 
   
   // Don't make transformation on the token or tile if the scene isn't isometric
   if (!isSceneIsometric) {
-    //object.mesh.rotation = 0;
-    //object.mesh.skew.set(0, 0);
-    //object.mesh.scale.set(objTxtRatio, objTxtRatio);
-    //object.mesh.position.set(object.document.x, object.document.y);
-    //object.document.texture.fit = "contain"; //height
-    object.mesh.anchor.set(0.5, 0.5);  // This is set to make isometric anchor don't mess with non-iso scenes
+    resetObjectTransform(object, baseState);
     return;
   }
 
