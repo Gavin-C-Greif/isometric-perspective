@@ -152,7 +152,6 @@ function isometricToCartesianGPT(x_iso, y_iso) {
   // Cria uma matriz de transformação com base nas rotações e distorções fornecidas
   // Criando um objeto "dummy" para aplicar a transformação
   const obj = new PIXI.Graphics();
-  console.log("obj", obj);
 
   // Aplica a transformação com setTransform
   obj.setTransform(x_iso, y_iso, 0, 0, 1, 1, -rotation, skewX, skewY);
@@ -162,8 +161,7 @@ function isometricToCartesianGPT(x_iso, y_iso) {
 
   // Inverter a matriz para reverter a transformação
   const invertedMatrix = matrix.invert();
-  console.log(matrix);
-  console.log(invertedMatrix);
+  debugLog("cartesianToIso matrix", { matrix, invertedMatrix });
 
   // Aplicar a inversa da matriz nas coordenadas isométricas
   const cartesian = invertedMatrix.apply({ x: x_iso, y: y_iso });

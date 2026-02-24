@@ -172,6 +172,16 @@ Use this section for every release candidate. Fill **Actual** with observed beha
 | 4 | Rapidly move tokens back and forth | No update loops; no console errors; order stable | | |
 | 5 | Switch selection between tokens | Each token's depth correct; no sort jitter | | |
 
+## US-007 (PRD): Error and Logging Standardization
+
+| # | Step | Expected | Pass? |
+|---|------|----------|-------|
+| 1 | Load Foundry with debug **off** | No noisy logs; warnings/errors use `[Isometric Perspective]` prefix only when they occur | |
+| 2 | Trigger a non-critical warning (e.g. open token config with missing scale input in a nonstandard setup) | Console shows prefixed `logWarn` output; no raw `console.warn` | |
+| 3 | Set invalid custom projection (e.g. "1,2,3" instead of 8 numbers) in Scene Settings > Isometric | UI notification appears: "Custom projection invalid. Expected 8 comma-separated numbers"; console shows prefixed `logError` | |
+| 4 | Enable debug setting and reload | All debug logs use `[Isometric Perspective]` prefix; no unconditional noisy logs in normal operation | |
+| 5 | With debug **on**, perform HUD sync (pan canvas with token selected) | Debug logs appear only when debug enabled; no `console.log` for matrix/obj in hud.js | |
+
 ## US-007: Safer Token Sorting Interop Patch
 
 | # | Step | Expected | Pass? |

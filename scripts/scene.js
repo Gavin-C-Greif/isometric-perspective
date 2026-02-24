@@ -1,7 +1,7 @@
 import { applyIsometricPerspective, applyBackgroundTransformation, resetBackgroundTracking } from './transform.js';
 import { isometricModuleConfig, updateIsometricConstants, parseCustomProjection, updateCustomProjection, PROJECTION_TYPES, DEFAULT_PROJECTION, CUSTOM_PROJECTION } from './consts.js';
 import { patchConfig} from './utils.js';
-import { debugLog } from './logger.js';
+import { debugLog, logError } from './logger.js';
 
 export function createSceneIsometricTab(){
   
@@ -81,7 +81,8 @@ export function handleUpdateScene(scene, changes) {
           const parsedCustom = parseCustomProjection(customProjectionValue);
           updateCustomProjection(parsedCustom);
         } catch (error) {
-          console.error("Error parsing custom projection:", error);
+          logError("Custom projection parsing failed", error);
+          ui?.notifications?.warn("Isometric: Custom projection invalid. Expected 8 comma-separated numbers. Check Scene Settings > Isometric tab.");
         }
       }
     }
@@ -114,7 +115,8 @@ export async function handleCanvasReady(canvas) {
         const parsedCustom = parseCustomProjection(customProjectionValue);
         updateCustomProjection(parsedCustom);
       } catch (error) {
-        console.error("Error parsing custom projection:", error);
+        logError("Custom projection parsing failed", error);
+        ui?.notifications?.warn("Isometric: Custom projection invalid. Expected 8 comma-separated numbers. Check Scene Settings > Isometric tab.");
       }
     }
   }

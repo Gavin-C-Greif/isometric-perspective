@@ -10,7 +10,7 @@ import {
   calculateTokenSortValue,
   createAdjustableButton
 } from './utils.js';
-import { debugLog, debugWarn } from './logger.js';
+import { debugLog, debugWarn, logWarn } from './logger.js';
 
 let tokenSortPatchRegistered = false;
 
@@ -347,7 +347,7 @@ export class TokenPrecisionConfig {
       scaleInput.min = '0.1';
       //console.log('Scale input adjusted', scaleInput);
     } else {
-      console.warn('Scale input not found');
+      logWarn('Scale input not found in token config');
     }
   }
 
@@ -373,7 +373,7 @@ export class TokenPrecisionConfig {
     });
 
     if (!foundInputs) {
-      console.warn('No texture anchor inputs found. Token configuration might have different selectors.');
+      logWarn('No texture anchor inputs found; token config may use different selectors');
       
       // Log all inputs in the token config for debugging
       //const allInputs = document.querySelectorAll('input');

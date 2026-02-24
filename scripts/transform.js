@@ -1,7 +1,7 @@
 import { isometricModuleConfig } from './consts.js';
 import { cartesianToIso } from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
-import { debugLog, debugWarn } from './logger.js';
+import { debugLog, debugWarn, logWarn } from './logger.js';
 
 const canvasTile = foundry.canvas.placeables.Tile;
 const canvasToken = foundry.canvas.placeables.Token;
@@ -324,7 +324,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
             break;
           }
           //throw new Error(`Invalid fill type passed to ${this.constructor.name}#resize (fit=${fit}).`);
-          console.warn("Invalid fill type passed to: ", object);
+          logWarn("Invalid fill type passed to resize", { object, fit });
           sx = 1;
           sy = 1;
       }

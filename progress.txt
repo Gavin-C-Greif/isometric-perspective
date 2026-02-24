@@ -3,6 +3,7 @@ Started: 2026-02-24
 ---
 
 ## Codebase Patterns
+- Logging: logWarn/logError for always-on prefixed output; debugLog/debugWarn for debug-only; avoid raw console.warn/error
 - Legacy v11 paths: marked with "// LEGACY: v11-only; not executed on v13"; module targets v13 so these branches never run
 - Grid config: Use renderGridConfig, gridConfigUpdate, closeGridConfig hooks; call canvas.draw() after grid/ruler edits to force refresh in isometric scenes
 - Use optional chaining (html.querySelector?.()) when targeting Foundry DOM elements that may vary by version
@@ -82,4 +83,16 @@ Started: 2026-02-24
 - **Learnings for future iterations:**
   - v11 branches never execute on v13 (module.json compatibility minimum 13); LEGACY comments clarify intent
   - Occlusion experiments were already not in runtime (commented imports); archiving removes them from scripts/ and documents them
+---
+
+## 2026-02-24 - US-007
+- Added logWarn and logError to logger.js for always-on structured prefixed logging
+- Replaced raw console.warn/error with logWarn/logError in utils.js, transform.js, token.js, scene.js, occlusion.js
+- Custom projection parsing errors now surface via ui.notifications.warn and logError
+- Removed unconditional noisy console.log in hud.js (cartesianToIso); converted to debugLog
+- Added US-007 (PRD): Error and Logging Standardization section to SMOKE-TEST.md with 5 steps
+- Files changed: scripts/logger.js, scripts/utils.js, scripts/transform.js, scripts/token.js, scripts/scene.js, scripts/occlusion.js, scripts/hud.js, SMOKE-TEST.md, prd.json, progress.txt
+- **Learnings for future iterations:**
+  - Use logWarn/logError for non-debug runtime issues; use debugLog/debugWarn for debug-only output
+  - ui?.notifications?.warn() surfaces parsing errors to users; combine with logError for console trace
 ---

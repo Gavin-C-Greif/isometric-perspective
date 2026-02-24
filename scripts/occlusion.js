@@ -1,4 +1,5 @@
 import { isometricModuleConfig } from './consts.js';
+import { logError } from './logger.js';
 import { throttle } from './utils.js';
 
 const scheduleOcclusionUpdate = throttle(updateOcclusionLayer, 50);
@@ -645,7 +646,7 @@ if (typeof PIXI !== 'undefined' && PIXI.filters) {
 	// Add the isooutlinefilter to the PIXI.filters namepace
 	PIXI.filters.isoOutlineFilter = IsoOutlineFilter;
 } else {
-	console.error('PIXI ou PIXI.filters não estão disponíveis.');
+	logError('PIXI or PIXI.filters not available; outline filter disabled');
 }
 
 // Create new outline filter
