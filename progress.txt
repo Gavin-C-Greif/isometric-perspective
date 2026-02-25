@@ -51,3 +51,13 @@ Started: 2026-02-24
   - matrix.test.mjs covers projection × token × offset for finite visY and transform/ruler equivalence; utils.test.mjs has unit-level tests. Avoid adding duplicate token×offset finite checks in both.
   - assertPointAlmostEqual throws on failure; no need to wrap in assert(assertPointAlmostEqual(...)).
 ---
+## 2026-02-25 - US-005
+- Simplified tooling, scripts, and repository metadata.
+- **release.cjs**: Standardized all user-facing messages from Portuguese to English (error, zip success, release prompt, zip removal, "Starting release", workflow check).
+- **.gitignore**: Translated section comments from Portuguese to English (OS, Editors, Node, Build artifacts and local files).
+- Lint passes (0 errors), tests pass (39/39).
+- Files changed: release.cjs, .gitignore, prd.json
+- **Learnings for future iterations:**
+  - release.cjs is CommonJS (.cjs); package.json has "type":"module" so .mjs/.js are ESM.
+  - Build script (`npm run build`) runs full release flow: update version, create zip, prompt for release message, git commit/tag/push.
+---

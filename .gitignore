@@ -1,17 +1,17 @@
-# Sistema operacional
+# OS
 .DS_Store
 Thumbs.db
 
-# Editores
+# Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Node.js
+# Node
 node_modules/
 
-Backup
+# Build artifacts and local files
 isometric-perspective.zip
 to-do list.txt
 files/backup
