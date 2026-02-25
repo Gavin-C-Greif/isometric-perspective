@@ -84,10 +84,7 @@ describe('matrix: transform/ruler equivalence', () => {
             y: centerY + token.height * isoOffsets.y
           };
 
-          assert(
-            assertPointAlmostEqual(transformPos, rulerPos, 1e-9),
-            label(proj, token, gridSize, gridDist, offset, elev)
-          );
+          assertPointAlmostEqual(transformPos, rulerPos, 1e-9);
         }
       }
     }

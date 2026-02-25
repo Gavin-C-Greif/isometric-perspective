@@ -41,3 +41,13 @@ Started: 2026-02-24
   - Texture fit scale logic (fill, contain, cover, width, height) is shared between reset and apply paths; use computeTextureFitScale for any new token sizing that needs it.
   - computeTextureFitScale logs invalid fit only when fit is defined but not a known value; undefined/null yields (1,1) silently.
 ---
+## 2026-02-25 - US-004
+- Leaned up tests and validation structure; removed duplicate/obsolete tests.
+- **utils.test.mjs**: Removed "covers all rectangular token fixtures" (duplicate of individual computeTokenPlacementPosition tests 1-4). Removed "scaled/offset positions produce stable ordering" (duplicate of matrix "finite visual Y for all token × offset combinations"). Simplified "sort order is deterministic" assertion.
+- **matrix.test.mjs**: Removed redundant assert wrapper around assertPointAlmostEqual (it throws on failure; wrapper was dead).
+- Test count: 41 → 39. Test commands remain deterministic (fixed fixtures, no randomness) and executable from clean clone via `npm test`.
+- Files changed: tests/utils.test.mjs, tests/matrix.test.mjs, prd.json
+- **Learnings for future iterations:**
+  - matrix.test.mjs covers projection × token × offset for finite visY and transform/ruler equivalence; utils.test.mjs has unit-level tests. Avoid adding duplicate token×offset finite checks in both.
+  - assertPointAlmostEqual throws on failure; no need to wrap in assert(assertPointAlmostEqual(...)).
+---

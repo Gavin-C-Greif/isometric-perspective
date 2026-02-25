@@ -150,20 +150,6 @@ describe('computeTokenPlacementPosition', () => {
     assertAlmostEqual(pos.x, expectedX, DEFAULT_EPSILON);
     assertAlmostEqual(pos.y, expectedY, DEFAULT_EPSILON);
   });
-
-  it('covers all rectangular token fixtures (2x1, 1x2, 3x2)', () => {
-    const rects = [
-      { width: 2, height: 1 },
-      { width: 1, height: 2 },
-      { width: 3, height: 2 }
-    ];
-    for (const { width, height } of rects) {
-      const pos = computeTokenPlacementPosition(0, 0, width, height, gridSize, { x: 0, y: 0 });
-      assert(Number.isFinite(pos.x) && Number.isFinite(pos.y), `${width}x${height}`);
-      assertAlmostEqual(pos.x, (width * gridSize) / 2, DEFAULT_EPSILON);
-      assertAlmostEqual(pos.y, (height * gridSize) / 2, DEFAULT_EPSILON);
-    }
-  });
 });
 
 describe('computeTextureFitScale', () => {
@@ -332,26 +318,8 @@ describe('computeVisualYForSort (depth sorting)', () => {
       { x: 25, y: 75 }
     ];
     const visYs = positions.map(p => computeVisualYForSort(p.x, p.y, r, sx, sy));
-    for (let i = 0; i < visYs.length - 1; i++) {
-      assert(Number.isFinite(visYs[i]));
-    }
+    assert(visYs.every(Number.isFinite), 'all visual Y values finite');
     const sorted = [...visYs].sort((a, b) => a - b);
-    assert.deepStrictEqual(visYs.map(v => v), visYs, 'no mutation');
     assert.ok(sorted.every((v, i) => i === 0 || v >= sorted[i - 1]), 'sorted ascending');
-  });
-
-  it('scaled/offset positions produce stable ordering', () => {
-    const gridSize = 100;
-    for (const { width: scaleX, height: scaleY } of TOKEN_DIMENSIONS) {
-      for (const { x: offX, y: offY } of OFFSETS) {
-        const baseX = (scaleX * gridSize) / 2;
-        const baseY = (scaleY * gridSize) / 2;
-        const offsetScale = gridSize / 100;
-        const x = baseX + offX * offsetScale;
-        const y = baseY + offY * offsetScale;
-        const visY = computeVisualYForSort(x, y, r, sx, sy);
-        assert(Number.isFinite(visY), `${scaleX}x${scaleY} off=(${offX},${offY})`);
-      }
-    }
   });
 });
