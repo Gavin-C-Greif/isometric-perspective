@@ -6,6 +6,7 @@ Started: 2026-02-24
 - Use `npm run harness:high-risk -- --init --force` to reset `high-risk-harness.json`, then `npm run harness:high-risk` to produce scenario-level PASS/FAIL evidence.
 - Normalize occlusion setting values through `scripts/occlusion-mode.js` before runtime use so invalid `cpuN` values safely fall back to `cpu6`.
 - Use `npm run harness:occlusion-baseline -- --init --force` to regenerate `occlusion-baseline-run.json`, then `npm run harness:occlusion-baseline` to verify release baseline evidence completeness.
+- On occlusion teardown, remove any stage children named `debug-*` to avoid stale debug overlays across scene transitions.
 
 ---
 
@@ -43,4 +44,13 @@ Started: 2026-02-24
   - Patterns discovered: Keep baseline performance evidence in machine-readable JSON artifacts and gate completeness with a non-zero-exit harness command.
   - Gotchas encountered: Harness intentionally fails until all metadata fields and all 21 scenario×mode rows are filled with metrics and `pass: true`.
   - Useful context: Browser verification for `US-003` remains manual here because browser MCP schemas/tools were unavailable in this environment.
+---
+
+## 2026-02-24 19:37:05 CST - US-003
+- Hardened occlusion lifecycle cleanup by removing stale debug intersection graphics (`debug-*`) during occlusion teardown, preventing debug overlay leftovers after scene/canvas transitions.
+- Files changed: `scripts/occlusion.js`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Any debug stage overlays should have deterministic teardown hooks, especially for scene-switch and canvas teardown paths.
+  - Gotchas encountered: This change adds one additional known lint warning (`_e` unused) in `scripts/occlusion.js` but does not introduce lint errors.
+  - Useful context: `US-003` still requires manual profiling evidence and browser verification before marking `passes: true`.
 ---

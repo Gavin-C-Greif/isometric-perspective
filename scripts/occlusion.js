@@ -72,6 +72,7 @@ function teardownOcclusionLayer() {
 			canvas.stage.removeChild(occlusionConfig.container);
 		}
 		destroyOcclusionContainer(occlusionConfig.container);
+		clearOcclusionDebugGraphics();
 	} catch (_e) {
 		// Canvas may already be torn down
 	}
@@ -109,6 +110,25 @@ function destroyOcclusionSprite(sprite) {
 		sprite.mask = null;
 	}
 	sprite.destroy({ texture: false, textureSource: false });
+}
+
+/**
+ * Remove stale debug intersection graphics from canvas stage.
+ * These are created only when DEBUG_PRINT is enabled.
+ */
+function clearOcclusionDebugGraphics() {
+	if (!canvas?.stage?.children) return;
+	const staleDebugGraphics = canvas.stage.children.filter(
+		(child) => typeof child?.name === 'string' && child.name.startsWith('debug-')
+	);
+	for (const child of staleDebugGraphics) {
+		try {
+			canvas.stage.removeChild(child);
+			child.destroy({ children: true });
+		} catch (_e) {
+			// Ignore graphics already destroyed by Foundry/PIXI lifecycle.
+		}
+	}
 }
 
 // Otimização 1: Debounce do updateOcclusionLayer
