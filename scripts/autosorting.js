@@ -192,7 +192,7 @@ async function awaitTokenAnimation(document) {
 
   const anim = token.movementAnimationPromise || token.animation;
   if (anim) {
-    try { await anim; } catch (e) { /* Ignore interruptions */ }
+    try { await anim; } catch { /* Ignore interruptions */ }
   } else {
     // Fallback: Check CanvasAnimation
     if (CanvasAnimation && CanvasAnimation.animations) {
@@ -205,7 +205,7 @@ async function awaitTokenAnimation(document) {
           // promiseData might be the promise itself or an object containing the promise
           const promise = promiseData.promise || promiseData;
           if (promise) {
-            try { await promise; } catch (e) { }
+            try { await promise; } catch { }
           }
         }
       }

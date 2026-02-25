@@ -2,6 +2,7 @@
 Started: 2026-02-24
 
 ## Codebase Patterns
+- Module targets v13 only (module.json minimum 13). Legacy v11 branches are marked "LEGACY: v11-only; not executed on v13" and are dead code on v13 runtime.
 - Use workflow job name `Lint and Test` as the required branch-protection status check for `main`.
 - Use `npm run harness:high-risk -- --init --force` to reset `high-risk-harness.json`, then `npm run harness:high-risk` to produce scenario-level PASS/FAIL evidence.
 - Normalize occlusion setting values through `scripts/occlusion-mode.js` before runtime use so invalid `cpuN` values safely fall back to `cpu6`.
@@ -92,4 +93,13 @@ Started: 2026-02-24
   - Patterns discovered: Per-token update coalescing (running + needsRerun Sets) prevents conflicting document writes when updateToken fires rapidly during drag; only one update in flight per token, with re-run of latest state if another update arrives.
   - Gotchas encountered: autosorting.js is the single authoritative path for document.sort writes; token.js _refreshSort patch is display-only and must not write to document.
   - Useful context: US-005 has no browser verification requirement in acceptance criteria; smoke tests in SMOKE-TEST.md cover sort pipeline (6a) and rapid movement (5).
+---
+
+## 2026-02-24 - US-006
+- Cleaned v13 runtime boundaries: removed ~370 lines of ambiguous commented experimental occlusion code from main.js (old occlusion layer, shaders, IsoOutlineFilter); removed unused imports (transform, consts, utils); fixed welcome.js irregular whitespace; fixed autosorting.js optional catch bindings; documented v11 legacy branches in Codebase Patterns; added Lint Baseline section to RELEASE-PROCESS.md. Lint warnings reduced from 82 to 66.
+- Files changed: `scripts/main.js`, `scripts/welcome.js`, `scripts/autosorting.js`, `RELEASE-PROCESS.md`, `progress.txt`, `prd.json`.
+- **Learnings for future iterations:**
+  - Patterns discovered: main.js is the sole entry point (module.json esmodules); production occlusion lives in occlusion.js; legacy experiments are in archive/legacy-occlusion-experiments/.
+  - Gotchas encountered: Removing a multi-line comment block in chunks can leave orphaned code; use smaller targeted replacements or verify file state after each edit.
+  - Useful context: v11 branches (FOUNDRY_VERSION === 11) are already marked and not executed on v13; module compatibility is minimum 13.
 ---

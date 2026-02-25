@@ -2,6 +2,10 @@
 
 This document defines the minimum release gate for `isometric-perspective` v13.
 
+## Lint Baseline (US-006)
+
+Lint warning count is tracked for release notes. Post-US-006 baseline: 66 warnings (down from 82). Run `npm run lint` to verify; record any change in release notes.
+
 ## Pre-Release Gate
 
 Before tagging or publishing any release candidate:
