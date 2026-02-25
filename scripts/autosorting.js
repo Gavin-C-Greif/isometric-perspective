@@ -28,7 +28,7 @@ export function registerSortingConfig() {
     // If the movement is from the current user
     if (userId === game.userId) {
       const token = canvas.tokens.get(tokenDocument.id);
-      if (token) updateTokenSort(token);
+      if (token) await updateTokenSort(token);
     }
   });
 
@@ -87,7 +87,7 @@ async function updateTokenSort(token) {
     if (needsRerun.has(id)) {
       needsRerun.delete(id);
       const t = canvas?.tokens?.get(id);
-      if (t) updateTokenSort(t);
+      if (t) await updateTokenSort(t);
     }
   }
 }
