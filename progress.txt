@@ -113,3 +113,12 @@ Started: 2026-02-24
   - Gotchas encountered: ESLint needs node globals for .cjs files in project root; add to eslint.config.cjs files array.
   - Useful context: release:publish will fail until high-risk-harness.json and occlusion-baseline-run.json are filled with PASS evidence.
 ---
+
+## 2026-02-24 - US-008
+- Aligned README and operator-facing documentation with shipped behavior: added feature maturity labels (production-ready) for Dynamic Tile, Token Silhouette Occlusion, and Auto Sorting; added Token Silhouette Occlusion to feature list; updated To-Do (token silhouette implemented, tile-to-tile not); added Release Validation and Operator Documentation section referencing SMOKE-TEST.md, RELEASE-PROCESS.md, PERFORMANCE-BASELINE.md, and evidence artifacts.
+- Files changed: `README.md`, `prd.json`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Feature maturity labels use *(production-ready)* consistently; operator docs section links smoke, release, and performance artifacts in one place.
+  - Gotchas encountered: To-Do "occlusion of tiles and tokens" was ambiguous; token silhouette is implemented, tile-to-tile is not.
+  - Useful context: All 8 user stories now pass; PRD v13 production hardening release complete.
+---

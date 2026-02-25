@@ -32,8 +32,9 @@ Here are some of the features the module offers. You can also see how all the fe
 - **Token Sprite Adjustments:** Fine-tune token sprite position and scale. Token artwork can be perfectly centered even for asymmetrical images. Increasing token size automatically scales the sprite, but this behavior can be disabled to support unconventional token sizes (for example, a 2×1 tank).
 - **Tile Sprite Adjustments:** Adjust tile sprite position and scale with ease, making it simple to copy and paste multiple tiles. An easy-to-use Flip Tile option is also available.
 - **Token Height Visual Cues:** When a token has elevation, its sprite visually reflects height using dynamic shadows and vertical guide lines for improved depth perception.
-- **Dynamic Tile:** Link tiles to walls so they automatically become hidden based on token position, creating an experience similar to classic isometric games.
-- **Auto Sorting Token:** Tokens are automatically layered based on their position on the canvas, ensuring that distant tokens appear behind closer ones.
+- **Dynamic Tile** *(production-ready)*: Link tiles to walls so they automatically become hidden based on token position, creating an experience similar to classic isometric games.
+- **Token Silhouette Occlusion** *(production-ready)*: Optional token silhouette masking with GPU and CPU modes; see Token Silhouette Occlusion Modes below.
+- **Auto Sorting Token** *(production-ready)*: Tokens are automatically layered based on their position on the canvas, ensuring that distant tokens appear behind closer ones.
 
 ## Configuration Screens
 > *Outdated v12 images*
@@ -114,7 +115,7 @@ LockerView _(needs a 330° rotation to make a working isometric rotation)_
 ## To-Do List
 
 - [ ] Code to handle tiles and walls.
-- [ ] Code to handle occlusion of tiles and tokens.
+- [ ] Tile-to-tile occlusion (token silhouette occlusion is implemented; see Token Silhouette Occlusion Modes).
 - [?] Different token art for isometric and top-down views.
 - [x] Code to handle non symmetrical token sizes.
 - [x] Translation to other languages.
@@ -127,6 +128,15 @@ LockerView _(needs a 330° rotation to make a working isometric rotation)_
 ## Contribution
 
 Contributions are welcome! If you want to improve this module, feel free to open an issue or submit a pull request.
+
+## Release Validation and Operator Documentation
+
+For maintainers preparing a release:
+
+- **Smoke suite**: [SMOKE-TEST.md](SMOKE-TEST.md) — Release Smoke Suite, Math Hardening Visual Matrix, high-risk interaction matrix.
+- **Release gate**: [RELEASE-PROCESS.md](RELEASE-PROCESS.md) — Pre-release gate, evidence requirements, release tooling (`npm run build`, `release:check`, `release:publish`).
+- **Performance baseline**: [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md) — Occlusion profiling baseline and mode policy.
+- **Evidence artifacts**: `high-risk-harness.json` (run `npm run harness:high-risk`), `occlusion-baseline-run.json` (run `npm run harness:occlusion-baseline`).
 
 ## CI Status Checks
 
