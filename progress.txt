@@ -18,3 +18,16 @@ Started: 2026-02-24
   - handleRenderTileConfig does not exist in tile.js; the commented hook was dead.
   - hud.js uses canvas.app.stage.toGlobal() for HUD positioning; legacy block used different math (calculateIsometricPosition_not).
 ---
+## 2026-02-25 - US-002
+- Collapsed v13 runtime to single canonical path; removed all v11/v12 compatibility branches.
+- **autosorting.js**: Removed v11 early return; auto-sorting now always registers.
+- **token.js**: Removed v11 early return from registerTokenSortingPatch.
+- **transform.js**: Removed v11 default fill-type handling in resetTokenTransform and applyIsometricTransformation; replaced with logWarn + fallback. Removed setupCompatibilityHooks and dropCanvasData hook (v11-only).
+- **dynamictile.js**: Replaced version-conditional wall API with v13-only: wall.edge.a/b, canvas.visibility.testVisibility.
+- **MIGRATION-NOTES.md**: Added documentation of removed compatibility areas.
+- Files changed: scripts/autosorting.js, scripts/token.js, scripts/transform.js, scripts/dynamictile.js, MIGRATION-NOTES.md, prd.json
+- **Learnings for future iterations:**
+  - v13 wall API: wall.edge.a, wall.edge.b (not wall.A, wall.B). Visibility: canvas.visibility.testVisibility (not canvas.effects.visibility).
+  - transform.js: resetTokenTransform and applyIsometricTransformation share a switch on doc.texture.fit; default case uses logWarn + sx=1/sy=1.
+  - FOUNDRY_VERSION is still set in main.js for SMOKE-TEST verification; no other runtime code uses it after v11 branch removal.
+---

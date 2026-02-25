@@ -19,7 +19,6 @@ export function registerSortingConfig() {
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
   const enableAutoSorting = game.settings.get(isometricModuleConfig.MODULE_ID, "enableAutoSorting");
   if (!isometricWorldEnabled || !enableAutoSorting) return;
-  if (isometricModuleConfig.FOUNDRY_VERSION === 11) return; // LEGACY: v11-only; not executed on v13
 
   Hooks.on('createToken', async (tokenDocument, options, userId) => {
     const scene = tokenDocument.parent;

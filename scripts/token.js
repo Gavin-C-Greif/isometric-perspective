@@ -23,7 +23,6 @@ let tokenSortPatchRegistered = false;
  */
 export function registerTokenSortingPatch() {
   if (tokenSortPatchRegistered) return;
-  if (isometricModuleConfig.FOUNDRY_VERSION === 11) return; // LEGACY: v11-only; not executed on v13
 
   const tokenPrototype = foundry.canvas.placeables.Token.prototype;
   if (!tokenPrototype?._refreshSort) return;

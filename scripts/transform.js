@@ -95,12 +95,7 @@ function resetTokenTransform(token, baseState) {
       sy = 1;
       break;
     default:
-      // LEGACY: v11-only; not executed on v13 (module targets v13)
-      if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
-        sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
-        sy = 1;
-        break;
-      }
+      logWarn("Invalid fill type passed to resetTokenTransform", { fit: doc?.texture?.fit });
       sx = 1;
       sy = 1;
   }
@@ -322,13 +317,6 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
           sy = 1;
           break;
         default:
-          // LEGACY: v11-only; not executed on v13 (module targets v13)
-          if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
-            sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
-            sy = 1;
-            break;
-          }
-          //throw new Error(`Invalid fill type passed to ${this.constructor.name}#resize (fit=${fit}).`);
           logWarn("Invalid fill type passed to resize", { object, fit });
           sx = 1;
           sy = 1;
@@ -554,30 +542,3 @@ Hooks.on('deleteToken', (token) => {
 
 
 
-
-// LEGACY: v11-only; not executed on v13 (module targets v13)
-Hooks.once('ready', () => {
-  setupCompatibilityHooks();
-});
-
-function setupCompatibilityHooks() {
-  if (isometricModuleConfig.FOUNDRY_VERSION === 11) {
-    Hooks.on('dropCanvasData', (canvas, object) => {
-      const globalPoint = {
-        x: event.clientX,
-        y: event.clientY
-      };
-  
-      // Converts to local coordinates of the stage
-      const localPos = canvas.stage.toLocal(globalPoint);
-      object.x = Math.round(localPos.x);
-      object.y = Math.round(localPos.y);
-    });
-    // Hooks.on('dropCanvasData', (canvas, object) => {
-    //   let {x, y} = canvas.stage.worldTransform.applyInverse({x: event.clientX, y: event.clientY})
-
-    //   object.x = x;
-    //   object.y = y;
-    // });
-  }
-}
