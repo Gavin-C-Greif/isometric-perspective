@@ -105,6 +105,14 @@ LockerView _(needs a 330° rotation to make a working isometric rotation)_
 
 Contributions are welcome! If you want to improve this module, feel free to open an issue or submit a pull request.
 
+## CI Status Checks
+
+For pull requests and pushes to `main`, GitHub Actions workflow `CI Quality Gates` must pass.
+
+Required check to enforce in branch protection:
+
+- `Lint and Test`
+
 #### v13 Main Contributors
 - **@warpspeednyancatpatreon** – https://github.com/warpspeednyancatpatreon  
 - **@JoshBrodieNZ** – https://github.com/Ludibrium-VTT

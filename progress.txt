@@ -2,6 +2,15 @@
 Started: 2026-02-24
 
 ## Codebase Patterns
-- Pending discovery for this run.
+- Use workflow job name `Lint and Test` as the required branch-protection status check for `main`.
 
+---
+
+## 2026-02-24 19:28:50 CST - US-001
+- Implemented GitHub Actions CI quality gates for pull requests and pushes to `main`, running `npm run lint` and `npm test`.
+- Files changed: `.github/workflows/ci-quality-gates.yml`, `README.md`, `prd.json`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Branch protection should enforce the `Lint and Test` check from the `CI Quality Gates` workflow.
+  - Gotchas encountered: `npm run lint` currently reports existing warnings but exits successfully; only errors fail the gate.
+  - Useful context: v13 release documentation is split across `README.md`, `RELEASE-PROCESS.md`, and `SMOKE-TEST.md`.
 ---
