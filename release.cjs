@@ -26,6 +26,7 @@ function createZip() {
       console.log(`Created ${zipName} (${archive.pointer()} bytes).`);
       resolve();
     });
+    output.on('error', reject);
     archive.on('error', reject);
     archive.pipe(output);
     archive.file('module.json', { name: 'module.json' });
