@@ -29,3 +29,15 @@ Started: 2026-02-24
   - Shader comments (GLSL) and inline comments in main.js required translation
   - Excluded archive/ folder (legacy experiments) from scope per PRD "tracked files"
 ---
+
+## 2026-02-25 - US-003
+- Verified that US-001 and US-002 changes are text-only and behavior-safe
+- US-001: Only URL/repository string replacements (module.json, README.md, release.cjs, templates)
+- US-002: Only comment and console string translations; one UI tool title (Reordenar Tokens → Reorder Tokens) for consistency
+- No API, runtime, data model, or logic changes introduced
+- npm run lint: PASS (0 errors)
+- npm test: PASS (38 tests)
+- **Learnings for future iterations:**
+  - US-003 is a verification/audit story; no code edits required
+  - Validation evidence (lint + test) confirms no regressions from text-only cleanup
+---
