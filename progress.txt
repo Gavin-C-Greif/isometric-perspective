@@ -2,6 +2,19 @@
 Started: 2026-02-24
 
 ## Codebase Patterns
-- Pending discovery for this run.
+- Production occlusion lives in `scripts/occlusion.js`; legacy experiments are in `archive/legacy-occlusion-experiments/`. Do not confuse with commented blocks in main.js.
+- Use `rg` to validate no remaining references before removing exports or functions.
+- Entry point is `scripts/main.js`; it imports from token, tile, scene, hud, transform, consts, utils, occlusion, welcome, ruler, autosorting, dynamictile.
 
+---
+## 2026-02-25 - US-001
+- Removed dead and unreachable runtime code per lean-repository US-001.
+- **main.js**: Removed ~210 lines of commented legacy occlusion/testing block (duplicate of occlusion.js; old hooks, shaders, IsoOutlineFilter, colorMatrixFilter, outlineFilter). Removed commented duplicate enableOcclusionTokenSilhouette block. Removed commented handleRenderTileConfig hook.
+- **consts.js**: Removed commented PROJECTION_TYPES entries (Fallout Style, Earthbound/Paperboy). Removed ~85 lines of commented legacy ISOMETRIC_CONST/updateIsometricConstants switch block.
+- **hud.js**: Removed ~115 lines of commented legacy block (calculateIsometricPosition_not, isometricToCartesianGPT, isometricToCartesian, isometricToCartesianGPT4o).
+- Files changed: scripts/main.js, scripts/consts.js, scripts/hud.js, prd.json
+- **Learnings for future iterations:**
+  - Production occlusion is in occlusion.js; main.js had a stale commented duplicate. Use `rg` to confirm no references before removal.
+  - handleRenderTileConfig does not exist in tile.js; the commented hook was dead.
+  - hud.js uses canvas.app.stage.toGlobal() for HUD positioning; legacy block used different math (calculateIsometricPosition_not).
 ---

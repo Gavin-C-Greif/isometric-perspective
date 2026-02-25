@@ -69,27 +69,7 @@ export let PROJECTION_TYPES = {
     reverseSkewX: 0,
     reverseSkewY: 0,
     ratio: 1
-  }/*,
-  'Game: Fallout Style': { // -14, 39, 0, 14, 0, -39.5, 21.75, 2.0965436
-    rotation: -14,
-    skewX:     39,
-    skewY:      0,
-    HudAngle:  14,
-    reverseRotation: 0,
-    reverseSkewX:    -39.5,
-    reverseSkewY:    21.75,
-    ratio:       2.0965436
-  },
-  'Earthbound / Paperboy Style': {
-    rotation:   0,
-    skewX:    -49,
-    skewY:      0,
-    HudAngle:   0,
-    reverseRotation: 45,
-    reverseSkewX:     0,
-    reverseSkewY:     0,
-    ratio:       0.373884679484805
-  }*/
+  }
 };
 
 // Default projection type
@@ -156,85 +136,3 @@ export const isometricModuleConfig = {
   WORLD_ISO_FLAG:false,
   FOUNDRY_VERSION:0
 }
-
-/*
-// values in degrees
-export let ISOMETRIC_CONST = {
-  rotation: -30 * Math.PI / 180,
-  skewX:     30 * Math.PI / 180,
-  skewY:      0 * Math.PI / 180,
-  reverseRotation: 45 * Math.PI / 180, //rotation + 45
-  reverseSkewX:     0 * Math.PI / 180,
-  reverseSkewY:     0 * Math.PI / 180,
-  ratio:         Math.sqrt(3)
-}
-
-export function updateIsometricConstants(option) {
-  switch (option) {
-    case 'True Isometric':
-      ISOMETRIC_CONST = {
-        rotation: -30.0,
-        skewX:     30.0,
-        skewY:      0.0,
-        reverseRotation: 45,
-        reverseSkewX:     0,
-        reverseSkewY:     0,
-        ratio:       Math.sqrt(3)
-      };
-      break;
-    case 'Diablo 1':
-      ISOMETRIC_CONST = {//                ✓
-        rotation:  -30, // -45  -30  -60  -15  -15
-        skewX:      34, //  19   34    4   49   49
-        skewY:       4, //  19    4   34  -11  -12.13010 (ratio 2.000000102719437 angle 0.57) 
-        reverseRotation: 45, // 2.0503038415792987
-        reverseSkewX:     0,
-        reverseSkewY:     0,
-        ratio:       2.0503038415792987
-      };
-      break;
-    case 'Planescape Torment Style':
-      ISOMETRIC_CONST = {
-        rotation: -35,
-        skewX:     20,
-        skewY:      0,
-        reverseRotation: 45,
-        reverseSkewX:     0,
-        reverseSkewY:     0,
-        ratio:       1.428148006742114
-      };
-      break;
-    case 'Fallout Style':
-      ISOMETRIC_CONST = {
-        rotation:  -15,
-        skewX:      38,
-        skewY:       1,
-        reverseRotation: 45,
-        reverseSkewX:     0,
-        reverseSkewY:     0,
-        ratio:       Math.sqrt(3)
-      };
-      break;
-    case 'Earthbound / Paperboy Style':
-      ISOMETRIC_CONST = {
-        rotation:   0,
-        skewX:    -49,
-        skewY:      0,
-        reverseRotation: 45,
-        reverseSkewX:     0,
-        reverseSkewY:     0,
-        ratio:       0.373884679484805
-      };
-      break;
-  }
-
-  //convert to rad
-  ISOMETRIC_CONST.rotation *= Math.PI / 180;
-  ISOMETRIC_CONST.skewX *= Math.PI / 180;
-  ISOMETRIC_CONST.skewY *= Math.PI / 180;
-  ISOMETRIC_CONST.reverseRotation *= Math.PI / 180;
-  ISOMETRIC_CONST.reverseSkewX *= Math.PI / 180;
-  ISOMETRIC_CONST.reverseSkewY *= Math.PI / 180;
-
-}
-*/
