@@ -2,13 +2,15 @@
   "name": "isometric-perspective",
   "version": "0.9.7",
   "description": "Isometric Module for Foundry VTT v13+",
+  "type": "module",
   "dependencies": {
     "archiver": "^5.3.1"
   },
   "scripts": {
-    "build": "node release.js",
-    "lint": "eslint scripts docs release.js",
-    "lint:fix": "eslint scripts docs release.js --fix"
+    "build": "node release.cjs",
+    "test": "node --test tests/*.test.mjs",
+    "lint": "eslint scripts docs release.cjs",
+    "lint:fix": "eslint scripts docs release.cjs --fix"
   },
   "keywords": [],
   "author": "",

@@ -1,20 +1,124 @@
 import { isometricModuleConfig } from './consts.js';
 import { debugLog, logWarn } from './logger.js';
-// Função auxiliar para converter coordenadas isométricas para cartesianas
-export function isoToCartesian(isoX, isoY) {
-  const angle = Math.PI / 4; // 45 graus em radianos
+
+/**
+ * Safe division: returns fallback when denominator is 0, NaN, or non-finite.
+ * Prevents NaN/Infinity in transform formulas.
+ * @param {number} num - Numerator
+ * @param {number} denom - Denominator
+ * @param {number} [fallback=0] - Value when division is invalid
+ * @returns {number}
+ */
+export function safeDivide(num, denom, fallback = 0) {
+  if (!Number.isFinite(num) || !Number.isFinite(denom) || denom === 0) return fallback;
+  return num / denom;
+}
+
+/**
+ * Elevation contribution to art offset (before gridSize/100 scaling).
+ * Returns 0 when gridDistance or scaleX is invalid to avoid NaN/Infinity.
+ * @param {number} elevation - Token elevation
+ * @param {number} gridDistance - Grid distance (units per cell)
+ * @param {number} scaleX - Token width in grid cells
+ * @returns {number}
+ */
+export function computeElevationOffsetDelta(elevation, gridDistance, scaleX) {
+  if (!Number.isFinite(elevation)) return 0;
+  const invDist = safeDivide(1, gridDistance, 0);
+  const invScale = safeDivide(1, scaleX, 0);
+  return elevation * invDist * 100 * Math.sqrt(2) * invScale;
+}
+
+/**
+ * Elevation visual offset (gridSize/gridDistance) for elevation line. Returns 0 when invalid.
+ * @param {number} elevation - Token elevation
+ * @param {number} gridSize - Pixels per grid cell
+ * @param {number} gridDistance - Grid distance (units per cell)
+ * @returns {number}
+ */
+export function computeElevationVisualOffset(elevation, gridSize, gridDistance) {
+  if (!Number.isFinite(elevation)) return 0;
+  return elevation * safeDivide(gridSize, gridDistance, 0);
+}
+
+/**
+ * Shared offset/elevation projection: computes (offsetX, offsetY) in grid space for transform and ruler.
+ * Both modules use this so projected coordinates match within tolerance.
+ * @param {number} artOffsetX - Art offset X from flags
+ * @param {number} artOffsetY - Art offset Y from flags
+ * @param {number} elevation - Token elevation
+ * @param {number} gridSize - Pixels per grid cell
+ * @param {number} gridDistance - Grid distance (units per cell)
+ * @param {number} scaleX - Token width in grid cells
+ * @returns {{offsetX: number, offsetY: number}}
+ */
+export function computeOffsetComponentsForProjection(artOffsetX, artOffsetY, elevation, gridSize, gridDistance, scaleX) {
+  const elevationDelta = computeElevationOffsetDelta(elevation, gridDistance, scaleX);
+  const gridScale = safeDivide(gridSize, 100, 1);
   return {
-    x: (isoX * Math.cos(angle) - isoY * Math.sin(angle)),
-    y: (isoX * Math.sin(angle) + isoY * Math.cos(angle))
+    offsetX: (artOffsetX + elevationDelta) * gridScale,
+    offsetY: (artOffsetY ?? 0) * gridScale
   };
 }
 
+/** Default conversion angle (45°) when no projection is provided. */
+const DEFAULT_CONVERSION_ANGLE = Math.PI / 4;
+
+// Função auxiliar para converter coordenadas isométricas para cartesianas
+export function isoToCartesian(isoX, isoY) {
+  return isoToCartesianProjection(isoX, isoY, { reverseRotation: DEFAULT_CONVERSION_ANGLE });
+}
+
 // Função auxiliar para converter coordenadas cartesianas para isométricas
-export function cartesianToIso(isoX, isoY) {
-  const angle = Math.PI / 4; // 45 graus em radianos
+export function cartesianToIso(x, y) {
+  return cartesianToIsoProjection(x, y, { reverseRotation: DEFAULT_CONVERSION_ANGLE });
+}
+
+/**
+ * Projection-aware: cartesian to iso conversion using projection constants.
+ * @param {number} x - Cartesian X
+ * @param {number} y - Cartesian Y
+ * @param {{reverseRotation?: number}} projection - Projection with reverseRotation in radians
+ * @returns {{x: number, y: number}}
+ */
+export function cartesianToIsoProjection(x, y, projection) {
+  const angle = -(projection?.reverseRotation ?? DEFAULT_CONVERSION_ANGLE);
   return {
-    x: (isoX * Math.cos(-angle) - isoY * Math.sin(-angle)),
-    y: (isoX * Math.sin(-angle) + isoY * Math.cos(-angle))
+    x: x * Math.cos(angle) - y * Math.sin(angle),
+    y: x * Math.sin(angle) + y * Math.cos(angle)
+  };
+}
+
+/**
+ * Projection-aware: iso to cartesian conversion (inverse of cartesianToIsoProjection).
+ * @param {number} isoX - Iso X
+ * @param {number} isoY - Iso Y
+ * @param {{reverseRotation?: number}} projection - Projection with reverseRotation in radians
+ * @returns {{x: number, y: number}}
+ */
+export function isoToCartesianProjection(isoX, isoY, projection) {
+  const angle = projection?.reverseRotation ?? DEFAULT_CONVERSION_ANGLE;
+  return {
+    x: isoX * Math.cos(angle) - isoY * Math.sin(angle),
+    y: isoX * Math.sin(angle) + isoY * Math.cos(angle)
+  };
+}
+
+/**
+ * Computes isometric token placement position with axis-correct scaling.
+ * X uses scaleX (width); Y uses scaleY (height) so rectangular tokens don't drift.
+ * @param {number} docX - Document top-left X (scene coords)
+ * @param {number} docY - Document top-left Y (scene coords)
+ * @param {number} scaleX - Token width in grid cells
+ * @param {number} scaleY - Token height in grid cells
+ * @param {number} gridSize - Pixels per grid cell
+ * @param {{x: number, y: number}} isoOffsets - Projected offset from cartesianToIso
+ * @returns {{x: number, y: number}} Mesh position
+ */
+export function computeTokenPlacementPosition(docX, docY, scaleX, scaleY, gridSize, isoOffsets) {
+  return {
+    x: docX + (scaleX * gridSize / 2) + (scaleX * (isoOffsets?.x ?? 0)),
+    y: docY + (scaleY * gridSize / 2) + (scaleY * (isoOffsets?.y ?? 0))
   };
 }
 
@@ -123,44 +227,56 @@ export function patchConfig(documentSheet, config, args) {
 }
 
 /**
- * Calculates the sort value for a token based on its isometric depth.
- * The formula (Width - X) + Y creates a gradient from North (back) to South (front).
+ * Projects a grid-space point (x, y) to Visual Y for depth sorting.
+ * Uses stage rotation and skew; higher Visual Y = "in front" (drawn last).
+ * Pure function for testing.
+ * @param {number} x - X in scene coords
+ * @param {number} y - Y in scene coords
+ * @param {number} rotation - Stage rotation (radians)
+ * @param {number} skewX - Stage skew X (radians)
+ * @param {number} skewY - Stage skew Y (radians)
+ * @returns {number} Visual Y for sort comparison
+ */
+export function computeVisualYForSort(x, y, rotation, skewX, skewY) {
+  const tanSx = Math.tan(skewX);
+  const tanSy = Math.tan(skewY);
+  const xSkewed = x + y * tanSx;
+  const ySkewed = y + x * tanSy;
+  return xSkewed * Math.sin(rotation) + ySkewed * Math.cos(rotation);
+}
+
+/**
+ * Calculates the sort value for a token based on isometric depth.
+ * Visual reference: token visual center (mesh position when available).
+ * Objects lower on screen (higher Visual Y) are "in front" and get higher sort.
  * @param {Token|TokenDocument} token - The token or token document to calculate for.
  * @returns {number} The calculated sort value.
  */
 export function calculateTokenSortValue(token) {
-  const scene = canvas.scene;
+  const scene = canvas?.scene;
   if (!scene) return 0;
-  
-  // Use document coordinates if passed a token document, otherwise use object coordinates
-  const doc = token.document || token;
-  const x = doc.x;
-  const y = doc.y;
 
-  // We want to sort by the "Visual Y" on the screen. 
-  // Objects lower on the screen (Higher Visual Y) are "in front" and should be drawn last (Higher Sort).
-  
-  // PIXI Transform Order: Scale -> Skew -> Rotate -> Translate
-  // We apply the Skew and Rotation to finding the Visual Y of the point.
-  // We use the actual canvas stage transform to ensure WYSIWYG correctness.
-  
+  const doc = token.document || token;
+  let x, y;
+
+  if (token.mesh?.position) {
+    x = token.mesh.position.x;
+    y = token.mesh.position.y;
+  } else {
+    const gridSize = scene.grid?.size ?? 100;
+    const scaleX = doc.width ?? 1;
+    const scaleY = doc.height ?? 1;
+    x = (doc.x ?? 0) + (scaleX * gridSize) / 2;
+    y = (doc.y ?? 0) + (scaleY * gridSize) / 2;
+  }
+
   const r = canvas.app.stage.rotation;
   const sx = canvas.app.stage.skew.x;
   const sy = canvas.app.stage.skew.y;
-  
-  const tanSx = Math.tan(sx);
-  const tanSy = Math.tan(sy);
-  
-  const xSkewed = x + y * tanSx;
-  const ySkewed = y + x * tanSy;
-  
-  const cosR = Math.cos(r);
-  const sinR = Math.sin(r);
-  const visualY = xSkewed * sinR + ySkewed * cosR;
+  const visualY = computeVisualYForSort(x, y, r, sx, sy);
 
-  debugLog(`[SortCalc] ${token.name || token.id} | (${x},${y}) -> VisY: ${visualY.toFixed(2)} | Sort: ${Math.round(visualY * 10)}`);
+  debugLog(`[SortCalc] ${token.name || token.id} | (${x.toFixed(0)},${y.toFixed(0)}) -> VisY: ${visualY.toFixed(2)} | Sort: ${Math.round(visualY * 10)}`);
 
-  // Multiply by 10 to keep precision in integer sort
   return Math.round(visualY * 10);
 }
 

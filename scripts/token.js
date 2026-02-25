@@ -1,11 +1,11 @@
 import { isometricModuleConfig, ISOMETRIC_CONST } from './consts.js';
 import { applyIsometricTransformation, updateTokenVisuals } from './transform.js';
 import {
-  cartesianToIso, 
+  cartesianToIsoProjection,
   adjustInputWithMouseDrag,
   parseNum,
   patchConfig,
-  isoToCartesian, 
+  isoToCartesianProjection,
   getFlagName,
   calculateTokenSortValue,
   createAdjustableButton
@@ -313,9 +313,10 @@ export function addPrecisionTokenArtListener(app, html, context, options){
     
     // 3. Convert Deltas to Screen Coordinates
     // Anchor deltas are multiplied by texture size AND Scale to match visual space
-    const screenDeltaAnchors = cartesianToIso(
+    const screenDeltaAnchors = cartesianToIsoProjection(
       dIsoAnchorX * tokenMesh.texture.height * tokenMesh.scale.y,
-      dIsoAnchorY * tokenMesh.texture.width * tokenMesh.scale.x
+      dIsoAnchorY * tokenMesh.texture.width * tokenMesh.scale.x,
+      ISOMETRIC_CONST
     );
     
     // 4. Apply to current Mesh Position
