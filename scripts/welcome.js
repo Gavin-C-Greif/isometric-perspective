@@ -17,7 +17,7 @@ export class WelcomeScreen extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static PARTS = {
-    div: {
+    div: {
       template: "modules/isometric-perspective/templates/welcome.hbs",
     }
   }

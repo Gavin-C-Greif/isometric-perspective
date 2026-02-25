@@ -1,13 +1,14 @@
 import { isometricModuleConfig } from './consts.js';
 import { logError } from './logger.js';
+import { normalizeOcclusionMode } from './occlusion-mode.js';
 import { throttle } from './utils.js';
 
 const scheduleOcclusionUpdate = throttle(updateOcclusionLayer, 50);
 
 // Enhanced Occlusion Layer Module for Foundry VTT
 export function registerOcclusionConfig() {
-	const occlusionMode = game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionTokenSilhouette");
-	if (occlusionMode === "off") return;
+	const mode = normalizeOcclusionMode(game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionTokenSilhouette"));
+	if (!mode.enabled) return;
 
 	// Global Hook Registration
 	function registerGlobalHooks() {
@@ -71,7 +72,8 @@ function teardownOcclusionLayer() {
 			canvas.stage.removeChild(occlusionConfig.container);
 		}
 		destroyOcclusionContainer(occlusionConfig.container);
-	} catch (_e) {
+		clearOcclusionDebugGraphics();
+	} catch {
 		// Canvas may already be torn down
 	}
 	occlusionConfig.container = null;
@@ -108,6 +110,25 @@ function destroyOcclusionSprite(sprite) {
 		sprite.mask = null;
 	}
 	sprite.destroy({ texture: false, textureSource: false });
+}
+
+/**
+ * Remove stale debug intersection graphics from canvas stage.
+ * These are created only when DEBUG_PRINT is enabled.
+ */
+function clearOcclusionDebugGraphics() {
+	if (!canvas?.stage?.children) return;
+	const staleDebugGraphics = canvas.stage.children.filter(
+		(child) => typeof child?.name === 'string' && child.name.startsWith('debug-')
+	);
+	for (const child of staleDebugGraphics) {
+		try {
+			canvas.stage.removeChild(child);
+			child.destroy({ children: true });
+		} catch {
+			// Ignore graphics already destroyed by Foundry/PIXI lifecycle.
+		}
+	}
 }
 
 // Otimização 1: Debounce do updateOcclusionLayer
@@ -360,14 +381,11 @@ function createOcclusionMask(token, intersectingTiles) {
 	// 4+ = light on cpu in zoom out, heavy on cpu on zoom in, really pixelated
 	// 8+ = light on cpu on almost all scenarios, works only with rectangle tiles
 
-	const occlusionMode = game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionTokenSilhouette");
-	const gpu = occlusionMode === "gpu" ? 1 : 0;
-	const chunkSize = occlusionMode.startsWith("cpu") ? parseInt(occlusionMode.slice(3)) : 2;
-
-	if (gpu === 1) {
+	const mode = normalizeOcclusionMode(game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionTokenSilhouette"));
+	if (mode.type === "gpu") {
 		return createOcclusionMask_gpu(token, intersectingTiles)
 	} else {
-		return createOcclusionMask_cpu(token, intersectingTiles, chunkSize)
+		return createOcclusionMask_cpu(token, intersectingTiles, mode.chunkSize ?? 6)
 	}
 }
 

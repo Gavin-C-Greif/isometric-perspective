@@ -1,0 +1,37 @@
+{
+  "storyId": "US-002",
+  "harness": "high-risk-interaction-matrix",
+  "generatedAt": "2026-02-25T01:31:12.867Z",
+  "scenarios": [
+    {
+      "id": "projection-switch",
+      "title": "Projection switch",
+      "status": "PENDING",
+      "evidence": ""
+    },
+    {
+      "id": "pan-zoom",
+      "title": "Pan/zoom",
+      "status": "PENDING",
+      "evidence": ""
+    },
+    {
+      "id": "scene-switch",
+      "title": "Scene switch",
+      "status": "PENDING",
+      "evidence": ""
+    },
+    {
+      "id": "token-control-switch",
+      "title": "Token control switch",
+      "status": "PENDING",
+      "evidence": ""
+    },
+    {
+      "id": "door-state-changes",
+      "title": "Door state changes",
+      "status": "PENDING",
+      "evidence": ""
+    }
+  ]
+}

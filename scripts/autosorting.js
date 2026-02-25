@@ -28,7 +28,7 @@ export function registerSortingConfig() {
     // If the movement is from the current user
     if (userId === game.userId) {
       const token = canvas.tokens.get(tokenDocument.id);
-      if (token) updateTokenSort(token);
+      if (token) await updateTokenSort(token);
     }
   });
 
@@ -69,7 +69,30 @@ export function registerSortingConfig() {
 }
 
 
+/** Per-token coalescing: only one update in flight per token; prevents jitter from rapid movement. */
+const runningSortUpdates = new Set();
+const needsRerun = new Set();
+
 async function updateTokenSort(token) {
+  const id = token.document.id;
+  if (runningSortUpdates.has(id)) {
+    needsRerun.add(id);
+    return;
+  }
+  runningSortUpdates.add(id);
+  try {
+    await doUpdateTokenSort(token);
+  } finally {
+    runningSortUpdates.delete(id);
+    if (needsRerun.has(id)) {
+      needsRerun.delete(id);
+      const t = canvas?.tokens?.get(id);
+      if (t) await updateTokenSort(t);
+    }
+  }
+}
+
+async function doUpdateTokenSort(token) {
   // Use the token's scene, or fall back to the rendered canvas scene.
   // We avoid game.scenes.active because the GM might be simulating movement on a non-active scene.
   const scene = token.scene || token.document.parent || canvas.scene;
@@ -92,9 +115,7 @@ async function updateTokenSort(token) {
 
     // Sort others by Visual Y to see expected order
     const sortedOthers = others.map(t => {
-      const doc = t.document;
-      // Duplicate logic just for debug print or export calculateVisualY from utils if possible
-      // For now, re-using calculateTokenSortValue gives integer sort, which is proxy for VisualY
+      // Re-using calculateTokenSortValue gives integer sort, which is proxy for VisualY
       return { name: t.name, sort: calculateTokenSortValue(t), currentSort: t.document.sort };
     }).sort((a, b) => b.sort - a.sort); // Highest sort first
 
@@ -171,7 +192,7 @@ async function awaitTokenAnimation(document) {
 
   const anim = token.movementAnimationPromise || token.animation;
   if (anim) {
-    try { await anim; } catch (e) { /* Ignore interruptions */ }
+    try { await anim; } catch { /* Ignore interruptions */ }
   } else {
     // Fallback: Check CanvasAnimation
     if (CanvasAnimation && CanvasAnimation.animations) {
@@ -184,7 +205,7 @@ async function awaitTokenAnimation(document) {
           // promiseData might be the promise itself or an object containing the promise
           const promise = promiseData.promise || promiseData;
           if (promise) {
-            try { await promise; } catch (e) { }
+            try { await promise; } catch { }
           }
         }
       }

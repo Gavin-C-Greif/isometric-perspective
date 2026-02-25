@@ -32,8 +32,9 @@ Here are some of the features the module offers. You can also see how all the fe
 - **Token Sprite Adjustments:** Fine-tune token sprite position and scale. Token artwork can be perfectly centered even for asymmetrical images. Increasing token size automatically scales the sprite, but this behavior can be disabled to support unconventional token sizes (for example, a 2×1 tank).
 - **Tile Sprite Adjustments:** Adjust tile sprite position and scale with ease, making it simple to copy and paste multiple tiles. An easy-to-use Flip Tile option is also available.
 - **Token Height Visual Cues:** When a token has elevation, its sprite visually reflects height using dynamic shadows and vertical guide lines for improved depth perception.
-- **Dynamic Tile:** Link tiles to walls so they automatically become hidden based on token position, creating an experience similar to classic isometric games.
-- **Auto Sorting Token:** Tokens are automatically layered based on their position on the canvas, ensuring that distant tokens appear behind closer ones.
+- **Dynamic Tile** *(production-ready)*: Link tiles to walls so they automatically become hidden based on token position, creating an experience similar to classic isometric games.
+- **Token Silhouette Occlusion** *(production-ready)*: Optional token silhouette masking with GPU and CPU modes; see Token Silhouette Occlusion Modes below.
+- **Auto Sorting Token** *(production-ready)*: Tokens are automatically layered based on their position on the canvas, ensuring that distant tokens appear behind closer ones.
 
 ## Configuration Screens
 > *Outdated v12 images*
@@ -55,6 +56,29 @@ Here are some of the features the module offers. You can also see how all the fe
 This module currently targets Foundry VTT v13 (see `module.json` compatibility fields).
 
 The core functionality applies a canvas transformation (rotation + skew) to achieve isometric perspective, then compensates background, token, and tile rendering so core interactions still behave as expected.
+
+### Token Silhouette Occlusion Modes (v13)
+
+`Enable Occlusion: Token Silhouette` supports:
+
+- `off` (default): safest production setting and lowest runtime overhead.
+- `gpu`: generally the fastest silhouette mode, but visual quality should be validated on target scenes.
+- `cpu1`, `cpu2`, `cpu3`, `cpu4`, `cpu6`, `cpu8`, `cpu10`: chunked CPU modes where smaller chunks improve edge fidelity at higher CPU cost.
+
+Production policy:
+
+- Keep global default at `off`.
+- If CPU fallback is needed, start with `cpu6` as the recommended quality/performance balance.
+- Use `cpu2` for higher-fidelity low/medium-density scenes; use `cpu8`/`cpu10` only for simple rectangular occluders.
+
+### Token Auto-Sorting (v13)
+
+When `Enable Automatic Token Sorting` is on for an isometric scene, token depth ordering uses a single documented ownership model:
+
+- **Document sort-write path** (`scripts/autosorting.js`): The only module that writes `token.sort` to the document. Updates run on `canvasReady` (batch sync) and on `updateToken`/`createToken` (position changes). Per-token coalescing prevents jitter during rapid movement.
+- **Display z-index path** (`scripts/token.js`): The `_refreshSort` patch sets `mesh.zIndex` for immediate visual order. It does *not* write to the document. Controlled tokens get a small zIndex boost (+0.1) so they remain visible when selected without breaking relative depth order.
+
+No other module should call `scene.updateEmbeddedDocuments('Token', {sort: ...})`.
 
 These are the modules I've tested and their status:
 
@@ -91,7 +115,7 @@ LockerView _(needs a 330° rotation to make a working isometric rotation)_
 ## To-Do List
 
 - [ ] Code to handle tiles and walls.
-- [ ] Code to handle occlusion of tiles and tokens.
+- [ ] Tile-to-tile occlusion (token silhouette occlusion is implemented; see Token Silhouette Occlusion Modes).
 - [?] Different token art for isometric and top-down views.
 - [x] Code to handle non symmetrical token sizes.
 - [x] Translation to other languages.
@@ -104,6 +128,23 @@ LockerView _(needs a 330° rotation to make a working isometric rotation)_
 ## Contribution
 
 Contributions are welcome! If you want to improve this module, feel free to open an issue or submit a pull request.
+
+## Release Validation and Operator Documentation
+
+For maintainers preparing a release:
+
+- **Smoke suite**: [SMOKE-TEST.md](SMOKE-TEST.md) — Release Smoke Suite, Math Hardening Visual Matrix, high-risk interaction matrix.
+- **Release gate**: [RELEASE-PROCESS.md](RELEASE-PROCESS.md) — Pre-release gate, evidence requirements, release tooling (`npm run build`, `release:check`, `release:publish`).
+- **Performance baseline**: [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md) — Occlusion profiling baseline and mode policy.
+- **Evidence artifacts**: `high-risk-harness.json` (run `npm run harness:high-risk`), `occlusion-baseline-run.json` (run `npm run harness:occlusion-baseline`).
+
+## CI Status Checks
+
+For pull requests and pushes to `main`, GitHub Actions workflow `CI Quality Gates` must pass.
+
+Required check to enforce in branch protection:
+
+- `Lint and Test`
 
 #### v13 Main Contributors
 - **@warpspeednyancatpatreon** – https://github.com/warpspeednyancatpatreon  

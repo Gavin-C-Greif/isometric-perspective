@@ -2,20 +2,38 @@
 
 This document defines the minimum release gate for `isometric-perspective` v13.
 
+## Release Tooling (US-007)
+
+Packaging is separated from irreversible git operations:
+
+| Command | Purpose |
+|---------|---------|
+| `npm run build` | Package only: sync version, create zip. No git operations. |
+| `npm run release:check` | Validate evidence: lint, test, high-risk harness, occlusion baseline. Must all pass. |
+| `CONFIRM_RELEASE=1 npm run release:publish` | Git commit, tag, push. Runs release:check first; requires explicit `CONFIRM_RELEASE=1`. |
+
+**Mandatory evidence** (enforced by `release:check`): smoke suite, high-risk matrix, profiling baseline, CI pass. See Pre-Release Gate below.
+
+## Lint Baseline (US-006)
+
+Lint warning count is tracked for release notes. Post-US-006 baseline: 66 warnings (down from 82). Run `npm run lint` to verify; record any change in release notes.
+
 ## Pre-Release Gate
 
 Before tagging or publishing any release candidate:
 
 1. Complete the `US-008: v13 Release Smoke Suite + Gate Record` section in `SMOKE-TEST.md`.
 2. Complete the **US-008 (PRD): High-Risk Interaction Matrix** in `SMOKE-TEST.md` — all 5 rows (projection switch, pan/zoom, scene switch, token control switch, door state changes) must pass.
-3. Complete the **Math Hardening Visual Matrix** in `SMOKE-TEST.md` — all four sections (projection mode, rectangular token, offset/elevation, sorting overlap) must pass.
-4. Record **Actual** outcomes for each scenario and mark each **Result** as `PASS` or `FAIL`.
-5. Refresh `PERFORMANCE-BASELINE.md` with one completed US-010 profiling run and at least one long-session stress scenario (see PERFORMANCE-BASELINE.md) for the candidate build (or explicitly state why profiling could not be executed).
-6. Ensure all rows in the Release Smoke Suite, the High-Risk Interaction Matrix, and the Math Hardening Visual Matrix are `PASS`.
-7. Run `npm run lint` and record the result in the Release Gate Checklist in `SMOKE-TEST.md`.
-8. If a release artifact is being prepared, run `npm run build` and record the result in the same checklist.
-9. Do not publish a release if any smoke scenario, high-risk matrix row, math hardening checklist section, or quality check fails.
+3. Run the high-risk harness: `npm run harness:high-risk -- --init --force`, fill `high-risk-harness.json` with scenario status/evidence, then run `npm run harness:high-risk`; command must report `Overall: PASS`.
+4. Complete the **Math Hardening Visual Matrix** in `SMOKE-TEST.md` — all four sections (projection mode, rectangular token, offset/elevation, sorting overlap) must pass.
+5. Record **Actual** outcomes for each scenario and mark each **Result** as `PASS` or `FAIL`.
+6. Refresh `PERFORMANCE-BASELINE.md` with one completed US-010 profiling run and at least one long-session stress scenario (see PERFORMANCE-BASELINE.md) for the candidate build (or explicitly state why profiling could not be executed).
+7. Run the profiling evidence harness: `npm run harness:occlusion-baseline -- --init --force`, fill `occlusion-baseline-run.json`, then run `npm run harness:occlusion-baseline`; command must report `Overall: PASS`.
+8. Ensure all rows in the Release Smoke Suite, the High-Risk Interaction Matrix, and the Math Hardening Visual Matrix are `PASS`.
+9. Run `npm run lint` and record the result in the Release Gate Checklist in `SMOKE-TEST.md`.
+10. If a release artifact is being prepared, run `npm run build` and record the result in the same checklist.
+11. Do not publish a release if any smoke scenario, high-risk matrix row, math hardening checklist section, or quality check fails.
 
 ## Evidence
 
-Treat the completed run metadata + smoke suite + high-risk interaction matrix + math hardening visual matrix + gate checklist in `SMOKE-TEST.md`, plus the current profiling record and long-session stress scenario in `PERFORMANCE-BASELINE.md`, as the release validation artifact for the version being shipped.
+Treat the completed run metadata + smoke suite + high-risk interaction matrix + `high-risk-harness.json` validation output + math hardening visual matrix + gate checklist in `SMOKE-TEST.md`, plus the current profiling record, `occlusion-baseline-run.json` validation output, and long-session stress scenario in `PERFORMANCE-BASELINE.md`, as the release validation artifact for the version being shipped.
