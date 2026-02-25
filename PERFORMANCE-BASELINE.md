@@ -91,6 +91,14 @@ Copy this section for each profiling run:
 | High Density | cpu8 | | | |
 | High Density | cpu10 | | | |
 
+Harness workflow:
+
+1. Initialize/reset artifact: `npm run harness:occlusion-baseline -- --init --force`
+2. Fill `occlusion-baseline-run.json` from actual Foundry profiling measurements.
+3. Validate completeness and pass/fail evidence: `npm run harness:occlusion-baseline`
+
+The harness exits non-zero until run metadata is complete and every matrix row has metrics plus `pass: true`.
+
 ## US-003: Occlusion Lifecycle and Memory Notes (2026-02-24)
 
 Occlusion overlay updates now explicitly destroy replaced sprites and masks on each update cycle to avoid memory churn during long sessions:

@@ -5,6 +5,7 @@ Started: 2026-02-24
 - Use workflow job name `Lint and Test` as the required branch-protection status check for `main`.
 - Use `npm run harness:high-risk -- --init --force` to reset `high-risk-harness.json`, then `npm run harness:high-risk` to produce scenario-level PASS/FAIL evidence.
 - Normalize occlusion setting values through `scripts/occlusion-mode.js` before runtime use so invalid `cpuN` values safely fall back to `cpu6`.
+- Use `npm run harness:occlusion-baseline -- --init --force` to regenerate `occlusion-baseline-run.json`, then `npm run harness:occlusion-baseline` to verify release baseline evidence completeness.
 
 ---
 
@@ -33,4 +34,13 @@ Started: 2026-02-24
   - Patterns discovered: Keep occlusion mode parsing logic isolated and testable outside Foundry/PIXI runtime dependencies.
   - Gotchas encountered: Browser MCP schema files are not present in this environment, so in-browser validation cannot be automated from this run.
   - Useful context: `US-003` still needs one manually executed release-candidate profiling baseline record plus browser verification evidence before it can be marked complete.
+---
+
+## 2026-02-24 19:35:58 CST - US-003
+- Added a structured occlusion profiling evidence harness (`scripts/occlusion-baseline-harness.js`) plus template artifact (`occlusion-baseline-run.json`), tests, and release docs wiring so release-candidate baseline runs can be validated with explicit PASS/FAIL output.
+- Files changed: `package.json`, `scripts/occlusion-baseline-harness.js`, `tests/occlusion-baseline-harness.test.mjs`, `occlusion-baseline-run.json`, `PERFORMANCE-BASELINE.md`, `RELEASE-PROCESS.md`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Keep baseline performance evidence in machine-readable JSON artifacts and gate completeness with a non-zero-exit harness command.
+  - Gotchas encountered: Harness intentionally fails until all metadata fields and all 21 scenario×mode rows are filled with metrics and `pass: true`.
+  - Useful context: Browser verification for `US-003` remains manual here because browser MCP schemas/tools were unavailable in this environment.
 ---

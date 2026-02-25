@@ -11,7 +11,8 @@
     "test": "node --test tests/*.test.mjs",
     "lint": "eslint scripts docs release.cjs",
     "lint:fix": "eslint scripts docs release.cjs --fix",
-    "harness:high-risk": "node scripts/high-risk-harness.js --file high-risk-harness.json"
+    "harness:high-risk": "node scripts/high-risk-harness.js --file high-risk-harness.json",
+    "harness:occlusion-baseline": "node scripts/occlusion-baseline-harness.js --file occlusion-baseline-run.json"
   },
   "keywords": [],
   "author": "",

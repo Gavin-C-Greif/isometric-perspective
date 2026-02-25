@@ -1,0 +1,183 @@
+{
+  "storyId": "US-003",
+  "harness": "occlusion-performance-baseline",
+  "generatedAt": "2026-02-25T01:35:50.740Z",
+  "runMetadata": {
+    "dateTime": "",
+    "buildCommit": "",
+    "foundryVersion": "",
+    "browserOs": "",
+    "tester": "",
+    "notes": ""
+  },
+  "rows": [
+    {
+      "scenario": "low",
+      "mode": "off",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "low",
+      "mode": "gpu",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "low",
+      "mode": "cpu2",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "low",
+      "mode": "cpu4",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "low",
+      "mode": "cpu6",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "low",
+      "mode": "cpu8",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "low",
+      "mode": "cpu10",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "medium",
+      "mode": "off",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "medium",
+      "mode": "gpu",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "medium",
+      "mode": "cpu2",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "medium",
+      "mode": "cpu4",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "medium",
+      "mode": "cpu6",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "medium",
+      "mode": "cpu8",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "medium",
+      "mode": "cpu10",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "high",
+      "mode": "off",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "high",
+      "mode": "gpu",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "high",
+      "mode": "cpu2",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "high",
+      "mode": "cpu4",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "high",
+      "mode": "cpu6",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "high",
+      "mode": "cpu8",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    },
+    {
+      "scenario": "high",
+      "mode": "cpu10",
+      "avgFrameOrFps": "",
+      "worstFrameOrStutters": "",
+      "visualQuality": "",
+      "pass": null
+    }
+  ]
+}
