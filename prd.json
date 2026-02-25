@@ -1,129 +1,66 @@
 {
   "project": "Isometric Perspective",
-  "branchName": "ralph/v13-production-hardening-release",
-  "description": "Production hardening release for Foundry v13 that matures existing isometric features, adds CI and regression gates, and improves release safety.",
+  "branchName": "ralph/github-reference-and-comment-english-standardization",
+  "description": "Standardize all GitHub repository references to the canonical Gavin-C-Greif URL and translate non-English comments to clear technical English across the tracked repository.",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Enforce CI quality gates",
-      "description": "As a maintainer, I want automated CI checks for lint and tests so regressions are blocked before merge.",
+      "title": "Canonicalize GitHub repository references",
+      "description": "As a maintainer, I want all repository references to use the canonical GitHub URL so contributors and automation resolve the correct project destination.",
       "acceptanceCriteria": [
-        "Add a PR workflow that runs npm run lint and npm test on pull requests and pushes to main.",
-        "Workflow fails when lint or tests fail.",
-        "Document required CI status checks in repository documentation.",
+        "Replace legacy repository-owner/repository references with https://github.com/Gavin-C-Greif/isometric-perspective in tracked files where they refer to this project.",
+        "Apply the update across full tracked repository scope (docs, configs, scripts, metadata, and comment text when present).",
+        "Search-based validation confirms no outdated repository references remain in scope.",
         "Typecheck passes",
         "Tests pass"
       ],
       "priority": 1,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-002",
-      "title": "Add high-risk integration regression harness",
-      "description": "As a maintainer, I want repeatable regression checks for scene transforms and interaction flows so runtime issues are caught before release.",
+      "title": "Translate non-English comments to technical English",
+      "description": "As a contributor, I want all non-English comments translated to clear technical English so maintenance and review are consistent.",
       "acceptanceCriteria": [
-        "Create a harness for projection switching, pan/zoom, scene switch, token control switch, and door state changes.",
-        "Harness outputs include pass/fail evidence for each scenario.",
-        "Link harness usage from SMOKE-TEST.md and RELEASE-PROCESS.md.",
+        "Translate all non-English comments in tracked files to English.",
+        "Preserve technical intent while improving clarity for maintainers.",
+        "Search-based validation confirms no non-English comments remain in scope.",
         "Typecheck passes",
-        "Tests pass",
-        "Verify in browser using dev-browser skill"
+        "Tests pass"
       ],
       "priority": 2,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-003",
-      "title": "Productionize occlusion behavior and defaults",
-      "description": "As a GM, I want token silhouette occlusion to be predictable and performant so it is safe to use in production sessions.",
+      "title": "Keep cleanup text-only and behavior-safe",
+      "description": "As a release owner, I want this cleanup to avoid logic changes so runtime behavior remains stable.",
       "acceptanceCriteria": [
-        "Occlusion lifecycle is stable across canvas init, scene switch, and canvas teardown with no stale containers or sprite leaks.",
-        "Document mode behavior (off, gpu, cpu modes) with production recommendations and default policy.",
-        "Record at least one completed profiling baseline run for the release candidate.",
+        "Changes are limited to repository references, comments, and related documentation text.",
+        "No intentional API, runtime, data model, or behavior changes are introduced.",
+        "Any unavoidable non-textual edit is documented with rationale.",
         "Typecheck passes",
-        "Tests pass",
-        "Verify in browser using dev-browser skill"
+        "Tests pass"
       ],
       "priority": 3,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-004",
-      "title": "Productionize dynamic tile linked-wall behavior",
-      "description": "As a GM/player, I want dynamic tile linked-wall visibility to be consistent during fast interaction so visibility behavior remains trustworthy.",
+      "title": "Provide deterministic validation evidence",
+      "description": "As a maintainer, I want repeatable validation outputs so completion can be verified quickly and confidently.",
       "acceptanceCriteria": [
-        "Overlay rebuild path deterministically destroys and recreates cloned sprites without accumulation.",
-        "Behavior is defined and stable for no-controlled-token, rapid control switching, and scene transitions.",
-        "Linked doors and wall state changes trigger correct visibility updates.",
+        "Document and run repeatable searches for legacy repository references and non-English comments.",
+        "Record validation results with explicit pass/fail statement for both checks.",
+        "Run npm run lint and npm test as final gate evidence.",
         "Typecheck passes",
-        "Tests pass",
-        "Verify in browser using dev-browser skill"
+        "Tests pass"
       ],
       "priority": 4,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-005",
-      "title": "Productionize token auto-sorting behavior",
-      "description": "As a GM, I want token depth ordering to remain stable and intuitive so token front/back rendering matches visual expectation.",
-      "acceptanceCriteria": [
-        "Document sorting ownership between display z-index path and document sort-write path.",
-        "Eliminate sort jitter and conflicting updates during rapid token movement.",
-        "Preserve controlled-token visibility boost without breaking relative depth order.",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 5,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-006",
-      "title": "Clean v13 runtime boundaries and reduce code debt",
-      "description": "As a maintainer, I want runtime code aligned to v13 support so future changes are safer and easier to reason about.",
-      "acceptanceCriteria": [
-        "Remove, isolate, or clearly mark non-executed legacy compatibility branches not relevant to v13 runtime.",
-        "Remove ambiguous commented experimental runtime paths from entry points.",
-        "Reduce lint warning count meaningfully from current baseline and track it in release notes.",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 6,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-007",
-      "title": "Harden release tooling and release evidence flow",
-      "description": "As a maintainer, I want a safer release process so packaging and publishing are reproducible and low-risk.",
-      "acceptanceCriteria": [
-        "Separate packaging from irreversible git operations (commit, tag, push) or add explicit guardrails.",
-        "Require release evidence: smoke suite, high-risk matrix, profiling baseline, and CI pass.",
-        "Ensure release candidate checklist is executable without ad-hoc steps.",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 7,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-008",
-      "title": "Align README and operator-facing documentation with shipped behavior",
-      "description": "As a user and maintainer, I want docs that accurately reflect current feature status so configuration choices are clear.",
-      "acceptanceCriteria": [
-        "README feature list, known bugs, and compatibility notes match current implementation.",
-        "Feature maturity labels for occlusion, dynamic tile, and auto-sorting are explicit and consistent.",
-        "Documentation references current smoke, release, and performance artifacts.",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 8,
-      "passes": true,
+      "passes": false,
       "notes": ""
     }
   ]
