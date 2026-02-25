@@ -19,14 +19,14 @@ export function registerDynamicTileConfig() {
     alwaysVisibleContainer.name = "AlwaysVisibleContainer";
     alwaysVisibleContainer.eventMode = 'passive';
     
-    // Cria subcamadas separadas para tiles e tokens
+    // Create separate sublayers for tiles and tokens
     tilesLayer = new PIXI.Container();
     tokensLayer = new PIXI.Container();
     
     tilesLayer.name = "AlwaysVisibleTiles";
     tokensLayer.name = "AlwaysVisibleTokens";
     
-    // Adiciona as camadas na ordem correta
+    // Add the layers in the correct order
     alwaysVisibleContainer.addChild(tilesLayer);
     alwaysVisibleContainer.addChild(tokensLayer);
     
@@ -82,7 +82,7 @@ export function registerDynamicTileConfig() {
 
   // ---------------------- TOKEN ----------------------
   Hooks.on('createToken', (token, options, userId) => {
-    // Adiciona um pequeno atraso para garantir que o token esteja completamente inicializado
+    // Add a small delay to ensure the token is fully initialized
     setTimeout(() => {
       scheduleDynamicTileUpdate();
     }, 100);
@@ -94,7 +94,7 @@ export function registerDynamicTileConfig() {
     scheduleDynamicTileUpdate();
   });
   Hooks.on('updateToken', (tokenDocument, change, options, userId) => {
-    // Se o token atualizado for o último controlado, atualize a referência
+    // If the updated token is the last controlled one, update the reference
     if (lastControlledToken && tokenDocument.id === lastControlledToken.id) {
       lastControlledToken = canvas.tokens.get(tokenDocument.id);
     }
@@ -131,15 +131,15 @@ export function registerDynamicTileConfig() {
   });
 
   Hooks.on('updateWall', (wallDocument, change, options, userId) => {
-    // Verifica se a mudança é relacionada ao estado da porta
+    // Check if the change is related to the door state
     if ('ds' in change) {
-      // Procura por tiles que têm esta wall vinculada
+      // Find tiles that have this wall linked
       const linkedTiles = canvas.tiles.placeables.filter(tile => {
         const walls = getLinkedWalls(tile);
         return walls.some(wall => wall && wall.id === wallDocument.id);
       });
       
-      // Se encontrou algum tile vinculado, atualiza os elementos visíveis
+      // If any linked tile was found, update the visible elements
       if (linkedTiles.length > 0) {
         scheduleDynamicTileUpdate();
       }
@@ -178,7 +178,7 @@ export function registerDynamicTileConfig() {
 
 
 
-// Container PIXI para elementos sempre visíveis
+// PIXI container for always-visible elements
 let alwaysVisibleContainer;
 let tilesLayer;
 let tokensLayer;
@@ -339,27 +339,27 @@ function cloneTokenSprite(token) {
   }
 }
 
-// Função para encontrar o token inicial na inicialização
+// Function to find the initial token during initialization
 function getInitialToken() {
-  // Primeiro, tenta pegar o token controlado
+  // First, try to get the controlled token
   const controlled = canvas.tokens.controlled[0];
   if (controlled) return controlled;
 
-  // Se não houver token controlado, tenta usar o último token conhecido
+  // If there is no controlled token, try to use the last known token
   if (lastControlledToken) return lastControlledToken;
 
-  // Se não houver último token conhecido, tenta pegar o token do personagem do usuário
+  // If there is no last known token, try to get the user's character token
   const actor = game.user.character;
   if (actor) {
       const userToken = canvas.tokens.placeables.find(t => t.actor?.id === actor.id);
       if (userToken) return userToken;
   }
 
-  // Se ainda não encontrou, pega o primeiro token que o usuário possui permissão
+  // If still not found, get the first token the user has permission for
   const availableToken = canvas.tokens.placeables.find(t => t.observer);
   if (availableToken) return availableToken;
 
-  // Se tudo falhar, retorna null
+  // If all fails, return null
   return null;
 }
 
@@ -376,7 +376,7 @@ function updateAlwaysVisibleElements() {
 
   // Collect Tiles with linked walls
   const tilesWithLinkedWalls = canvas.tiles.placeables.filter(tile => {
-    // Usa a função auxiliar para garantir que temos um array
+    // Use the helper function to ensure we have an array
     const walls = getLinkedWalls(tile);
     return walls.length > 0;
   });
@@ -447,7 +447,7 @@ function updateAlwaysVisibleElements() {
   updateLayerOpacity(tilesLayer, tilesOpacity);
   //updateLayerOpacity(tokensLayer, tokensOpacity);
 
-  // Habilita o zIndex para a camada de tokens
+  // Enable zIndex for the token layer
   tokensLayer.sortableChildren = true;
 }
 
@@ -456,7 +456,7 @@ export function normalizeLinkedWallIds(linkedWallIds) {
 
   let parsedIds = [];
 
-  // Se for uma string
+  // If it is a string
   if (typeof linkedWallIds === 'string') {
     if (!linkedWallIds.trim()) return [];
     parsedIds = linkedWallIds.split(',');
@@ -510,19 +510,19 @@ async function normalizeAllTileLinkedWallFlags() {
   }
 }
 
-// Função para obter walls linkadas a um tile de forma segura
+// Function to safely get walls linked to a tile
 function getLinkedWalls(tile) {
   if (!tile || !tile.document) return [];
   const linkedWallIds = normalizeLinkedWallIds(tile.document.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds'));
   return linkedWallIds.map(id => canvas.walls.get(id)).filter(Boolean);
 }
 
-// Função auxiliar para verificar e corrigir flags existentes
+// Helper function to verify and fix existing flags
 async function validateAndFixTileFlags(tile) {
   const currentLinkedWalls = tile.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds');
   const validArray = normalizeLinkedWallIds(currentLinkedWalls);
   
-  // Se o valor atual for diferente do array válido, atualiza
+  // If the current value differs from the valid array, update it
   if (JSON.stringify(currentLinkedWalls) !== JSON.stringify(validArray)) {
     await tile.setFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds', validArray);
   }
@@ -539,48 +539,39 @@ async function validateAndFixTileFlags(tile) {
 
 
 
-// Funções auxiliares para os calculos de posição
+// Helper functions for position calculations
 
 
 /**
-
-  --- Regras para determinar visibilidade, partindo de um ponto de vista 2D (top-down) ---
-
-- Se a parede estiver na horizontal: Qualquer ponto que o token estiver abaixo da linha horizontal é
-considerado que ele esteja em frente a parede. Senão ele está atrás da parede.
-
-- Se a parede estiver na vertical: Qualquer ponto que o token estiver à esquerda da linha vertical que
-a parede faz, ele é considerado estar em frente a parede. Senão ele está atrás da parede.
-
-- Se a parede estiver inclinada com o sentido desta barra / e o angulo que ela faz com uma reta
-horizontal é menor que 45º: Trace uma linha infinita entre os dois pontos que formam a parede.
-Faça a diferença entre o ponto Y do token e o ponto y da linha sob o mesmo valor de X. Se essa
-diferença for positiva, o token está em frente a parede, senão ele está atrás da parede.
-
-- Se a parede estiver inclinada com o sentido desta barra \ e o angulo que ela faz com uma reta
-horizontal é menor que 45º: Trace uma linha infinita entre os dois pontos que formam a parede.
-Faça a diferença entre o ponto Y do token e o ponto y da linha sob o mesmo valor de X. Se essa
-diferença for positiva, o token está em frente a parede, senão ele está atrás da parede.
-
-- Se a parede estiver inclinada com o sentido desta barra / e o angulo que ela faz com uma reta
-horizontal é maior que 45º: Trace uma linha infinita entre os dois pontos que formam a parede.
-Faça a diferença entre o ponto Y do token e o ponto y da linha sob o mesmo valor de X. Se essa
-diferença for positiva, o token está atrás da parede, senão ele está na frente da parede.
-
-- Se a parede estiver inclinada com o sentido desta barra \ e o angulo que ela faz com uma reta
-horizontal é maior que 45º: Trace uma linha infinita entre os dois pontos que formam a parede.
-Faça a diferença entre o ponto Y do token e o ponto y da linha sob o mesmo valor de X. Se essa
-diferença for positiva, o token está em frente a parede, senão ele está atrás da parede.
- 
-*/
+ * --- Rules for determining visibility from a 2D (top-down) viewpoint ---
+ *
+ * - If the wall is horizontal: Any point where the token is below the horizontal line is
+ *   considered in front of the wall. Otherwise it is behind the wall.
+ *
+ * - If the wall is vertical: Any point where the token is to the left of the vertical line
+ *   the wall makes is considered in front of the wall. Otherwise it is behind the wall.
+ *
+ * - If the wall is sloped in the / direction and its angle with a horizontal line is less than 45°:
+ *   Draw an infinite line between the two points that form the wall. Compute the difference between
+ *   the token's Y and the line's Y at the same X. If positive, the token is in front; otherwise behind.
+ *
+ * - If the wall is sloped in the \ direction and its angle with a horizontal line is less than 45°:
+ *   Same as above. If the difference is positive, the token is in front; otherwise behind.
+ *
+ * - If the wall is sloped in the / direction and its angle with a horizontal line is greater than 45°:
+ *   Same line/difference. If positive, the token is behind the wall; otherwise in front.
+ *
+ * - If the wall is sloped in the \ direction and its angle with a horizontal line is greater than 45°:
+ *   Same line/difference. If positive, the token is in front; otherwise behind.
+ */
 
 /**
- * Calcula o ângulo em graus entre uma linha e a horizontal
- * @param {number} x1 - Coordenada X do primeiro ponto
- * @param {number} y1 - Coordenada Y do primeiro ponto
- * @param {number} x2 - Coordenada X do segundo ponto
- * @param {number} y2 - Coordenada Y do segundo ponto
- * @returns {number} - Ângulo em graus (0-360)
+ * Calculate the angle in degrees between a line and the horizontal
+ * @param {number} x1 - X coordinate of the first point
+ * @param {number} y1 - Y coordinate of the first point
+ * @param {number} x2 - X coordinate of the second point
+ * @param {number} y2 - Y coordinate of the second point
+ * @returns {number} - Angle in degrees (0-360)
  */
 function calculateAngle(x1, y1, x2, y2) {
   const dx = x2 - x1;
@@ -592,16 +583,16 @@ function calculateAngle(x1, y1, x2, y2) {
 
 
 /**
-* Determina se a parede está inclinada no sentido / ou \
-* @param {number} x1 - Coordenada X do primeiro ponto
-* @param {number} y1 - Coordenada Y do primeiro ponto
-* @param {number} x2 - Coordenada X do segundo ponto
-* @param {number} y2 - Coordenada Y do segundo ponto
-* @returns {string} - 'forward' para / ou 'backward' para \
+* Determine if the wall is sloped in the / or \ direction
+* @param {number} x1 - X coordinate of the first point
+* @param {number} y1 - Y coordinate of the first point
+* @param {number} x2 - X coordinate of the second point
+* @param {number} y2 - Y coordinate of the second point
+* @returns {string} - 'forward' for / or 'backward' for \
 */
 function getWallDirection(x1, y1, x2, y2) {
-  // Se y2 for menor que y1 quando x2 é maior que x1, é uma parede '/'
-  // Caso contrário, é uma parede '\'
+  // If y2 is less than y1 when x2 is greater than x1, it is a '/' wall
+  // Otherwise, it is a '\' wall
   if (x2 > x1) {
     return y2 < y1 ? 'forward' : 'backward';
   } else {
@@ -612,10 +603,10 @@ function getWallDirection(x1, y1, x2, y2) {
 
 
 /**
-* Verifica se um token está em frente a uma parede baseado nas regras especificadas
-* @param {Object} token - Objeto token com propriedade center {x, y}
-* @param {Object} wall - Objeto wall com propriedades edge.a {x, y} e edge.b {x, y}
-* @returns {boolean} - true se o token estiver em frente à parede, false caso contrário
+* Check if a token is in front of a wall based on the specified rules
+* @param {Object} token - Token object with center property {x, y}
+* @param {Object} wall - Wall object with edge.a {x, y} and edge.b {x, y}
+* @returns {boolean} - true if the token is in front of the wall, false otherwise
 */
 function isTokenInFrontOfWall(token, wall) {
   // LEGACY: v11 uses wall.A/B; v13 uses wall.edge.a/b (module targets v13)
@@ -629,40 +620,40 @@ function isTokenInFrontOfWall(token, wall) {
   const { x: x2, y: y2 } = isometricModuleConfig.FOUNDRY_VERSION === 11 ? wall.B : wall.edge.b; // v11: wall.B
   const { x: tokenX, y: tokenY } = token.center;
 
-  // Verifica se a parede é horizontal (ângulo próximo a 0°)
-  // Token está em frente se estiver abaixo da linha horizontal
+  // Check if the wall is horizontal (angle close to 0°)
+  // Token is in front if it is below the horizontal line
   if (Math.abs(y1 - y2) < 0.001) {
     return tokenY > y1;
   }
 
-  // Verifica se a parede é vertical (ângulo próximo a 90°)
-  // Token está em frente se estiver à esquerda da linha vertical
+  // Check if the wall is vertical (angle close to 90°)
+  // Token is in front if it is to the left of the vertical line
   if (Math.abs(x1 - x2) < 0.001) {
     return tokenX < x1;
   }
 
-  // Calcula o ângulo da parede com a horizontal
+  // Calculate the angle of the wall with the horizontal
   const angle = calculateAngle(x1, y1, x2, y2);
   
-  // Determina a direção da inclinação da parede (/ ou \)
+  // Determine the direction of the wall slope (/ or \)
   const wallDirection = getWallDirection(x1, y1, x2, y2);
 
-  // Calcula a posição Y na linha da parede para o X do token
+  // Calculate the Y position on the wall line for the token's X
   const slope = (y2 - y1) / (x2 - x1);
   const wallYAtTokenX = slope * (tokenX - x1) + y1;
   const difference = tokenY - wallYAtTokenX;
 
   if (wallDirection === 'forward') { // Parede tipo /
     if (angle < 45) {
-      return difference > 0; // Token está em frente se estiver acima da linha
+      return difference > 0; // Token is in front if above the line
     } else {
-      return difference < 0; // Token está em frente se estiver abaixo da linha
+      return difference < 0; // Token is in front if below the line
     }
-  } else { // Parede tipo \
+  } else { // Wall type \
     if (angle < 45) {
-      return difference > 0; // Token está em frente se estiver acima da linha
+      return difference > 0; // Token is in front if above the line
     } else {
-      return difference > 0; // Token está em frente se estiver acima da linha
+      return difference > 0; // Token is in front if above the line
     }
   }
 }
@@ -670,26 +661,26 @@ function isTokenInFrontOfWall(token, wall) {
 
 
 /**
-* Verifica se um token pode ver uma parede
-* @param {Object} token - Objeto token
-* @param {Object} wall - Objeto wall
-* @returns {boolean} - true se o token puder ver a parede, false caso contrário
+* Check if a token can see a wall
+* @param {Object} token - Token object
+* @param {Object} wall - Wall object
+* @returns {boolean} - true if the token can see the wall, false otherwise
 */
 function canTokenSeeWall(token, wall) {
   if (!wall || !token) return false;
 
-  // Verifica se o token está em frente à parede
+  // Check if the token is in front of the wall
   const isInFront = isTokenInFrontOfWall(token, wall);
   if (!isInFront) return false;
 
-  // Verifica colisão com outros objetos entre o token e os pontos da parede
+  // Check collision with other objects between the token and the wall points
   // LEGACY: v11 uses wall.A/B and canvas.effects.visibility; v13 uses wall.edge.a/b and canvas.visibility
   const wallPoints = isometricModuleConfig.FOUNDRY_VERSION === 11 ? [wall.A, wall.center, wall.B] : [wall.edge.a, wall.center, wall.edge.b];
   const tokenPosition = token.center;
 
   for (const point of wallPoints) {
     const visibilityTest = isometricModuleConfig.FOUNDRY_VERSION === 11 ? canvas.effects.visibility.testVisibility(point, { tolerance: 2 }) : canvas.visibility?.testVisibility(point, { tolerance: 2 });
-    // Usa o testVisibility do token para verificar se ele pode ver o ponto
+    // Use the token's testVisibility to verify it can see the point
     if (visibilityTest) {
       const ray = new Ray(tokenPosition, point);
       const collision = CONFIG.Canvas.polygonBackends.sight.testCollision(ray.B, ray.A, { 
@@ -697,7 +688,7 @@ function canTokenSeeWall(token, wall) {
         type: "sight" 
       });
       
-      // Se não houver colisão com algum ponto dentro do alcance, o token pode ver a parede
+      // If there is no collision with any point within range, the token can see the wall
       if (!collision) {
         return true
       }
@@ -710,6 +701,6 @@ function canTokenSeeWall(token, wall) {
 function canTokenSeeToken(sourceToken, targetToken) {
   if (!sourceToken || !targetToken) return false;
   
-  // Usa o canvas testVisibility no token alvo como verificação
+  // Use the canvas testVisibility on the target token as verification
   return canvas.visibility?.testVisibility(targetToken.center, { tolerance: 2 });
 }

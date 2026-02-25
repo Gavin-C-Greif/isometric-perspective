@@ -122,70 +122,70 @@ export function adjustHUDPosition(hud, html) {
 
 
 /*
-// Função para calcular a posição isométrica
+// Function to calculate the isometric position
 export function calculateIsometricPosition_not(x, y) {
-  // Obter valores de rotação e skew
-  const rotation = ISOMETRIC_CONST.HudAngle; //ISOMETRIC_CONST.rotation;  // em graus
-  const skewX = 0;//ISOMETRIC_CONST.skewX;       // em graus
-  const skewY = 0;//ISOMETRIC_CONST.skewY;       // em graus
+  // Get rotation and skew values
+  const rotation = ISOMETRIC_CONST.HudAngle; //ISOMETRIC_CONST.rotation;  // in degrees
+  const skewX = 0;//ISOMETRIC_CONST.skewX;       // in degrees
+  const skewY = 0;//ISOMETRIC_CONST.skewY;       // in degrees
 
-  // Converter ângulos de graus para radianos
+  // Convert angles from degrees to radians
   const rotationRad = rotation * (Math.PI / 180);
   const skewXRad = skewX * (Math.PI / 180);
   const skewYRad = skewY * (Math.PI / 180);
 
-  // 1. Aplicar distorções de skew
-  const skewedX = x + y * Math.tan(skewXRad);  // Distorção no eixo X devido ao skewX
-  const skewedY = y + x * Math.tan(skewYRad);  // Distorção no eixo Y devido ao skewY
+  // 1. Apply skew distortions
+  const skewedX = x + y * Math.tan(skewXRad);  // Distortion on X axis due to skewX
+  const skewedY = y + x * Math.tan(skewYRad);  // Distortion on Y axis due to skewY
 
-  // 2. Aplicar rotação nas coordenadas distorcidas
-  const isoX =        (skewedX + skewedY) * Math.cos(rotationRad);   // Aplique rotação ao eixo X
-  const isoY = (-1) * (skewedX - skewedY) * Math.sin(rotationRad); // Aplique rotação ao eixo Y
+  // 2. Apply rotation to the distorted coordinates
+  const isoX =        (skewedX + skewedY) * Math.cos(rotationRad);   // Apply rotation to X axis
+  const isoY = (-1) * (skewedX - skewedY) * Math.sin(rotationRad); // Apply rotation to Y axis
 
-  // Retornar a posição isométrica calculada
+  // Return the calculated isometric position
   return { x: isoX, y: isoY };
 }
 
 function isometricToCartesianGPT(x_iso, y_iso) {
-  // Extrair os parâmetros de transformação
+  // Extract the transformation parameters
   const rotation = Math.abs(ISOMETRIC_CONST.rotation);
   const skewX = Math.abs(ISOMETRIC_CONST.skewX);
   const skewY = Math.abs(ISOMETRIC_CONST.skewY);
   
-  // Cria uma matriz de transformação com base nas rotações e distorções fornecidas
-  // Criando um objeto "dummy" para aplicar a transformação
+  // Create a transformation matrix based on the provided rotations and distortions
+  // Create a "dummy" object to apply the transformation
   const obj = new PIXI.Graphics();
 
-  // Aplica a transformação com setTransform
+  // Apply the transformation with setTransform
   obj.setTransform(x_iso, y_iso, 0, 0, 1, 1, -rotation, skewX, skewY);
 
-  // A matriz de transformação do objeto agora contém rotação e skew
+  // The object's transformation matrix now contains rotation and skew
   const matrix = obj.transform.worldTransform;
 
-  // Inverter a matriz para reverter a transformação
+  // Invert the matrix to reverse the transformation
   const invertedMatrix = matrix.invert();
   debugLog("cartesianToIso matrix", { matrix, invertedMatrix });
 
-  // Aplicar a inversa da matriz nas coordenadas isométricas
+  // Apply the inverse matrix to the isometric coordinates
   const cartesian = invertedMatrix.apply({ x: x_iso, y: y_iso });
 
   return { x: cartesian.x, y: cartesian.y };
 }
 
 function isometricToCartesian(isoX, isoY) {
-  // Definir parâmetros de transformação
+  // Define transformation parameters
   const rotation = ISOMETRIC_CONST.rotation;
   const skewX = -ISOMETRIC_CONST.skewX;
   const skewY = -ISOMETRIC_CONST.skewY;
   
-  // Etapa 1: Reverter a rotação
+  // Step 1: Reverse the rotation
   const unrotatedX = isoX * Math.cos(rotation) - isoY * Math.sin(rotation);
   const unrotatedY = isoX * Math.sin(rotation) + isoY * Math.cos(rotation);
 
-  // Etapa 2: Reverter o skew em X
+  // Step 2: Reverse the skew in X
   const unskewedX = unrotatedX - unrotatedY * Math.tan(skewX);
 
-  // Etapa 3: Reverter o skew em Y
+  // Step 3: Reverse the skew in Y
   const cartesianY = unrotatedY - unskewedX * Math.tan(skewY);
   const cartesianX = unskewedX;
 
@@ -202,24 +202,24 @@ function isometricToCartesianGPT4o(x, y) {
   let adjustedX = x * scale;
   let adjustedY = y * scale;
 
-  // Cálculo dos valores da matriz composta T (com rotação + skewX + skewY)
+  // Calculation of the composite matrix T values (with rotation + skewX + skewY)
   const cosTheta = Math.cos(angle);
   const sinTheta = Math.sin(angle);
 
-  // Componentes da matriz composta T
+  // Components of the composite matrix T
   const a = cosTheta + sinTheta * skewY;
   const b = cosTheta * skewX + sinTheta;
   const c = -sinTheta + cosTheta * skewY;
   const d = -sinTheta * skewX + cosTheta;
 
-  // Determinante de T
+  // Determinant of T
   const detT = a * d - b * c;
 
   if (detT === 0) {
-      throw new Error("A matriz de transformação não é invertível");
+      throw new Error("The transformation matrix is not invertible");
   }
 
-  // Inversão da matriz T^-1
+  // Inversion of matrix T^-1
   const invDetT = 1 / detT;
 
   // Matrizes inversas
@@ -228,11 +228,11 @@ function isometricToCartesianGPT4o(x, y) {
   const c_inv = -c * invDetT;
   const d_inv = a * invDetT;
 
-  // Aplicando a matriz inversa para encontrar as coordenadas cartesianas
+  // Apply the inverse matrix to find the cartesian coordinates
   let cartesianX = a_inv * adjustedX + b_inv * adjustedY;
   let cartesianY = c_inv * adjustedX + d_inv * adjustedY;
 
-  // Retornar as coordenadas cartesianas
+  // Return the cartesian coordinates
   return { x: cartesianX, y: cartesianY };
 }
 */

@@ -338,7 +338,7 @@ export function addPrecisionTokenArtListener(app, html, context, options){
 // --- TokenPrecisionConfig adjust the scale (ratio) to has step of 0.01 instead of 0.1,
 // --- and EnhancedAnchorInput adjust the anchor X and Y to has steps of 0.01 instead of 1
 
-// Ajusta a precisão de configurações de token no Foundry VTT
+// Adjust token configuration precision in Foundry VTT
 export class TokenPrecisionConfig {
   // Ajusta o incremento de Scale (Ratio) para 0.01
   static adjustScaleRatio() {
@@ -354,7 +354,7 @@ export class TokenPrecisionConfig {
 
   // Ajusta o incremento de Anchor para 0.01
   static adjustAnchorIncrement() {
-    // Seletores específicos para os inputs de anchor na aba Appearance
+    // Specific selectors for anchor inputs in the Appearance tab
     const anchorInputSelectors = ['input[name="texture.anchorX"]', 'input[name="texture.anchorY"]'];
 
     let foundInputs = false;
@@ -382,7 +382,7 @@ export class TokenPrecisionConfig {
     }
   }
 
-  // Método principal para inicializar todas as configurações de precisão
+  // Main method to initialize all precision settings
   static initialize() {
     // Aguarda um breve momento para garantir que o DOM esteja carregado
     Hooks.on('renderTokenConfig', (tokenConfig, html, data) => {
@@ -397,15 +397,15 @@ export class TokenPrecisionConfig {
   }
 }
 
-// Inicializa as configurações de precisão ao carregar o módulo
+  // Initialize precision settings when the module loads
 TokenPrecisionConfig.initialize();
 */
 
 /*
 export class EnhancedAnchorInput {
-  // Cria botões de controle e configura listeners para ajuste refinado
+  // Create control buttons and configure listeners for fine adjustment
   static enhanceAnchorInputs(inputs) {
-    // Verifica se o wrapper já existe
+    // Check if the wrapper already exists
     let wrapper = inputs[0].parentNode;
     if (wrapper.classList.contains('enhanced-anchor-wrapper')) {
       // Se existir, remove o wrapper e seus filhos
@@ -413,13 +413,13 @@ export class EnhancedAnchorInput {
       wrapper.parentNode.replaceChild(inputs[1], wrapper.lastElementChild);
     }
     
-    // Contêiner principal para envolver os inputs e botão
+    // Main container to wrap the inputs and button
     wrapper = document.createElement('div');
     wrapper.style.display = 'flex';
     wrapper.style.alignItems = 'center';
     wrapper.style.gap = '5px';
 
-    // Adiciona os inputs e botão
+    // Add the inputs and button
     let anchorXInput = inputs[0].cloneNode(true);
     let anchorYInput = inputs[1].cloneNode(true);
 
@@ -431,9 +431,9 @@ export class EnhancedAnchorInput {
     anchorYInput.removeAttribute('min');
     anchorYInput.removeAttribute('max');
 
-    // Criar botão de ajuste fino com ícone de 4 direções
+    // Create fine-adjustment button with 4-direction icon
     const adjustButton = document.createElement('button');
-    adjustButton.innerHTML = '✥'; // Ícone de movimento 4 direções
+    adjustButton.innerHTML = '✥'; // 4-direction movement icon
     adjustButton.type = 'button';
     adjustButton.style.cursor = 'pointer';
     adjustButton.style.padding = '2px 5px';
@@ -448,11 +448,11 @@ export class EnhancedAnchorInput {
     let originalValueX = 0;
     let originalValueY = 0;
 
-    // Função para aplicar ajuste
+    // Function to apply adjustment
     const applyAdjustment = (e) => {
       if (!isAdjusting) return;
 
-      // Calcula a diferença de movimento nos eixos X e Y
+      // Calculate the movement difference on the X and Y axes
       const deltaX = startX - e.clientX;
       const deltaY = startY - e.clientY;
       
@@ -489,7 +489,7 @@ export class EnhancedAnchorInput {
       startX = e.clientX;
       startY = e.clientY;
       
-      // Obtém os valores originais dos inputs de anchor
+      // Get the original values from the anchor inputs
       const actualXInput = document.querySelector('input[name="texture.anchorX"]');
       const actualYInput = document.querySelector('input[name="texture.anchorY"]');
       
@@ -506,7 +506,7 @@ export class EnhancedAnchorInput {
       e.preventDefault();
     });
 
-    // Adiciona os elementos ao wrapper na ordem: X input, botão, Y input
+    // Add the elements to the wrapper in order: X input, button, Y input
     wrapper.appendChild(anchorXInput);
     wrapper.appendChild(adjustButton);
     wrapper.appendChild(anchorYInput);
@@ -532,6 +532,6 @@ export class EnhancedAnchorInput {
   }
 }
 
-// Inicializa o módulo de melhoria de inputs
+// Initialize the input improvement module
 EnhancedAnchorInput.initialize();
 */

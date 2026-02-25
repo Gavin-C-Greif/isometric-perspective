@@ -183,7 +183,7 @@ function restoreBackgroundDefaults(bg) {
 }
 
 
-// Função principal que muda o canvas da cena
+// Main function that changes the scene canvas
 export function applyIsometricPerspective(scene, isSceneIsometric) {
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
   const shouldIsoTransform = isometricWorldEnabled && isSceneIsometric;
@@ -205,7 +205,7 @@ export function applyIsometricPerspective(scene, isSceneIsometric) {
 
 
 
-// Função auxiliar que chama a função de transformação isométrica em todos os tokens e tiles da cena
+// Helper function that calls the isometric transformation on all tokens and tiles in the scene
 /*export function adjustAllTokensAndTilesForIsometric() {
   canvas.tokens.placeables.forEach(token => applyIsometricTransformation(token, true));
   canvas.tiles.placeables.forEach(tile => applyIsometricTransformation(tile, true));
@@ -216,7 +216,7 @@ export function adjustAllTokensAndTilesForIsometric(isSceneIsometric = true) {
   tokensAndTiles.forEach(obj => applyIsometricTransformation(obj, isSceneIsometric));
 }
 
-// Função que aplica a transformação isométrica para um token ou tile -------------------------------------------------
+// Function that applies the isometric transformation to a token or tile
 export function applyIsometricTransformation(object, isSceneIsometric) {
   // Don't make any transformation if the isometric module isn't active
   const isometricWorldEnabled = game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
@@ -463,12 +463,12 @@ export function applyBackgroundTransformation(scene, isSceneIsometric, shouldTra
 
 // ----------------- Elevation -----------------
 
-// Manter registro de todos os tokens com visuais (para controle se necessário, embora atrelado ao token facilite)
+// Keep track of all tokens with visuals (for control if needed, though attaching to token is simpler)
 const tokensWithVisuals = new Set();
 
-// Função para limpar todos os visuais
+// Function to clear all visuals
 export function clearAllVisuals() {
-  // Se estivermos atrelando ao token, basta iterar tokens existentes
+  // If we are attaching to the token, just iterate over existing tokens
   if (canvas.tokens?.placeables) {
     for (const token of canvas.tokens.placeables) {
         removeTokenVisuals(token);
@@ -476,16 +476,16 @@ export function clearAllVisuals() {
   }
 }
 
-// Função para verificar se um token existe na cena atual
+// Function to verify if a token exists in the current scene
 function isTokenInCurrentScene(tokenId) {
   return canvas.tokens.placeables.some(t => t.id === tokenId);
 }
 
 export function updateTokenVisuals(token, elevacao, gridSize, gridDistance) {
-  // Primeiro, remova qualquer representação visual existente
+  // First, remove any existing visual representation
   removeTokenVisuals(token);
 
-  // Se não há elevação ou a variável global está desativada, não cria visuais
+  // If there is no elevation or the global variable is disabled, do not create visuals
   const tokenVisuals = game.settings.get(isometricModuleConfig.MODULE_ID, "enableTokenVisuals");
   if (elevacao <= 0 || !tokenVisuals) return;
 
@@ -498,15 +498,15 @@ export function updateTokenVisuals(token, elevacao, gridSize, gridDistance) {
   // Registrar o token
   tokensWithVisuals.add(token.id);
 
-  // Center X/Y relativo ao token
-  // O código original usava token.h / 2. Vamos manter a lógica ou usar w/2, h/2?
+  // Center X/Y relative to the token
+  // Original code used token.h / 2. Keep the logic or use w/2, h/2?
   // Original: token.x + token.h / 2.
-  // Vamos usar token.w / 2 e token.h / 2 para ser mais generico, ou manter token.h?
-  // Se o token não for quadrado, center seria w/2, h/2.
+  // Use token.w / 2 and token.h / 2 to be more generic, or keep token.h?
+  // If the token is not square, center would be w/2, h/2.
   const centerX = token.w ? token.w / 2 : token.h / 2;
   const centerY = token.h / 2;
 
-  // Criar uma sombra circular no chão (guarded: gridSize=0 yields radius 0)
+  // Create a circular shadow on the ground (guarded: gridSize=0 yields radius 0)
   const shadow = new PIXI.Graphics();
   shadow.beginFill(0x000000, 0.3);
   const radius = (safeDivide(gridSize, 2, 1)) * safeDivide(token.h ?? 0, gridSize, 0);
@@ -515,7 +515,7 @@ export function updateTokenVisuals(token, elevacao, gridSize, gridDistance) {
   shadow.position.set(centerX, centerY);
   container.addChild(shadow);
 
-  // Criar uma linha conectando o chão ao token (guarded: gridDistance=0 yields 0)
+  // Create a line connecting the ground to the token (guarded: gridDistance=0 yields 0)
   const offset = computeElevationVisualOffset(elevacao, gridSize, gridDistance);
 
   const line = new PIXI.Graphics();
@@ -527,8 +527,8 @@ export function updateTokenVisuals(token, elevacao, gridSize, gridDistance) {
       );
   container.addChild(line);
 
-  // Adicionar o container ao TOKEN, não ao stage.
-  // addChildAt(0) tenta colocar atrás do artwork principal se possível.
+  // Add the container to the TOKEN, not the stage.
+  // addChildAt(0) tries to place behind the main artwork if possible.
   token.addChildAt(container, 0);
 }
 
@@ -546,7 +546,7 @@ Hooks.on('canvasReady', () => {
 });
 
 Hooks.on('deleteToken', (token) => {
-  // O child é destruído automaticamente com o token, mas removemos do set por sanidade
+  // The child is destroyed automatically with the token, but we remove from the set for sanity
   tokensWithVisuals.delete(token.id);
 });
 

@@ -64,12 +64,12 @@ export function computeOffsetComponentsForProjection(artOffsetX, artOffsetY, ele
 /** Default conversion angle (45°) when no projection is provided. */
 const DEFAULT_CONVERSION_ANGLE = Math.PI / 4;
 
-// Função auxiliar para converter coordenadas isométricas para cartesianas
+// Helper function to convert isometric coordinates to cartesian
 export function isoToCartesian(isoX, isoY) {
   return isoToCartesianProjection(isoX, isoY, { reverseRotation: DEFAULT_CONVERSION_ANGLE });
 }
 
-// Função auxiliar para converter coordenadas cartesianas para isométricas
+// Helper function to convert cartesian coordinates to isometric
 export function cartesianToIso(x, y) {
   return cartesianToIsoProjection(x, y, { reverseRotation: DEFAULT_CONVERSION_ANGLE });
 }
@@ -122,10 +122,10 @@ export function computeTokenPlacementPosition(docX, docY, scaleX, scaleY, gridSi
   };
 }
 
-// Função auxiliar para calcular a menor diagonal do losango (distância vertical entre vértices)
+// Helper function to calculate the shorter diagonal of the rhombus (vertical distance between vertices)
 export function calculateIsometricVerticalDistance(width, height) {
-  // Em uma projeção isométrica com rotação de 45°, a distância vertical
-  // entre os vértices é a altura do losango formado
+  // In an isometric projection with 45° rotation, the vertical distance
+  // between vertices is the height of the formed rhombus
   return Math.sqrt(2) * Math.min(width, height);
 }
 

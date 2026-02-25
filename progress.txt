@@ -18,3 +18,14 @@ Started: 2026-02-24
   - Fork attribution (warpspeednyancatpatreon) and contributor links are left unchanged per PRD scope ("where they refer to this project")
   - GitHub Pages tool URL pattern: owner.github.io/repo-name
 ---
+
+## 2026-02-25 - US-002
+- Translated all non-English (Portuguese) comments to technical English
+- Updated release.cjs (console messages and prompts)
+- Updated scripts: autosorting.js, dynamictile.js, occlusion.js, main.js, utils.js, transform.js, token.js, hud.js, consts.js
+- **Learnings for future iterations:**
+  - Portuguese comments were concentrated in release.cjs, dynamictile.js, occlusion.js, main.js, transform.js, token.js, hud.js
+  - JSDoc @param/@returns in Portuguese also needed translation
+  - Shader comments (GLSL) and inline comments in main.js required translation
+  - Excluded archive/ folder (legacy experiments) from scope per PRD "tracked files"
+---

@@ -125,16 +125,16 @@ async function updateTokenSort(token) {
 
 
 /*
-// Adiciona um comando de macro para reordenar os tokens manualmente (opcional)
+// Add a macro command to manually reorder tokens (optional)
 Hooks.on('getSceneControlButtons', (controls) => {
   const tokenControls = controls.find(c => c.name === 'token');
   
   tokenControls.tools.push({
     name: 'reorder-tokens',
-    title: 'Reordenar Tokens',
+    title: 'Reorder Tokens',
     icon: 'fas fa-sort-amount-down',
     onClick: () => {
-      // Se precisar reordenar todos os tokens, pode manter o código anterior
+      // If you need to reorder all tokens, the previous code can be kept
       const tokens = canvas.tokens.placeables;
       tokens.forEach(token => updateTokenSort(token));
     },

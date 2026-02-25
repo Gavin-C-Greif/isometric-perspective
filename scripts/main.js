@@ -54,7 +54,7 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 // Hook to register module configuration in Foundry VTT
 Hooks.once("init", function() {
 
-  // ------------- Registra as configurações do módulo ------------- 
+  // ------------- Register module settings ------------- 
   // Checkbox configuration to enable or disable isometric mode globally
   game.settings.register(isometricModuleConfig.MODULE_ID, "worldIsometricFlag", {
     name: game.i18n.localize('isometric-perspective.settings_main_name'), //name: "Enable Isometric Perspective",
@@ -160,7 +160,7 @@ Hooks.once("init", function() {
     //onChange: settings => window.location.reload()
   });
 
-  // ------------- Registra os atalhos do módulo ------------- 
+  // ------------- Register module keybindings ------------- 
   
   game.keybindings.register(isometricModuleConfig.MODULE_ID, 'increaseTilesOpacity', {
     name: game.i18n.localize('isometric-perspective.keybindings_increase_tile_opacity'), //name: 'Increase Tile Opacity',
@@ -196,7 +196,7 @@ Hooks.once("init", function() {
   isometricModuleConfig.DEBUG_PRINT = !!game.settings.get(isometricModuleConfig.MODULE_ID, "debug");
   isometricModuleConfig.WORLD_ISO_FLAG = !!game.settings.get(isometricModuleConfig.MODULE_ID, "worldIsometricFlag");
 
-  // ------------- Executa os hooks de funcionalidades adicionais do módulo -------------
+  // ------------- Execute hooks for additional module functionality -------------
   registerTokenSortingPatch();
   registerDynamicTileConfig();
   registerSortingConfig();
@@ -206,7 +206,7 @@ Hooks.once("init", function() {
 });
 
 
-// Verifica se deve mostrar a tela de boas-vindas
+// Check whether to show the welcome screen
 // Checks whether to show the welcome screen
 
 //HOOKS REGISTRATION 
@@ -329,14 +329,14 @@ function updateOcclusionLayer() {
 function createOcclusionSprite(token, intersectingTiles) {
   const sprite = new PIXI.Sprite(token.mesh.texture.clone());
 
-  // Copiar transformações exatamente como o token original
+    // Copy transformations exactly like the original token
   sprite.position.copyFrom(token.mesh.position);
   sprite.anchor.copyFrom(token.mesh.anchor);
   sprite.rotation = token.mesh.rotation;
   sprite.scale.copyFrom(token.mesh.scale);
   sprite.alpha = token.mesh.alpha;
   
-  // Aplicar shader de interseção para cada tile intersectante
+    // Apply intersection shader for each intersecting tile
   const intersectionFilters = intersectingTiles.map(tile => 
     createIntersectionFilter(token.mesh.texture, tile.mesh.texture)
   );
@@ -376,30 +376,30 @@ const fragmentShader = `
   varying vec2 vTextureCoord;
 
   void main(void) {
-    // Amostragem das texturas nas mesmas coordenadas
+    // Sample the textures at the same coordinates
     vec4 tokenPixel = texture2D(tokenTexture, vTextureCoord);
     vec4 tilePixel = texture2D(tileTexture, vTextureCoord);
 
-    // Verificação precisa de transparência
+    // Precise transparency check
     bool tokenTransparent = tokenPixel.a < transparencyThreshold;
     bool tileTransparent = tilePixel.a < transparencyThreshold;
 
-    // Considerar interseção apenas se ambos não forem completamente transparentes
+    // Consider intersection only if both are not fully transparent
     if (!tokenTransparent && !tileTransparent) {
-      // Cálculo de interseção com mesclagem suave
+      // Intersection calculation with smooth blending
       float intersectionAlpha = min(tokenPixel.a, tilePixel.a);
       vec3 intersectionColor = mix(tokenPixel.rgb, tilePixel.rgb, 0.5);
 
       gl_FragColor = vec4(intersectionColor, intersectionAlpha);
     } else {
-      // Manter transparência original do token
+      // Preserve original token transparency
       gl_FragColor = tokenPixel;
     }
   }
 `;
 
 
-// Função para criar filtro de shader de interseção
+// Function to create intersection shader filter
 function createIntersectionFilter(tokenTexture, tileTexture) {
   return new PIXI.Filter(vertexShader, fragmentShader, {
     tokenTexture: tokenTexture,
@@ -408,22 +408,22 @@ function createIntersectionFilter(tokenTexture, tileTexture) {
       tokenTexture.width,
       tokenTexture.height
     ],
-    transparencyThreshold: 0.1  // Limiar de transparência ajustável
+    transparencyThreshold: 0.1  // Adjustable transparency threshold
   });
 }
 
-// Função para detectar interseção de texturas usando shader
+// Function to detect texture intersection using shader
 function detectTextureIntersectionWithShader(token, tile) {
   const tokenSprite = token.mesh;
   const tileSprite = tile.mesh;
 
-  // Verificar sobreposição de bounding boxes primeiro (otimização)
+  // Check bounding box overlap first (optimization)
   if (!isAABBIntersecting(tokenSprite, tileSprite)) 
     return false;
   
-  // Criar renderTexture para análise de interseção
+    // Create renderTexture for intersection analysis
   const renderTexture = PIXI.RenderTexture.create({
-    width: tokenSprite.width,   // Usar dimensões específicas do token
+    width: tokenSprite.width,   // Use token-specific dimensions
     height: tokenSprite.height
   });
 
@@ -432,7 +432,7 @@ function detectTextureIntersectionWithShader(token, tile) {
     tileSprite.texture
   );
   
-  // Criar sprite para processamento
+  // Create sprite for processing
   const intersectionSprite = new PIXI.Sprite(renderTexture);
   intersectionSprite.filters = [intersectionFilter];
 
@@ -442,13 +442,13 @@ function detectTextureIntersectionWithShader(token, tile) {
     clear: true
   });
 
-  // Ler pixels da renderTexture
+  // Read pixels from the renderTexture
   const pixels = canvas.app.renderer.extract.pixels(renderTexture);
   
-  // Contagem de pixels intersectados considerando transparência
+  // Count intersected pixels considering transparency
   const totalPixels = pixels.length / 4;
   const intersectionPixels = pixels.reduce((count, pixel, index) => {
-    // Verifica canal alpha e se é uma interseção significativa
+    // Check alpha channel and whether it is a significant intersection
     if (index % 4 === 3 && pixel > 25) {  // Canal alpha
       return count + 1;
     }
@@ -457,11 +457,11 @@ function detectTextureIntersectionWithShader(token, tile) {
 
   renderTexture.destroy(true);
 
-  // Considerar interseção se mais de 1% dos pixels forem intersectados
+  // Consider intersection if more than 1% of pixels are intersected
   return intersectionPixels / totalPixels > 0.01;
 }
 
-// Função auxiliar para verificação rápida de bounding boxes
+// Helper function for fast bounding box verification
 function isAABBIntersecting(spriteA, spriteB) {
   const boundsA = spriteA.getBounds();
   const boundsB = spriteB.getBounds();
@@ -482,7 +482,7 @@ function isAABBIntersecting(spriteA, spriteB) {
 
 
 
-// Definição do isoOutlineFilter
+// Definition of isoOutlineFilter
 
 const IsoOutlineVertexShader =`
   attribute vec2 aVertexPosition;
@@ -512,18 +512,18 @@ const IsoOutlineFragmentShader = `
     float maxAlpha = 0.0;
     vec2 displaced;
   
-    // Outline externo com mais samples e suavização
+    // Outer outline with more samples and smoothing
     for (float angle = 0.0; angle < 6.28318530718; angle += 0.19634954085) {  // Dividido em 32 samples
-      // Múltiplas amostras em diferentes distâncias para cada ângulo
+      // Multiple samples at different distances for each angle
       for (float dist = 0.5; dist <= 1.0; dist += 0.25) {
         displaced.x = vTextureCoord.x + (outlineThickness.x * dist) * cos(angle);
         displaced.y = vTextureCoord.y + (outlineThickness.y * dist) * sin(angle);
         curColor = texture2D(uSampler, displaced);
-        maxAlpha = max(maxAlpha, curColor.a * (1.0 - dist * 0.5));  // Peso baseado na distância
+        maxAlpha = max(maxAlpha, curColor.a * (1.0 - dist * 0.5));  // Weight based on distance
       }
     }
 
-    // Outline interno com suavização
+    // Inner outline with smoothing
     float innerAlpha = 0.0;
     for (float angle = 0.0; angle < 6.28318530718; angle += 0.19634954085) {
       for (float dist = 0.25; dist <= 0.75; dist += 0.25) {
@@ -537,7 +537,7 @@ const IsoOutlineFragmentShader = `
     float resultAlpha = max(maxAlpha, ownColor.a);
     float innerEffect = smoothstep(0.0, 0.5, innerAlpha) * ownColor.a;
 
-    // Suaviza a transição entre cores
+    // Smooth the transition between colors
     vec3 color = ownColor.rgb;
     if (ownColor.a < 0.1) {
       color = outlineColor.rgb * smoothstep(0.0, 0.3, maxAlpha);
@@ -576,7 +576,7 @@ const fragmentShader22 = `
    }
 `;
 
-// Defina a classe isoOutlineFilter
+// Define the isoOutlineFilter class
 class IsoOutlineFilter extends PIXI.Filter {
   constructor(thickness = 1, color = 0x000000, alpha = 1) {
     super(IsoOutlineVertexShader, fragmentShader22);
@@ -605,7 +605,7 @@ class IsoOutlineFilter extends PIXI.Filter {
     this.uniforms.outlineThickness[1] = value / filterAreaY;
   }
 }
-// Adicione o isoOutlineFilter ao namespace PIXI.filters
+// Add the isoOutlineFilter to the PIXI.filters namespace
 PIXI.filters.isoOutlineFilter = IsoOutlineFilter;
 
 // Blue ColorMatrix Filter

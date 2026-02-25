@@ -110,7 +110,7 @@ function destroyOcclusionSprite(sprite) {
 	sprite.destroy({ texture: false, textureSource: false });
 }
 
-// Otimização 1: Debounce do updateOcclusionLayer
+// Optimization 1: Debounce for updateOcclusionLayer
 //const debouncedUpdate = debounce(updateOcclusionLayer, 50);
 //const throttledUpdate = throttle(updateOcclusionLayer, 50);
 
@@ -186,7 +186,7 @@ function updateOcclusionLayer() {
 	const tokens = canvas.tokens.placeables;
 	const tiles = canvas.tiles.placeables;
 
-	// Filtra apenas tiles com a flag OccludingTile
+	// Filter only tiles with the OccludingTile flag
 	const occludingTiles = tiles.filter(tile => 
 		tile.document.getFlag(isometricModuleConfig.MODULE_ID, "OccludingTile")
 	);
@@ -316,36 +316,36 @@ function createOcclusionSprite(token, intersectingTiles) {
 // Advanced Occlusion Mask Creation
 const alphaFragmentShader = `
 varying vec2 vTextureCoord;
-uniform sampler2D uSampler;       // Textura do token (não usada aqui)
-uniform sampler2D uTileMask;      // Textura do tile
-uniform vec4 dimensions;          // [x, y, width, height] da interseção
-uniform vec4 tileDimensions;      // [x, y, width, height] do tile
+uniform sampler2D uSampler;       // Token texture (not used here)
+uniform sampler2D uTileMask;      // Tile texture
+uniform vec4 dimensions;          // [x, y, width, height] of the intersection
+uniform vec4 tileDimensions;      // [x, y, width, height] of the tile
 
 void main(void) {
-	// Posição local do fragmento na interseção
+	// Local position of the fragment in the intersection
 	vec2 localPos = gl_FragCoord.xy - dimensions.xy;
 	
-	// Coordenadas UV normalizadas para a textura do tile
+	// Normalized UV coordinates for the tile texture
 	vec2 tileCoord = vec2(
 		(localPos.x / dimensions.z) * (tileDimensions.z / dimensions.z),
 		(localPos.y / dimensions.w) * (tileDimensions.w / dimensions.w)
 	);
 
-	// Ajuste para considerar a posição do tile no canvas
+	// Adjust to account for the tile position on the canvas
 	tileCoord.x += (dimensions.x - tileDimensions.x) / tileDimensions.z;
 	tileCoord.y += (dimensions.y - tileDimensions.y) / tileDimensions.w;
 
-	// Amostra a textura do tile
+	// Sample the tile texture
 	vec4 tileColor = texture2D(uTileMask, tileCoord);
 
-	// Amostra a textura do token
+	// Sample the token texture
 	vec4 tokenColor = texture2D(uSampler, vTextureCoord);
 
-	// Se o pixel do tile for opaco, cria uma máscara branca opaca
+	// If the tile pixel is opaque, create an opaque white mask
 	if (tileColor.a > 0.1) {
-		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); // Branco opaco
+		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); // Opaque white
 	} else {
-		gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); // Transparente
+		gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); // Transparent
 	}
 }
 
@@ -418,7 +418,7 @@ function createOcclusionMask_gpu(token, intersectingTiles) {
 
 
 
-// 4/10 versão otimizada 2 (não senti muita diferença)
+// Optimized version 2 (minimal perceived difference)
 function createOcclusionMask_cpu(token, intersectingTiles, chunkSize) {
 	const maskGraphics = new PIXI.Graphics();
 	maskGraphics.beginFill(0xffffff);
@@ -570,7 +570,7 @@ function createOcclusionMask_cpu(token, intersectingTiles, chunkSize) {
 
 
 
-// Definição do isoOutlineFilter
+// Definition of isoOutlineFilter
 if (typeof PIXI !== 'undefined' && PIXI.filters) {
 	const vertexShader =`
 		attribute vec2 aVertexPosition;
@@ -610,18 +610,18 @@ if (typeof PIXI !== 'undefined' && PIXI.filters) {
 		 }
 	`;
 
-	// Defina a classe isoOutlineFilter
+		// Define the isoOutlineFilter class
 	class IsoOutlineFilter extends PIXI.Filter {
 		constructor(thickness = 0.5, color = 0x000000, alpha = 0.5) {
 			super(vertexShader, fragmentShader);
 
-			// Inicialize os uniforms
-			this.uniforms.outlineColor = new Float32Array(4);     // Para armazenar RGBA
-			this.uniforms.outlineThickness = new Float32Array(2); // Para armazenar X e Y
-			this.uniforms.filterArea = new Float32Array(2);       // Para área de filtro
+			// Initialize the uniforms
+			this.uniforms.outlineColor = new Float32Array(4);     // To store RGBA
+			this.uniforms.outlineThickness = new Float32Array(2); // To store X and Y
+			this.uniforms.filterArea = new Float32Array(2);       // For filter area
 			this.uniforms.alpha = alpha;
 
-			// Configure as propriedades iniciais
+			// Configure the initial properties
 			this.color = color;
 			this.thickness = thickness;
 		}
@@ -634,9 +634,9 @@ if (typeof PIXI !== 'undefined' && PIXI.filters) {
 
 		get thickness() { return this.uniforms.outlineThickness[0]; }
 		set thickness(value) {
-			// Certifique-se de que filterArea tenha valores válidos
-			const filterAreaX = this.uniforms.filterArea[0] || 1; // Evite divisão por 0
-			const filterAreaY = this.uniforms.filterArea[1] || 1; // Evite divisão por 0
+			// Ensure filterArea has valid values
+			const filterAreaX = this.uniforms.filterArea[0] || 1; // Avoid division by zero
+			const filterAreaY = this.uniforms.filterArea[1] || 1; // Avoid division by zero
 			
 			this.uniforms.outlineThickness[0] = value / filterAreaX;
 			this.uniforms.outlineThickness[1] = value / filterAreaY;
@@ -684,7 +684,7 @@ alphaFilter.alpha = 0.5;
 
 
 
-// Adicione esta função
+// Add this function
 function debugVisualIntersection(token, tile, DEBUG_INTERSECTION) {
 		if (!DEBUG_INTERSECTION) return;
 

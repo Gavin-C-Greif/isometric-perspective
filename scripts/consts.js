@@ -101,7 +101,7 @@ export let CUSTOM_PROJECTION = { ...PROJECTION_TYPES['Custom Projection'] };
 // Current isometric constants
 export let ISOMETRIC_CONST = { ...PROJECTION_TYPES[DEFAULT_PROJECTION] };
 
-// Função para atualizar CUSTOM_PROJECTION
+// Function to update CUSTOM_PROJECTION
 export function updateCustomProjection(newProjection) {
   CUSTOM_PROJECTION = { ...newProjection };
 }

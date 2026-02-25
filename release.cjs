@@ -12,7 +12,7 @@ function execCommand(command) {
     try {
         execSync(command, { stdio: 'inherit' });
     } catch {
-        console.error(`Erro ao executar comando: ${command}`);
+        console.error(`Error executing command: ${command}`);
         process.exit(1);
     }
 }
@@ -31,7 +31,7 @@ function createZip() {
     const archive = archiver('zip', { zlib: { level: 9 } });
 
     output.on('close', () => {
-        console.log(`Arquivo ${zipName} criado com sucesso (${archive.pointer()} bytes).`);
+        console.log(`File ${zipName} created successfully (${archive.pointer()} bytes).`);
     });
 
     archive.on('error', (e) => { throw e; });
@@ -46,19 +46,19 @@ function createZip() {
 
 function askReleaseInfo(callback) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    rl.question('Digite um nome ou descrição para o release: ', (info) => {
+    rl.question('Enter a name or description for the release: ', (info) => {
         rl.close();
         callback(info);
     });
 }
 
-console.log(`Iniciando release da versão ${version}...`);
+console.log(`Starting release for version ${version}...`);
 updateVersionInFiles();
 
 const zipPath = path.join(__dirname, 'isometric-perspective.zip');
 if (fs.existsSync(zipPath)) {
     fs.unlinkSync(zipPath);
-    console.log(`Arquivo ${zipPath} deletado.`);
+    console.log(`File ${zipPath} deleted.`);
 }
 
 createZip();
@@ -71,6 +71,6 @@ askReleaseInfo((info) => {
     execCommand('git push');
     execCommand('git push --tags');
     console.log(`\n${releaseMessage}`);
-    console.log('Confira o workflow e publique os artefatos do release no repositório atual:');
+    console.log('Check the workflow and publish the release artifacts in the current repository:');
     console.log('https://github.com/Gavin-C-Greif/isometric-perspective/actions');
 });
