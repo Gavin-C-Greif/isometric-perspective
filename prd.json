@@ -63,7 +63,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
@@ -75,8 +75,7 @@
         "Eliminate sort jitter and conflicting updates during rapid token movement.",
         "Preserve controlled-token visibility boost without breaking relative depth order.",
         "Typecheck passes",
-        "Tests pass",
-        "Verify in browser using dev-browser skill"
+        "Tests pass"
       ],
       "priority": 5,
       "passes": false,
