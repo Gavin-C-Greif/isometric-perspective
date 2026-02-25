@@ -10,7 +10,8 @@
     "build": "node release.cjs",
     "test": "node --test tests/*.test.mjs",
     "lint": "eslint scripts docs release.cjs",
-    "lint:fix": "eslint scripts docs release.cjs --fix"
+    "lint:fix": "eslint scripts docs release.cjs --fix",
+    "harness:high-risk": "node scripts/high-risk-harness.js --file high-risk-harness.json"
   },
   "keywords": [],
   "author": "",

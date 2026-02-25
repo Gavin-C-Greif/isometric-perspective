@@ -232,6 +232,12 @@ Required for release validation. Complete this checklist in-browser to confirm m
 
 Required evidence for release. Each row must pass before shipping.
 
+Harness workflow:
+
+1. Initialize/reset template: `npm run harness:high-risk -- --init --force`
+2. Run the five in-browser interaction scenarios below and fill `status` + `evidence` in `high-risk-harness.json`
+3. Validate and print pass/fail evidence: `npm run harness:high-risk`
+
 | # | Interaction | Steps | Expected | Pass? |
 |---|-------------|-------|----------|-------|
 | 1 | **Projection switch** | Enable isometric; change projection True Iso → Dimetric 2:1 → Overhead → True Iso (3 cycles) | Canvas updates immediately each change; no corruption, no console errors; tokens/tiles/background remain correctly transformed | |
@@ -242,7 +248,7 @@ Required evidence for release. Each row must pass before shipping.
 
 ### Release Evidence
 
-The release process (see `RELEASE-PROCESS.md`) requires this matrix to be completed and all rows marked `PASS` before publishing a release candidate.
+The release process (see `RELEASE-PROCESS.md`) requires this matrix to be completed and all rows marked `PASS` before publishing a release candidate. The `high-risk-harness.json` output validated by `npm run harness:high-risk` is the pass/fail evidence artifact for these five scenarios.
 
 ## US-007: Safer Token Sorting Interop Patch
 

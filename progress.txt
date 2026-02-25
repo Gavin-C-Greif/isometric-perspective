@@ -3,6 +3,7 @@ Started: 2026-02-24
 
 ## Codebase Patterns
 - Use workflow job name `Lint and Test` as the required branch-protection status check for `main`.
+- Use `npm run harness:high-risk -- --init --force` to reset `high-risk-harness.json`, then `npm run harness:high-risk` to produce scenario-level PASS/FAIL evidence.
 
 ---
 
@@ -13,4 +14,13 @@ Started: 2026-02-24
   - Patterns discovered: Branch protection should enforce the `Lint and Test` check from the `CI Quality Gates` workflow.
   - Gotchas encountered: `npm run lint` currently reports existing warnings but exits successfully; only errors fail the gate.
   - Useful context: v13 release documentation is split across `README.md`, `RELEASE-PROCESS.md`, and `SMOKE-TEST.md`.
+---
+
+## 2026-02-24 19:31:37 CST - US-002
+- Implemented a repeatable high-risk integration harness (`scripts/high-risk-harness.js`) with scenario-level pass/fail evidence output, added a default evidence template (`high-risk-harness.json`), added harness unit tests, and linked harness usage from `SMOKE-TEST.md` and `RELEASE-PROCESS.md`.
+- Files changed: `package.json`, `scripts/high-risk-harness.js`, `tests/high-risk-harness.test.mjs`, `high-risk-harness.json`, `SMOKE-TEST.md`, `RELEASE-PROCESS.md`, `prd.json`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Keep high-risk release evidence machine-readable in `high-risk-harness.json` and validate with `npm run harness:high-risk`.
+  - Gotchas encountered: Harness exits non-zero until all five scenarios are `PASS` with non-empty evidence.
+  - Useful context: Browser verification for this run is blocked in this environment because browser MCP tool descriptor files were unavailable and no Foundry runtime target URL/session was provided.
 ---
