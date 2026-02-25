@@ -1,0 +1,67 @@
+{
+  "project": "Isometric Perspective",
+  "branchName": "ralph/github-reference-and-comment-english-standardization",
+  "description": "Standardize all GitHub repository references to the canonical Gavin-C-Greif URL and translate non-English comments to clear technical English across the tracked repository.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Canonicalize GitHub repository references",
+      "description": "As a maintainer, I want all repository references to use the canonical GitHub URL so contributors and automation resolve the correct project destination.",
+      "acceptanceCriteria": [
+        "Replace legacy repository-owner/repository references with https://github.com/Gavin-C-Greif/isometric-perspective in tracked files where they refer to this project.",
+        "Apply the update across full tracked repository scope (docs, configs, scripts, metadata, and comment text when present).",
+        "Search-based validation confirms no outdated repository references remain in scope.",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Translate non-English comments to technical English",
+      "description": "As a contributor, I want all non-English comments translated to clear technical English so maintenance and review are consistent.",
+      "acceptanceCriteria": [
+        "Translate all non-English comments in tracked files to English.",
+        "Preserve technical intent while improving clarity for maintainers.",
+        "Search-based validation confirms no non-English comments remain in scope.",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Keep cleanup text-only and behavior-safe",
+      "description": "As a release owner, I want this cleanup to avoid logic changes so runtime behavior remains stable.",
+      "acceptanceCriteria": [
+        "Changes are limited to repository references, comments, and related documentation text.",
+        "No intentional API, runtime, data model, or behavior changes are introduced.",
+        "Any unavoidable non-textual edit is documented with rationale.",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Provide deterministic validation evidence",
+      "description": "As a maintainer, I want repeatable validation outputs so completion can be verified quickly and confidently.",
+      "acceptanceCriteria": [
+        "Document and run repeatable searches for legacy repository references and non-English comments.",
+        "Record validation results with explicit pass/fail statement for both checks.",
+        "Run npm run lint and npm test as final gate evidence.",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": ""
+    }
+  ]
+}

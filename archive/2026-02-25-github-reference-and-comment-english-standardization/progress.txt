@@ -1,0 +1,57 @@
+# Ralph Progress Log
+Started: 2026-02-24
+
+## Codebase Patterns
+- Repository references appear in: module.json (url, manifest, download), README.md, release.cjs, templates/*.hbs
+- **US-004 validation commands** (repeatable):
+  - Legacy repo refs: `rg "github\.com/(arlosmolten|warpspeednyancatpatreon)/isometric-perspective" --glob "*.{json,md,js,cjs,hbs,yml,yaml}"` — expect only module.json fork attribution (excluded from scope)
+  - Non-English comments: `rg "[àáâãäåæçèéêëìíîïñòóôõöùúûüýÿ]" scripts/` — expect no matches
+
+---
+
+## 2026-02-25 - US-001
+- Canonicalized all GitHub repository references to https://github.com/Gavin-C-Greif/isometric-perspective
+- Updated module.json (url, manifest, download)
+- Updated README.md (raw.githubusercontent, img.shields.io, wiki, projection tool link)
+- Updated release.cjs (actions URL)
+- Updated templates/scene-config.hbs (wiki Manual, Website links)
+- Updated templates/welcome.hbs (wiki, repo links)
+- **Learnings for future iterations:**
+  - Repository references appear in module.json, README.md, release.cjs, and .hbs templates
+  - Fork attribution (warpspeednyancatpatreon) and contributor links are left unchanged per PRD scope ("where they refer to this project")
+  - GitHub Pages tool URL pattern: owner.github.io/repo-name
+---
+
+## 2026-02-25 - US-002
+- Translated all non-English (Portuguese) comments to technical English
+- Updated release.cjs (console messages and prompts)
+- Updated scripts: autosorting.js, dynamictile.js, occlusion.js, main.js, utils.js, transform.js, token.js, hud.js, consts.js
+- **Learnings for future iterations:**
+  - Portuguese comments were concentrated in release.cjs, dynamictile.js, occlusion.js, main.js, transform.js, token.js, hud.js
+  - JSDoc @param/@returns in Portuguese also needed translation
+  - Shader comments (GLSL) and inline comments in main.js required translation
+  - Excluded archive/ folder (legacy experiments) from scope per PRD "tracked files"
+---
+
+## 2026-02-25 - US-003
+- Verified that US-001 and US-002 changes are text-only and behavior-safe
+- US-001: Only URL/repository string replacements (module.json, README.md, release.cjs, templates)
+- US-002: Only comment and console string translations; one UI tool title (Reordenar Tokens → Reorder Tokens) for consistency
+- No API, runtime, data model, or logic changes introduced
+- npm run lint: PASS (0 errors)
+- npm test: PASS (38 tests)
+- **Learnings for future iterations:**
+  - US-003 is a verification/audit story; no code edits required
+  - Validation evidence (lint + test) confirms no regressions from text-only cleanup
+---
+
+## 2026-02-25 - US-004
+- Documented and ran repeatable validation searches
+- **Legacy repository references:** `rg "github\.com/(arlosmolten|warpspeednyancatpatreon)/isometric-perspective"` — only match: module.json fork attribution (warpspeednyancatpatreon), excluded per PRD scope → **PASS**
+- **Non-English comments:** `rg "[àáâãäåæçèéêëìíîïñòóôõöùúûüýÿ]" scripts/` — no matches → **PASS**
+- **npm run lint:** PASS (0 errors)
+- **npm test:** PASS (38 tests)
+- **Learnings for future iterations:**
+  - Validation commands added to Codebase Patterns for repeatability
+  - Fork attribution in module.json description is intentionally out of scope
+---
