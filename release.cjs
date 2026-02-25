@@ -72,5 +72,5 @@ askReleaseInfo((info) => {
     execCommand('git push --tags');
     console.log(`\n${releaseMessage}`);
     console.log('Check the workflow and publish release artifacts in the repository:');
-    console.log('https://github.com/arlosmolten/isometric-perspective/actions');
+    console.log('https://github.com/Gavin-C-Greif/isometric-perspective/actions');
 });
