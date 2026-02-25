@@ -1,129 +1,130 @@
 {
   "project": "Isometric Perspective",
-  "branchName": "ralph/v13-math-calculation-hardening",
-  "description": "Harden and unify v13 isometric math by fixing projection, offset, placement, and sorting inconsistencies, while adding a robust automated test matrix.",
+  "branchName": "ralph/v13-production-hardening-release",
+  "description": "Production hardening release for Foundry v13 that matures existing isometric features, adds CI and regression gates, and improves release safety.",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Create shared math fixtures and tolerance helpers for tests",
-      "description": "As a maintainer, I want reusable numeric fixtures and float-comparison helpers so math tests are consistent and easy to extend.",
+      "title": "Enforce CI quality gates",
+      "description": "As a maintainer, I want automated CI checks for lint and tests so regressions are blocked before merge.",
       "acceptanceCriteria": [
-        "Add reusable fixtures for projection type, token dimensions, grid size/distance, offsets, and elevation values.",
-        "Add a shared tolerance helper for floating-point assertions.",
-        "At least one existing/new test suite consumes the shared fixtures and helper.",
+        "Add a PR workflow that runs npm run lint and npm test on pull requests and pushes to main.",
+        "Workflow fails when lint or tests fail.",
+        "Document required CI status checks in repository documentation.",
         "Typecheck passes",
         "Tests pass"
       ],
       "priority": 1,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-002",
-      "title": "Fix axis-scale token placement math",
-      "description": "As a GM using rectangular tokens, I want placement formulas to use the correct axis scale so token art does not drift.",
+      "title": "Add high-risk integration regression harness",
+      "description": "As a maintainer, I want repeatable regression checks for scene transforms and interaction flows so runtime issues are caught before release.",
       "acceptanceCriteria": [
-        "Token placement formulas use axis-correct scaling for both center and projected offsets.",
-        "Rectangular token cases (2x1, 1x2, 3x2) are covered by automated tests.",
-        "Square-token baseline behavior remains unchanged in default projection.",
+        "Create a harness for projection switching, pan/zoom, scene switch, token control switch, and door state changes.",
+        "Harness outputs include pass/fail evidence for each scenario.",
+        "Link harness usage from SMOKE-TEST.md and RELEASE-PROCESS.md.",
         "Typecheck passes",
         "Tests pass",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 2,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-003",
-      "title": "Add numeric guards for division-sensitive formulas",
-      "description": "As a GM, I want invalid numeric inputs (including grid distance zero) handled safely so transforms never produce NaN or Infinity.",
+      "title": "Productionize occlusion behavior and defaults",
+      "description": "As a GM, I want token silhouette occlusion to be predictable and performant so it is safe to use in production sessions.",
       "acceptanceCriteria": [
-        "Division-sensitive transform formulas have zero/invalid-denominator guards.",
-        "Guard behavior is explicit (fallback value or early return) and documented in code comments where non-obvious.",
-        "Unit tests validate guard behavior for grid distance 0 and non-finite inputs.",
+        "Occlusion lifecycle is stable across canvas init, scene switch, and canvas teardown with no stale containers or sprite leaks.",
+        "Document mode behavior (off, gpu, cpu modes) with production recommendations and default policy.",
+        "Record at least one completed profiling baseline run for the release candidate.",
         "Typecheck passes",
-        "Tests pass"
+        "Tests pass",
+        "Verify in browser using dev-browser skill"
       ],
       "priority": 3,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-004",
-      "title": "Unify transform and ruler offset/elevation projection logic",
-      "description": "As a player measuring movement, I want ruler labels and transformed tokens to use consistent offset math so labels align with visuals.",
+      "title": "Productionize dynamic tile linked-wall behavior",
+      "description": "As a GM/player, I want dynamic tile linked-wall visibility to be consistent during fast interaction so visibility behavior remains trustworthy.",
       "acceptanceCriteria": [
-        "Transform and ruler modules use one shared helper path for offset/elevation projection.",
-        "Equivalent inputs produce matching projected coordinates within configured tolerance.",
-        "Integration tests assert transform/ruler equivalence for multiple token shapes and offsets.",
+        "Overlay rebuild path deterministically destroys and recreates cloned sprites without accumulation.",
+        "Behavior is defined and stable for no-controlled-token, rapid control switching, and scene transitions.",
+        "Linked doors and wall state changes trigger correct visibility updates.",
         "Typecheck passes",
         "Tests pass",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 4,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-005",
-      "title": "Stabilize depth sorting reference semantics",
-      "description": "As a GM, I want front/back ordering to match rendered visuals for scaled and offset tokens so overlaps are deterministic.",
+      "title": "Productionize token auto-sorting behavior",
+      "description": "As a GM, I want token depth ordering to remain stable and intuitive so token front/back rendering matches visual expectation.",
       "acceptanceCriteria": [
-        "Sorting uses a documented visual reference strategy appropriate for transformed tokens.",
-        "Scaled and offset overlap scenarios do not invert expected front/back ordering.",
-        "Integration tests cover movement and overlap ordering cases under isometric transforms.",
+        "Document sorting ownership between display z-index path and document sort-write path.",
+        "Eliminate sort jitter and conflicting updates during rapid token movement.",
+        "Preserve controlled-token visibility boost without breaking relative depth order.",
         "Typecheck passes",
         "Tests pass",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 5,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-006",
-      "title": "Implement projection-aware conversion helpers including custom projection",
-      "description": "As a world builder using custom projection values, I want coordinate conversion helpers to reflect active projection settings for consistent math behavior.",
+      "title": "Clean v13 runtime boundaries and reduce code debt",
+      "description": "As a maintainer, I want runtime code aligned to v13 support so future changes are safer and easier to reason about.",
       "acceptanceCriteria": [
-        "Coordinate conversion helpers are projection-aware and use active projection constants.",
-        "Custom projection values are reflected in conversion outputs used by dependent features.",
-        "Unit tests validate forward/inverse behavior across required projection presets.",
+        "Remove, isolate, or clearly mark non-executed legacy compatibility branches not relevant to v13 runtime.",
+        "Remove ambiguous commented experimental runtime paths from entry points.",
+        "Reduce lint warning count meaningfully from current baseline and track it in release notes.",
         "Typecheck passes",
         "Tests pass"
       ],
       "priority": 6,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-007",
-      "title": "Automate the required math matrix core combinations",
-      "description": "As a maintainer, I want automated coverage of the core matrix dimensions so projection and transform regressions are detected quickly.",
+      "title": "Harden release tooling and release evidence flow",
+      "description": "As a maintainer, I want a safer release process so packaging and publishing are reproducible and low-risk.",
       "acceptanceCriteria": [
-        "Automated tests cover matrix core combinations for projection, token shape, grid config, offsets, and elevation.",
-        "Matrix assertions include finite outputs, transform/ruler equivalence, sorting stability, and custom projection effect.",
-        "Matrix test output clearly identifies failing dimension combinations.",
+        "Separate packaging from irreversible git operations (commit, tag, push) or add explicit guardrails.",
+        "Require release evidence: smoke suite, high-risk matrix, profiling baseline, and CI pass.",
+        "Ensure release candidate checklist is executable without ad-hoc steps.",
         "Typecheck passes",
         "Tests pass"
       ],
       "priority": 7,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-008",
-      "title": "Document manual visual matrix checklist for release validation",
-      "description": "As a release maintainer, I want a manual visual checklist for high-risk scenarios so final behavior can be confirmed in-browser.",
+      "title": "Align README and operator-facing documentation with shipped behavior",
+      "description": "As a user and maintainer, I want docs that accurately reflect current feature status so configuration choices are clear.",
       "acceptanceCriteria": [
-        "A manual matrix checklist is added/updated with projection mode, rectangular token, offset/elevation, and sorting overlap scenarios.",
-        "Checklist has explicit pass/fail steps and expected outcomes.",
-        "Release docs reference this checklist as required validation evidence.",
+        "README feature list, known bugs, and compatibility notes match current implementation.",
+        "Feature maturity labels for occlusion, dynamic tile, and auto-sorting are explicit and consistent.",
+        "Documentation references current smoke, release, and performance artifacts.",
         "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "Tests pass"
       ],
       "priority": 8,
-      "passes": true,
+      "passes": false,
       "notes": ""
     }
   ]

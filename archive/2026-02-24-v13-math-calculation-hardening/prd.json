@@ -1,0 +1,130 @@
+{
+  "project": "Isometric Perspective",
+  "branchName": "ralph/v13-math-calculation-hardening",
+  "description": "Harden and unify v13 isometric math by fixing projection, offset, placement, and sorting inconsistencies, while adding a robust automated test matrix.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Create shared math fixtures and tolerance helpers for tests",
+      "description": "As a maintainer, I want reusable numeric fixtures and float-comparison helpers so math tests are consistent and easy to extend.",
+      "acceptanceCriteria": [
+        "Add reusable fixtures for projection type, token dimensions, grid size/distance, offsets, and elevation values.",
+        "Add a shared tolerance helper for floating-point assertions.",
+        "At least one existing/new test suite consumes the shared fixtures and helper.",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Fix axis-scale token placement math",
+      "description": "As a GM using rectangular tokens, I want placement formulas to use the correct axis scale so token art does not drift.",
+      "acceptanceCriteria": [
+        "Token placement formulas use axis-correct scaling for both center and projected offsets.",
+        "Rectangular token cases (2x1, 1x2, 3x2) are covered by automated tests.",
+        "Square-token baseline behavior remains unchanged in default projection.",
+        "Typecheck passes",
+        "Tests pass",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Add numeric guards for division-sensitive formulas",
+      "description": "As a GM, I want invalid numeric inputs (including grid distance zero) handled safely so transforms never produce NaN or Infinity.",
+      "acceptanceCriteria": [
+        "Division-sensitive transform formulas have zero/invalid-denominator guards.",
+        "Guard behavior is explicit (fallback value or early return) and documented in code comments where non-obvious.",
+        "Unit tests validate guard behavior for grid distance 0 and non-finite inputs.",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Unify transform and ruler offset/elevation projection logic",
+      "description": "As a player measuring movement, I want ruler labels and transformed tokens to use consistent offset math so labels align with visuals.",
+      "acceptanceCriteria": [
+        "Transform and ruler modules use one shared helper path for offset/elevation projection.",
+        "Equivalent inputs produce matching projected coordinates within configured tolerance.",
+        "Integration tests assert transform/ruler equivalence for multiple token shapes and offsets.",
+        "Typecheck passes",
+        "Tests pass",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Stabilize depth sorting reference semantics",
+      "description": "As a GM, I want front/back ordering to match rendered visuals for scaled and offset tokens so overlaps are deterministic.",
+      "acceptanceCriteria": [
+        "Sorting uses a documented visual reference strategy appropriate for transformed tokens.",
+        "Scaled and offset overlap scenarios do not invert expected front/back ordering.",
+        "Integration tests cover movement and overlap ordering cases under isometric transforms.",
+        "Typecheck passes",
+        "Tests pass",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Implement projection-aware conversion helpers including custom projection",
+      "description": "As a world builder using custom projection values, I want coordinate conversion helpers to reflect active projection settings for consistent math behavior.",
+      "acceptanceCriteria": [
+        "Coordinate conversion helpers are projection-aware and use active projection constants.",
+        "Custom projection values are reflected in conversion outputs used by dependent features.",
+        "Unit tests validate forward/inverse behavior across required projection presets.",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Automate the required math matrix core combinations",
+      "description": "As a maintainer, I want automated coverage of the core matrix dimensions so projection and transform regressions are detected quickly.",
+      "acceptanceCriteria": [
+        "Automated tests cover matrix core combinations for projection, token shape, grid config, offsets, and elevation.",
+        "Matrix assertions include finite outputs, transform/ruler equivalence, sorting stability, and custom projection effect.",
+        "Matrix test output clearly identifies failing dimension combinations.",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Document manual visual matrix checklist for release validation",
+      "description": "As a release maintainer, I want a manual visual checklist for high-risk scenarios so final behavior can be confirmed in-browser.",
+      "acceptanceCriteria": [
+        "A manual matrix checklist is added/updated with projection mode, rectangular token, offset/elevation, and sorting overlap scenarios.",
+        "Checklist has explicit pass/fail steps and expected outcomes.",
+        "Release docs reference this checklist as required validation evidence.",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": ""
+    }
+  ]
+}
