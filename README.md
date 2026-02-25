@@ -9,26 +9,22 @@ Thank you to all contributors who helped make this release possible!
 
 # Isometric Perspective
 
-![Isometric Map Example](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/banner2.jpg)
+![Isometric Map Example](https://raw.githubusercontent.com/Gavin-C-Greif/isometric-perspective/refs/heads/main/files/banner2.jpg)
 
 ![Static Badge - Foundry VTT Version](https://img.shields.io/badge/Foundry%20VTT-v13-blue)
-![Latest Release version](https://img.shields.io/github/v/release/arlosmolten/isometric-perspective?color=green)
-![Downloads Latest](https://img.shields.io/github/downloads/arlosmolten/isometric-perspective/isometric-perspective.zip?color=yellow)
+![Latest Release version](https://img.shields.io/github/v/release/Gavin-C-Greif/isometric-perspective?color=green)
+![Downloads Latest](https://img.shields.io/github/downloads/Gavin-C-Greif/isometric-perspective/isometric-perspective.zip?color=yellow)
 ![Static Badge - License](https://img.shields.io/badge/license%20-%20MIT-yellow)
 ![Contributors](https://img.shields.io/badge/Contributors-@warpspeednyancatpatreon%20|%20@JoshBrodieNZ%20|%20ArlosMolten-orange)
-
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H1160UID)
-[![Discord](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/discordsm.png)](https://discord.gg/64p6ZqQBNX)
 
 This module changes the map, tiles and token artwork/sprite for use with maps and tokens drawn using an isometric perspective. 
 
 ## Features
 
-Here are some of the features the module offers. You can also see how all the features of this module work with some videos on my [wiki](https://github.com/arlosmolten/isometric-perspective/wiki/1.-Core-Features).
+Here are some of the features the module offers. You can also see how all the features of this module work with some videos on my [wiki](https://github.com/Gavin-C-Greif/isometric-perspective/wiki/1.-Core-Features).
 
 - **Dual Canvas Perspectives:** Use native isometric maps or transform top-down maps into an isometric perspective. This allows you to apply an isometric view to virtually any 2D map.
-- **Multiple Isometric Projections:** Choose from several isometric projection types with different aspect ratios, including true isometric (√3:1), dimetric (2:1), overhead (√2:1), and other projections inspired by classic games. You can also create and add your own custom perspective using the tool available [here](https://arlosmolten.github.io/isometric-perspective/).
+- **Multiple Isometric Projections:** Choose from several isometric projection types with different aspect ratios, including true isometric (√3:1), dimetric (2:1), overhead (√2:1), and other projections inspired by classic games. You can also create and add your own custom perspective using the tool available [here](https://github.com/Gavin-C-Greif/isometric-perspective).
 - **Token Sprite Adjustments:** Fine-tune token sprite position and scale. Token artwork can be perfectly centered even for asymmetrical images. Increasing token size automatically scales the sprite, but this behavior can be disabled to support unconventional token sizes (for example, a 2×1 tank).
 - **Tile Sprite Adjustments:** Adjust tile sprite position and scale with ease, making it simple to copy and paste multiple tiles. An easy-to-use Flip Tile option is also available.
 - **Token Height Visual Cues:** When a token has elevation, its sprite visually reflects height using dynamic shadows and vertical guide lines for improved depth perception.
@@ -38,17 +34,17 @@ Here are some of the features the module offers. You can also see how all the fe
 ## Configuration Screens
 > *Outdated v12 images*
 
-![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/configuration-screens.jpg)
+![](https://raw.githubusercontent.com/Gavin-C-Greif/isometric-perspective/refs/heads/main/files/configuration-screens.jpg)
 
 
 ## Images
 *Token and map art provided by [Epic Isometric](https://www.patreon.com/c/epicisometric/posts) and [The Dungeon Sketcher.](https://www.patreon.com/TheDungeonSketcher)*
 
-![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/showcase-1.jpg)
-![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/showcase-2.jpg)
-![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/dynamictile.jpg)
+![](https://raw.githubusercontent.com/Gavin-C-Greif/isometric-perspective/refs/heads/main/files/showcase-1.jpg)
+![](https://raw.githubusercontent.com/Gavin-C-Greif/isometric-perspective/refs/heads/main/files/showcase-2.jpg)
+![](https://raw.githubusercontent.com/Gavin-C-Greif/isometric-perspective/refs/heads/main/files/dynamictile.jpg)
 *Dynamic Tile previews.*
-![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/elevation.jpg)
+![](https://raw.githubusercontent.com/Gavin-C-Greif/isometric-perspective/refs/heads/main/files/elevation.jpg)
 *Elevation previews.*
 
 ## Compatibility
