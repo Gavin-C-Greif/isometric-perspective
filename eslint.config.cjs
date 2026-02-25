@@ -52,7 +52,7 @@ module.exports = [
     },
   },
   {
-    files: ["release.cjs"],
+    files: ["release.cjs", "release-check.cjs", "release-publish.cjs"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "commonjs",

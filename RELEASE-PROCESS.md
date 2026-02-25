@@ -2,6 +2,18 @@
 
 This document defines the minimum release gate for `isometric-perspective` v13.
 
+## Release Tooling (US-007)
+
+Packaging is separated from irreversible git operations:
+
+| Command | Purpose |
+|---------|---------|
+| `npm run build` | Package only: sync version, create zip. No git operations. |
+| `npm run release:check` | Validate evidence: lint, test, high-risk harness, occlusion baseline. Must all pass. |
+| `CONFIRM_RELEASE=1 npm run release:publish` | Git commit, tag, push. Runs release:check first; requires explicit `CONFIRM_RELEASE=1`. |
+
+**Mandatory evidence** (enforced by `release:check`): smoke suite, high-risk matrix, profiling baseline, CI pass. See Pre-Release Gate below.
+
 ## Lint Baseline (US-006)
 
 Lint warning count is tracked for release notes. Post-US-006 baseline: 66 warnings (down from 82). Run `npm run lint` to verify; record any change in release notes.

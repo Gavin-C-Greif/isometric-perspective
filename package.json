@@ -8,9 +8,11 @@
   },
   "scripts": {
     "build": "node release.cjs",
+    "release:check": "node release-check.cjs",
+    "release:publish": "node release-publish.cjs",
     "test": "node --test tests/*.test.mjs",
-    "lint": "eslint scripts docs release.cjs",
-    "lint:fix": "eslint scripts docs release.cjs --fix",
+    "lint": "eslint scripts docs release.cjs release-check.cjs release-publish.cjs",
+    "lint:fix": "eslint scripts docs release.cjs release-check.cjs release-publish.cjs --fix",
     "harness:high-risk": "node scripts/high-risk-harness.js --file high-risk-harness.json",
     "harness:occlusion-baseline": "node scripts/occlusion-baseline-harness.js --file occlusion-baseline-run.json"
   },

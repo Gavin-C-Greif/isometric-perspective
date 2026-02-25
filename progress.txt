@@ -2,6 +2,7 @@
 Started: 2026-02-24
 
 ## Codebase Patterns
+- Release flow: `npm run build` = package only; `npm run release:check` = validate evidence; `CONFIRM_RELEASE=1 npm run release:publish` = git commit/tag/push (runs release:check first).
 - Module targets v13 only (module.json minimum 13). Legacy v11 branches are marked "LEGACY: v11-only; not executed on v13" and are dead code on v13 runtime.
 - Use workflow job name `Lint and Test` as the required branch-protection status check for `main`.
 - Use `npm run harness:high-risk -- --init --force` to reset `high-risk-harness.json`, then `npm run harness:high-risk` to produce scenario-level PASS/FAIL evidence.
@@ -102,4 +103,13 @@ Started: 2026-02-24
   - Patterns discovered: main.js is the sole entry point (module.json esmodules); production occlusion lives in occlusion.js; legacy experiments are in archive/legacy-occlusion-experiments/.
   - Gotchas encountered: Removing a multi-line comment block in chunks can leave orphaned code; use smaller targeted replacements or verify file state after each edit.
   - Useful context: v11 branches (FOUNDRY_VERSION === 11) are already marked and not executed on v13; module compatibility is minimum 13.
+---
+
+## 2026-02-24 - US-007
+- Hardened release tooling: separated packaging (npm run build) from git operations; added release:check (lint, test, high-risk harness, occlusion baseline) and release:publish (requires CONFIRM_RELEASE=1, runs release:check first); documented in RELEASE-PROCESS.md.
+- Files changed: `release.cjs`, `release-check.cjs`, `release-publish.cjs`, `package.json`, `eslint.config.cjs`, `RELEASE-PROCESS.md`, `prd.json`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: release:check gates publish; CONFIRM_RELEASE=1 is the explicit guardrail for irreversible git ops; packaging creates zip only, no git.
+  - Gotchas encountered: ESLint needs node globals for .cjs files in project root; add to eslint.config.cjs files array.
+  - Useful context: release:publish will fail until high-risk-harness.json and occlusion-baseline-run.json are filled with PASS evidence.
 ---
