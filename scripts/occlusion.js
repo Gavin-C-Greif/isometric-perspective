@@ -1,13 +1,14 @@
 import { isometricModuleConfig } from './consts.js';
 import { logError } from './logger.js';
+import { normalizeOcclusionMode } from './occlusion-mode.js';
 import { throttle } from './utils.js';
 
 const scheduleOcclusionUpdate = throttle(updateOcclusionLayer, 50);
 
 // Enhanced Occlusion Layer Module for Foundry VTT
 export function registerOcclusionConfig() {
-	const occlusionMode = game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionTokenSilhouette");
-	if (occlusionMode === "off") return;
+	const mode = normalizeOcclusionMode(game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionTokenSilhouette"));
+	if (!mode.enabled) return;
 
 	// Global Hook Registration
 	function registerGlobalHooks() {
@@ -360,14 +361,11 @@ function createOcclusionMask(token, intersectingTiles) {
 	// 4+ = light on cpu in zoom out, heavy on cpu on zoom in, really pixelated
 	// 8+ = light on cpu on almost all scenarios, works only with rectangle tiles
 
-	const occlusionMode = game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionTokenSilhouette");
-	const gpu = occlusionMode === "gpu" ? 1 : 0;
-	const chunkSize = occlusionMode.startsWith("cpu") ? parseInt(occlusionMode.slice(3)) : 2;
-
-	if (gpu === 1) {
+	const mode = normalizeOcclusionMode(game.settings.get(isometricModuleConfig.MODULE_ID, "enableOcclusionTokenSilhouette"));
+	if (mode.type === "gpu") {
 		return createOcclusionMask_gpu(token, intersectingTiles)
 	} else {
-		return createOcclusionMask_cpu(token, intersectingTiles, chunkSize)
+		return createOcclusionMask_cpu(token, intersectingTiles, mode.chunkSize ?? 6)
 	}
 }
 

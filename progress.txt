@@ -4,6 +4,7 @@ Started: 2026-02-24
 ## Codebase Patterns
 - Use workflow job name `Lint and Test` as the required branch-protection status check for `main`.
 - Use `npm run harness:high-risk -- --init --force` to reset `high-risk-harness.json`, then `npm run harness:high-risk` to produce scenario-level PASS/FAIL evidence.
+- Normalize occlusion setting values through `scripts/occlusion-mode.js` before runtime use so invalid `cpuN` values safely fall back to `cpu6`.
 
 ---
 
@@ -23,4 +24,13 @@ Started: 2026-02-24
   - Patterns discovered: Keep high-risk release evidence machine-readable in `high-risk-harness.json` and validate with `npm run harness:high-risk`.
   - Gotchas encountered: Harness exits non-zero until all five scenarios are `PASS` with non-empty evidence.
   - Useful context: Browser verification for this run is blocked in this environment because browser MCP tool descriptor files were unavailable and no Foundry runtime target URL/session was provided.
+---
+
+## 2026-02-24 19:33:48 CST - US-003
+- Hardened occlusion mode handling with `scripts/occlusion-mode.js` (normalized `off/gpu/cpuN` parsing and `cpu6` fallback for invalid CPU chunk values), wired it into `scripts/occlusion.js`, added mode-policy tests, and documented production mode behavior/default recommendations in `README.md` and `PERFORMANCE-BASELINE.md`.
+- Files changed: `scripts/occlusion.js`, `scripts/occlusion-mode.js`, `tests/occlusion-mode.test.mjs`, `README.md`, `PERFORMANCE-BASELINE.md`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Keep occlusion mode parsing logic isolated and testable outside Foundry/PIXI runtime dependencies.
+  - Gotchas encountered: Browser MCP schema files are not present in this environment, so in-browser validation cannot be automated from this run.
+  - Useful context: `US-003` still needs one manually executed release-candidate profiling baseline record plus browser verification evidence before it can be marked complete.
 ---

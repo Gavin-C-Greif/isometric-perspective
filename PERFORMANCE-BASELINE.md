@@ -47,6 +47,13 @@ The module already includes empirical quality/performance notes in `scripts/occl
 - `cpu2` is recommended only when higher silhouette fidelity is required and the scene density is low-to-medium.
 - `cpu8`/`cpu10` are recommended only for rectangular/simple occluders where blockiness is acceptable.
 
+## US-003: Occlusion Mode Behavior and Production Guidance
+
+- **`off`**: Default and safest production mode. No silhouette masking work is executed.
+- **`gpu`**: Fast path for most scenes; validate visual correctness for your scene/tile content before release.
+- **`cpuN`** (`cpu1`, `cpu2`, `cpu3`, `cpu4`, `cpu6`, `cpu8`, `cpu10`): Chunked CPU masking where lower chunk sizes improve fidelity but increase CPU cost.
+- **Policy**: Keep global default at `off`; recommend `cpu6` as the balanced CPU fallback when silhouette occlusion is explicitly enabled.
+
 ## Run Record Template
 
 Copy this section for each profiling run:
@@ -93,6 +100,10 @@ Occlusion overlay updates now explicitly destroy replaced sprites and masks on e
 - **Re-initialization**: `initializeOcclusionLayer` uses the same explicit destroy path when replacing an existing container.
 
 **Stress test recommendation**: Run 10+ minutes of repeated token movement and pan/zoom with occlusion enabled (gpu or cpu modes). Use browser DevTools Memory profiler to confirm heap does not continuously grow.
+
+## US-003 Release-Candidate Profiling Status
+
+Manual Foundry/browser profiling is required to produce a completed release-candidate run record (per `US-003` acceptance criteria). This repository currently includes the baseline matrix, policy, and templates; populate one full run record below during release validation.
 
 ## Long-Session Stress Scenario (US-008)
 

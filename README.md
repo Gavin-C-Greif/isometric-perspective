@@ -56,6 +56,20 @@ This module currently targets Foundry VTT v13 (see `module.json` compatibility f
 
 The core functionality applies a canvas transformation (rotation + skew) to achieve isometric perspective, then compensates background, token, and tile rendering so core interactions still behave as expected.
 
+### Token Silhouette Occlusion Modes (v13)
+
+`Enable Occlusion: Token Silhouette` supports:
+
+- `off` (default): safest production setting and lowest runtime overhead.
+- `gpu`: generally the fastest silhouette mode, but visual quality should be validated on target scenes.
+- `cpu1`, `cpu2`, `cpu3`, `cpu4`, `cpu6`, `cpu8`, `cpu10`: chunked CPU modes where smaller chunks improve edge fidelity at higher CPU cost.
+
+Production policy:
+
+- Keep global default at `off`.
+- If CPU fallback is needed, start with `cpu6` as the recommended quality/performance balance.
+- Use `cpu2` for higher-fidelity low/medium-density scenes; use `cpu8`/`cpu10` only for simple rectangular occluders.
+
 These are the modules I've tested and their status:
 
 - **Working**  
