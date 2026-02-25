@@ -31,3 +31,13 @@ Started: 2026-02-24
   - transform.js: resetTokenTransform and applyIsometricTransformation share a switch on doc.texture.fit; default case uses logWarn + sx=1/sy=1.
   - FOUNDRY_VERSION is still set in main.js for SMOKE-TEST verification; no other runtime code uses it after v11 branch removal.
 ---
+## 2026-02-25 - US-003
+- Simplified high-complexity functions by extracting duplicated texture-fit logic into a shared utility.
+- **utils.js**: Added `computeTextureFitScale(objTxtRatio_W, objTxtRatio_H, fit)` returning `{sx, sy}` for fill/contain/cover/width/height modes. Eliminates ~50 lines of duplicated switch logic.
+- **transform.js**: Replaced duplicated switch blocks in `resetTokenTransform` and `applyIsometricTransformation` with calls to `computeTextureFitScale`. Removed unused logWarn import.
+- **tests/utils.test.mjs**: Added 3 tests for computeTextureFitScale (fill, contain/cover/width/height finite outputs, default/unknown).
+- Files changed: scripts/utils.js, scripts/transform.js, tests/utils.test.mjs, prd.json
+- **Learnings for future iterations:**
+  - Texture fit scale logic (fill, contain, cover, width, height) is shared between reset and apply paths; use computeTextureFitScale for any new token sizing that needs it.
+  - computeTextureFitScale logs invalid fit only when fit is defined but not a known value; undefined/null yields (1,1) silently.
+---

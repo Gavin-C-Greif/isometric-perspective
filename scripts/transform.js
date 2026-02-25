@@ -2,12 +2,13 @@ import { isometricModuleConfig } from './consts.js';
 import {
   cartesianToIsoProjection,
   computeTokenPlacementPosition,
+  computeTextureFitScale,
   safeDivide,
   computeOffsetComponentsForProjection,
   computeElevationVisualOffset
 } from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
-import { debugLog, debugWarn, logWarn } from './logger.js';
+import { debugLog, debugWarn } from './logger.js';
 
 const canvasTile = foundry.canvas.placeables.Tile;
 const canvasToken = foundry.canvas.placeables.Token;
@@ -60,45 +61,7 @@ function resetTokenTransform(token, baseState) {
   // Recompute native token dimensions without any isometric adjustments or iso flags.
   const objTxtRatio_W = safeDivide(token.texture.width, gridSize, 1);
   const objTxtRatio_H = safeDivide(token.texture.height, gridSize, 1);
-  let sx = 1;
-  let sy = 1;
-
-  switch (doc?.texture?.fit) {
-    case "fill":
-      sx = 1;
-      sy = 1;
-      break;
-    case "contain":
-      if (Math.max(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
-        sx = 1;
-        sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
-      } else {
-        sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
-        sy = 1;
-      }
-      break;
-    case "cover":
-      if (Math.min(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
-        sx = 1;
-        sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
-      } else {
-        sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
-        sy = 1;
-      }
-      break;
-    case "width":
-      sx = 1;
-      sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
-      break;
-    case "height":
-      sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
-      sy = 1;
-      break;
-    default:
-      logWarn("Invalid fill type passed to resetTokenTransform", { fit: doc?.texture?.fit });
-      sx = 1;
-      sy = 1;
-  }
+  const { sx, sy } = computeTextureFitScale(objTxtRatio_W, objTxtRatio_H, doc?.texture?.fit);
 
   const scaleX = doc?.width ?? 1;
   const scaleY = doc?.height ?? 1;
@@ -282,45 +245,11 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     //Otherwise it scales the dynamic ring subject based on the token art dimensions
     if (!object.document.ring?.enabled) {
       const gs = canvas.scene.grid.size;
-      let objTxtRatio_W = safeDivide(object.texture.width, gs, 1);
-      let objTxtRatio_H = safeDivide(object.texture.height, gs, 1);
-
-      switch ( object.document.texture.fit ) {
-        case "fill":
-          sx = 1;
-          sy = 1;
-          break;
-        case "contain":
-          if (Math.max(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
-            sx = 1;
-            sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
-          } else {
-            sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
-            sy = 1;
-          }
-          break;
-        case "cover":
-          if (Math.min(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
-            sx = 1;
-            sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
-          } else {
-            sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
-            sy = 1;
-          }
-          break;
-        case "width":
-          sx = 1;
-          sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
-          break;
-        case "height":
-          sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
-          sy = 1;
-          break;
-        default:
-          logWarn("Invalid fill type passed to resize", { object, fit });
-          sx = 1;
-          sy = 1;
-      }
+      const objTxtRatio_W = safeDivide(object.texture.width, gs, 1);
+      const objTxtRatio_H = safeDivide(object.texture.height, gs, 1);
+      const fitScale = computeTextureFitScale(objTxtRatio_W, objTxtRatio_H, object.document.texture?.fit);
+      sx = fitScale.sx;
+      sy = fitScale.sy;
       object.mesh.width  = Math.abs(sx * scaleX * gridSize * isoScale * Math.sqrt(2))
       object.mesh.height = Math.abs(sy * scaleY * gridSize * isoScale * Math.sqrt(2) * ISOMETRIC_CONST.ratio)
     } else {

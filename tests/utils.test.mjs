@@ -11,6 +11,7 @@ import {
   isoToCartesianProjection,
   calculateIsometricVerticalDistance,
   computeTokenPlacementPosition,
+  computeTextureFitScale,
   safeDivide,
   computeElevationOffsetDelta,
   computeElevationVisualOffset,
@@ -162,6 +163,30 @@ describe('computeTokenPlacementPosition', () => {
       assertAlmostEqual(pos.x, (width * gridSize) / 2, DEFAULT_EPSILON);
       assertAlmostEqual(pos.y, (height * gridSize) / 2, DEFAULT_EPSILON);
     }
+  });
+});
+
+describe('computeTextureFitScale', () => {
+  it('returns (1,1) for fill', () => {
+    const { sx, sy } = computeTextureFitScale(1, 1, 'fill');
+    assert.strictEqual(sx, 1);
+    assert.strictEqual(sy, 1);
+  });
+
+  it('returns finite values for contain/cover/width/height', () => {
+    const ratios = [[1, 1], [2, 1], [1, 2]];
+    for (const [w, h] of ratios) {
+      for (const fit of ['contain', 'cover', 'width', 'height']) {
+        const { sx, sy } = computeTextureFitScale(w, h, fit);
+        assert(Number.isFinite(sx) && Number.isFinite(sy), `fit=${fit} (${w},${h})`);
+      }
+    }
+  });
+
+  it('default/unknown fit returns (1,1)', () => {
+    const { sx, sy } = computeTextureFitScale(1, 1, 'unknown');
+    assert.strictEqual(sx, 1);
+    assert.strictEqual(sy, 1);
   });
 });
 

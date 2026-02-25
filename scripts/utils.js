@@ -15,6 +15,50 @@ export function safeDivide(num, denom, fallback = 0) {
 }
 
 /**
+ * Computes scale factors (sx, sy) for texture fit modes (fill, contain, cover, width, height).
+ * Shared by resetTokenTransform and applyIsometricTransformation to avoid duplicated logic.
+ * @param {number} objTxtRatio_W - Texture width / gridSize
+ * @param {number} objTxtRatio_H - Texture height / gridSize
+ * @param {string} [fit] - Texture fit mode from document.texture.fit
+ * @returns {{sx: number, sy: number}}
+ */
+export function computeTextureFitScale(objTxtRatio_W, objTxtRatio_H, fit) {
+  let sx = 1;
+  let sy = 1;
+  switch (fit) {
+    case "fill":
+      break;
+    case "contain":
+      if (Math.max(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
+        sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
+      } else {
+        sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
+        sy = 1;
+      }
+      break;
+    case "cover":
+      if (Math.min(objTxtRatio_W, objTxtRatio_H) === objTxtRatio_W) {
+        sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
+      } else {
+        sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
+        sy = 1;
+      }
+      break;
+    case "width":
+      sy = safeDivide(objTxtRatio_H, objTxtRatio_W, 1);
+      break;
+    case "height":
+      sx = safeDivide(objTxtRatio_W, objTxtRatio_H, 1);
+      sy = 1;
+      break;
+    default:
+      if (fit !== undefined && fit !== null) logWarn("Invalid texture fit", { fit });
+      break;
+  }
+  return { sx, sy };
+}
+
+/**
  * Elevation contribution to art offset (before gridSize/100 scaling).
  * Returns 0 when gridDistance or scaleX is invalid to avoid NaN/Infinity.
  * @param {number} elevation - Token elevation
