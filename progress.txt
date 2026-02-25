@@ -9,6 +9,7 @@ Started: 2026-02-24
 - On occlusion teardown, remove any stage children named `debug-*` to avoid stale debug overlays across scene transitions.
 - Use optional catch binding (`catch {}`) for intentional no-op teardown guards to avoid extra unused-error lint warnings.
 - Dynamic tile overlay policy for US-004: render overlays only when a token is actively controlled; keep layers empty when no token is controlled.
+- For linked-wall dynamic tiles, refresh overlay on both `updateWall` (door/geometry/flag changes) and `deleteWall` events when the wall id is linked by any tile.
 
 ---
 
@@ -73,4 +74,13 @@ Started: 2026-02-24
   - Patterns discovered: Prefer explicit controlled-token sources over observer/character fallbacks for overlay systems that must be deterministic.
   - Gotchas encountered: This change increases existing lint warning count because hook callback params are still unused in legacy handlers.
   - Useful context: Browser verification for rapid control switching and linked-door interactions is still manual in this environment.
+---
+
+## 2026-02-24 19:41:43 CST - US-004
+- Hardened linked-wall update handling so dynamic tile overlays refresh when relevant linked walls are updated (`ds`, `door`, geometry/coords, flags) or deleted, preventing stale visibility state after wall/door lifecycle changes.
+- Files changed: `scripts/dynamictile.js`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Match linked-wall relationships by stored wall id values from tile flags to support deleted-wall refresh paths where wall objects no longer resolve from canvas.
+  - Gotchas encountered: Expanding wall hooks increases existing warning count due unchanged legacy unused hook parameters, but introduces no lint errors.
+  - Useful context: Browser verification for linked-door visibility transitions remains manual in this environment.
 ---

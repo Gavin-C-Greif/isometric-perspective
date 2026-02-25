@@ -119,18 +119,19 @@ export function registerDynamicTileConfig() {
   });
 
   Hooks.on('updateWall', (wallDocument, change, options, userId) => {
-    // Verifica se a mudança é relacionada ao estado da porta
-    if ('ds' in change) {
-      // Procura por tiles que têm esta wall vinculada
-      const linkedTiles = canvas.tiles.placeables.filter(tile => {
-        const walls = getLinkedWalls(tile);
-        return walls.some(wall => wall && wall.id === wallDocument.id);
-      });
-      
-      // Se encontrou algum tile vinculado, atualiza os elementos visíveis
-      if (linkedTiles.length > 0) {
-        scheduleDynamicTileUpdate();
-      }
+    // Any linked wall update can affect dynamic visibility (door state, geometry, metadata)
+    const shouldRefresh = ['ds', 'door', 'c', 'flags'].some((key) => key in change);
+    if (!shouldRefresh) return;
+
+    const linkedTiles = canvas.tiles.placeables.filter((tile) => hasLinkedWallId(tile, wallDocument.id));
+    if (linkedTiles.length > 0) {
+      scheduleDynamicTileUpdate();
+    }
+  });
+  Hooks.on('deleteWall', (wallDocument, options, userId) => {
+    const linkedTiles = canvas.tiles.placeables.filter((tile) => hasLinkedWallId(tile, wallDocument.id));
+    if (linkedTiles.length > 0) {
+      scheduleDynamicTileUpdate();
     }
   });
 
@@ -485,6 +486,12 @@ function getLinkedWalls(tile) {
   if (!tile || !tile.document) return [];
   const linkedWallIds = normalizeLinkedWallIds(tile.document.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds'));
   return linkedWallIds.map(id => canvas.walls.get(id)).filter(Boolean);
+}
+
+function hasLinkedWallId(tile, wallId) {
+  if (!tile || !wallId) return false;
+  const linkedWallIds = normalizeLinkedWallIds(tile.document?.getFlag(isometricModuleConfig.MODULE_ID, 'linkedWallIds'));
+  return linkedWallIds.includes(String(wallId));
 }
 
 // Função auxiliar para verificar e corrigir flags existentes
