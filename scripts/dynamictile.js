@@ -36,11 +36,9 @@ export function registerDynamicTileConfig() {
   // Add a hook to reset the container when scene changes
   Hooks.on('changeScene', () => {
     destroyAlwaysVisibleContainer();
-    lastControlledToken = null;
   });
   Hooks.on('canvasTearDown', () => {
     destroyAlwaysVisibleContainer();
-    lastControlledToken = null;
   });
   Hooks.on('canvasReady', () => {
     normalizeAllTileLinkedWallFlags();
@@ -88,22 +86,12 @@ export function registerDynamicTileConfig() {
     }, 100);
   });
   Hooks.on('controlToken', (token, controlled) => {
-    if (controlled) {
-      lastControlledToken = token; // Store the last controlled token
-    }
     scheduleDynamicTileUpdate();
   });
   Hooks.on('updateToken', (tokenDocument, change, options, userId) => {
-    // Se o token atualizado for o último controlado, atualize a referência
-    if (lastControlledToken && tokenDocument.id === lastControlledToken.id) {
-      lastControlledToken = canvas.tokens.get(tokenDocument.id);
-    }
     scheduleDynamicTileUpdate();
   });
   Hooks.on('deleteToken', (token, options, userId) => {
-    if (lastControlledToken && token.id === lastControlledToken.id) {
-      lastControlledToken = null;
-    }
     scheduleDynamicTileUpdate();
   });
   Hooks.on("refreshToken", (token) => {
@@ -184,7 +172,6 @@ let tilesLayer;
 let tokensLayer;
 let tilesOpacity = 1.0;
 let tokensOpacity = 1.0;
-let lastControlledToken = null;
 
 /**
  * Destroy a cloned sprite without destroying its shared texture (US-004).
@@ -223,7 +210,6 @@ function destroyAlwaysVisibleContainer() {
   alwaysVisibleContainer = null;
   tilesLayer = null;
   tokensLayer = null;
-  lastControlledToken = null;
 }
 
 
@@ -339,28 +325,12 @@ function cloneTokenSprite(token) {
   }
 }
 
-// Função para encontrar o token inicial na inicialização
-function getInitialToken() {
-  // Primeiro, tenta pegar o token controlado
-  const controlled = canvas.tokens.controlled[0];
-  if (controlled) return controlled;
-
-  // Se não houver token controlado, tenta usar o último token conhecido
-  if (lastControlledToken) return lastControlledToken;
-
-  // Se não houver último token conhecido, tenta pegar o token do personagem do usuário
-  const actor = game.user.character;
-  if (actor) {
-      const userToken = canvas.tokens.placeables.find(t => t.actor?.id === actor.id);
-      if (userToken) return userToken;
-  }
-
-  // Se ainda não encontrou, pega o primeiro token que o usuário possui permissão
-  const availableToken = canvas.tokens.placeables.find(t => t.observer);
-  if (availableToken) return availableToken;
-
-  // Se tudo falhar, retorna null
-  return null;
+/**
+ * US-004 policy: Dynamic tile overlays render only for an actively controlled token.
+ * When no token is controlled, overlay layers are intentionally empty.
+ */
+function getControlledToken() {
+  return canvas.tokens.controlled[0] ?? null;
 }
 
 function updateAlwaysVisibleElements() {
@@ -371,7 +341,7 @@ function updateAlwaysVisibleElements() {
   destroyLayerSprites(tokensLayer);
 
   // Get the selected token; if none, layers stay empty (defined behavior)
-  const controlled = getInitialToken();
+  const controlled = getControlledToken();
   if (!controlled) return;
 
   // Collect Tiles with linked walls

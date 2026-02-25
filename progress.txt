@@ -8,6 +8,7 @@ Started: 2026-02-24
 - Use `npm run harness:occlusion-baseline -- --init --force` to regenerate `occlusion-baseline-run.json`, then `npm run harness:occlusion-baseline` to verify release baseline evidence completeness.
 - On occlusion teardown, remove any stage children named `debug-*` to avoid stale debug overlays across scene transitions.
 - Use optional catch binding (`catch {}`) for intentional no-op teardown guards to avoid extra unused-error lint warnings.
+- Dynamic tile overlay policy for US-004: render overlays only when a token is actively controlled; keep layers empty when no token is controlled.
 
 ---
 
@@ -63,4 +64,13 @@ Started: 2026-02-24
   - Patterns discovered: Prefer optional catch binding in expected teardown races where the error object is intentionally unused.
   - Gotchas encountered: Lifecycle cleanup remains intentionally defensive because Foundry/PIXI may already have destroyed stage children during scene transitions.
   - Useful context: `US-003` still needs manual profiling artifact completion and manual browser verification before `passes` can be set to `true`.
+---
+
+## 2026-02-24 19:40:28 CST - US-004
+- Hardened dynamic tile control behavior to eliminate no-controlled-token fallback rendering. The always-visible overlay now only uses actively controlled tokens, yielding deterministic empty layers when nothing is controlled and more predictable rapid control switching behavior.
+- Files changed: `scripts/dynamictile.js`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Prefer explicit controlled-token sources over observer/character fallbacks for overlay systems that must be deterministic.
+  - Gotchas encountered: This change increases existing lint warning count because hook callback params are still unused in legacy handlers.
+  - Useful context: Browser verification for rapid control switching and linked-door interactions is still manual in this environment.
 ---
