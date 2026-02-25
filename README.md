@@ -70,6 +70,15 @@ Production policy:
 - If CPU fallback is needed, start with `cpu6` as the recommended quality/performance balance.
 - Use `cpu2` for higher-fidelity low/medium-density scenes; use `cpu8`/`cpu10` only for simple rectangular occluders.
 
+### Token Auto-Sorting (v13)
+
+When `Enable Automatic Token Sorting` is on for an isometric scene, token depth ordering uses a single documented ownership model:
+
+- **Document sort-write path** (`scripts/autosorting.js`): The only module that writes `token.sort` to the document. Updates run on `canvasReady` (batch sync) and on `updateToken`/`createToken` (position changes). Per-token coalescing prevents jitter during rapid movement.
+- **Display z-index path** (`scripts/token.js`): The `_refreshSort` patch sets `mesh.zIndex` for immediate visual order. It does *not* write to the document. Controlled tokens get a small zIndex boost (+0.1) so they remain visible when selected without breaking relative depth order.
+
+No other module should call `scene.updateEmbeddedDocuments('Token', {sort: ...})`.
+
 These are the modules I've tested and their status:
 
 - **Working**  

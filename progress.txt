@@ -84,3 +84,12 @@ Started: 2026-02-24
   - Gotchas encountered: Expanding wall hooks increases existing warning count due unchanged legacy unused hook parameters, but introduces no lint errors.
   - Useful context: Browser verification for linked-door visibility transitions remains manual in this environment.
 ---
+
+## 2026-02-24 - US-005
+- Productionized token auto-sorting: added per-token coalescing in autosorting.js to eliminate sort jitter during rapid movement; documented sorting ownership (display z-index path in token.js vs document sort-write path in autosorting.js) in README; controlled-token visibility boost (+0.1 zIndex) already preserved in token.js.
+- Files changed: `scripts/autosorting.js`, `README.md`, `prd.json`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Per-token update coalescing (running + needsRerun Sets) prevents conflicting document writes when updateToken fires rapidly during drag; only one update in flight per token, with re-run of latest state if another update arrives.
+  - Gotchas encountered: autosorting.js is the single authoritative path for document.sort writes; token.js _refreshSort patch is display-only and must not write to document.
+  - Useful context: US-005 has no browser verification requirement in acceptance criteria; smoke tests in SMOKE-TEST.md cover sort pipeline (6a) and rapid movement (5).
+---
