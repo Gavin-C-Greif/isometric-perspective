@@ -73,7 +73,7 @@ function teardownOcclusionLayer() {
 		}
 		destroyOcclusionContainer(occlusionConfig.container);
 		clearOcclusionDebugGraphics();
-	} catch (_e) {
+	} catch {
 		// Canvas may already be torn down
 	}
 	occlusionConfig.container = null;
@@ -125,7 +125,7 @@ function clearOcclusionDebugGraphics() {
 		try {
 			canvas.stage.removeChild(child);
 			child.destroy({ children: true });
-		} catch (_e) {
+		} catch {
 			// Ignore graphics already destroyed by Foundry/PIXI lifecycle.
 		}
 	}

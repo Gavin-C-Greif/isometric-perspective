@@ -7,6 +7,7 @@ Started: 2026-02-24
 - Normalize occlusion setting values through `scripts/occlusion-mode.js` before runtime use so invalid `cpuN` values safely fall back to `cpu6`.
 - Use `npm run harness:occlusion-baseline -- --init --force` to regenerate `occlusion-baseline-run.json`, then `npm run harness:occlusion-baseline` to verify release baseline evidence completeness.
 - On occlusion teardown, remove any stage children named `debug-*` to avoid stale debug overlays across scene transitions.
+- Use optional catch binding (`catch {}`) for intentional no-op teardown guards to avoid extra unused-error lint warnings.
 
 ---
 
@@ -53,4 +54,13 @@ Started: 2026-02-24
   - Patterns discovered: Any debug stage overlays should have deterministic teardown hooks, especially for scene-switch and canvas teardown paths.
   - Gotchas encountered: This change adds one additional known lint warning (`_e` unused) in `scripts/occlusion.js` but does not introduce lint errors.
   - Useful context: `US-003` still requires manual profiling evidence and browser verification before marking `passes: true`.
+---
+
+## 2026-02-24 19:38:17 CST - US-003
+- Replaced intentional no-op `catch (_e)` blocks in occlusion teardown/debug cleanup with optional catch binding (`catch {}`), preserving behavior while reducing non-actionable lint warnings in lifecycle cleanup paths.
+- Files changed: `scripts/occlusion.js`, `progress.txt`.
+- **Learnings for future iterations:**
+  - Patterns discovered: Prefer optional catch binding in expected teardown races where the error object is intentionally unused.
+  - Gotchas encountered: Lifecycle cleanup remains intentionally defensive because Foundry/PIXI may already have destroyed stage children during scene transitions.
+  - Useful context: `US-003` still needs manual profiling artifact completion and manual browser verification before `passes` can be set to `true`.
 ---
